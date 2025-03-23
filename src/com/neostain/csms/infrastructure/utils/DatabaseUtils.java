@@ -18,6 +18,8 @@ public class DatabaseUtils {
     public static Connection getConnection() throws SQLException {
         try {
             return DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521/NEOSTAIN_CSMS", "CSMS_ADMIN", "12345678");
+            // Dành cho các thành viên sử dụng Radmin VPN
+            // return DriverManager.getConnection("jdbc:oracle:thin:@26.141.93.197:1521/NEOSTAIN_CSMS", "CSMS_ADMIN", "12345678");
         } catch (SQLException e) {
             LOGGER.log(Level.SEVERE, "Cannot connect to database", e);
             throw e;
