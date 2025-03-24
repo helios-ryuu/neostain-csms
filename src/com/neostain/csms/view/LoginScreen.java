@@ -1,22 +1,21 @@
 package com.neostain.csms.view;
 
-import com.neostain.csms.controller.MemberController;
-import com.neostain.csms.model.Member;
+import com.neostain.csms.service.AuthService;
 
 import javax.swing.*;
 import java.awt.*;
 
 // Login screen with basic components
 public class LoginScreen extends JPanel {
-    private final MemberController memberController;
+    private final AuthService authService;
     private final JTextField usernameField;
     private final JPasswordField passwordField;
     private final JLabel statusLabel;
-    private Runnable loginHandler;
+    private String currentUsername;
 
-    public LoginScreen(MemberController memberController) {
-        this.memberController = memberController;
-        
+    public LoginScreen(AuthService authService) {
+        this.authService = authService;
+
         // Create text fields
         usernameField = new JTextField(20);
         passwordField = new JPasswordField(20);
@@ -51,15 +50,18 @@ public class LoginScreen extends JPanel {
         String password = new String(passwordField.getPassword());
 
         try {
-            if (memberController.login(username, password)) {
+            if (authService.authenticate(username, password)) {
                 // Login worked
                 statusLabel.setText("Đăng nhập thành công!");
                 statusLabel.setForeground(Color.GREEN);
                 passwordField.setText("");
-                
-                // Call success handler
-                if (loginHandler != null) {
-                    loginHandler.run();
+                currentUsername = username;
+                if (username != null) {
+                    JOptionPane.showMessageDialog(this,
+                            "Đăng nhập thành công!\nChào mừng, " + username,
+                            "Thành công",
+                            JOptionPane.INFORMATION_MESSAGE);
+                    System.exit(0);
                 }
             } else {
                 // Login failed
@@ -73,9 +75,9 @@ public class LoginScreen extends JPanel {
         }
     }
 
-    // Set what happens after successful login
-    public void setLoginHandler(Runnable handler) {
-        this.loginHandler = handler;
+    // Get current logged-in username
+    public String getCurrentUsername() {
+        return currentUsername;
     }
 }
 

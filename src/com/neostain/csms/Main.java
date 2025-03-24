@@ -4,12 +4,10 @@ import com.neostain.csms.view.MainFrame;
 
 import javax.swing.*;
 
-/**
- * Main application entry point
- */
+// Điểm khởi đầu của ứng dụng
 public class Main {
     public static void main(String[] args) {
-        // Start application in Swing thread
+        // Khởi động ứng dụng trong luồng Swing
         SwingUtilities.invokeLater(MainFrame::new);
     }
 }
