@@ -1,6 +1,6 @@
 package com.neostain.csms;
 
-import com.neostain.csms.presentation.view.screens.MainFrame;
+import com.neostain.csms.view.MainFrame;
 
 import javax.swing.*;
 
