@@ -35,7 +35,7 @@ public class MainFrame extends JFrame {
 
         // Hiển thị màn hình đăng nhập
         this.setContentPane(loginScreen);
-        this.setMinimumSize(new Dimension(500, 250));
+        this.setSize(new Dimension(500, 250));
         this.setResizable(false);
         this.setLocationRelativeTo(null);
         this.revalidate();

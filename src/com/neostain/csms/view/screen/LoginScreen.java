@@ -3,7 +3,6 @@ package com.neostain.csms.view.screen;
 import com.neostain.csms.model.Account;
 import com.neostain.csms.model.Employee;
 import com.neostain.csms.model.Role;
-import com.neostain.csms.model.Token;
 import com.neostain.csms.service.ServiceManager;
 import com.neostain.csms.view.MainFrame;
 
@@ -136,8 +135,6 @@ public class LoginScreen extends JPanel {
                 Account account = this.serviceManager.getAccountService().getAccount(username);
                 Employee employee = this.serviceManager.getEmployeeService().getEmployee(username);
                 Role role = this.serviceManager.getRoleService().getRole(account.getRoleID());
-                Token token = this.serviceManager.getTokenService().getToken(this.serviceManager.getCurrentTokenValue());
-                System.out.println(token.getExpiresAt());
 
                 JOptionPane.showMessageDialog(this,
                         "Đăng nhập thành công!\nChào mừng, " + employee.getEmployeeId() + " - " + employee.getEmployeeName()
