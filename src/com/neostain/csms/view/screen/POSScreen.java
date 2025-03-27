@@ -38,7 +38,7 @@ public class POSScreen extends JPanel {
         // Xử lý click chuột
         button.addActionListener(e -> {
             MainFrame mainFrame = (MainFrame) SwingUtilities.getWindowAncestor(this);
-            mainFrame.showLoginScreen();
+            mainFrame.showAuthorizeScreen();
         });
 
         // Hiệu ứng hover
