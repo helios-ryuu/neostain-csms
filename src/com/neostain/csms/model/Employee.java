@@ -5,18 +5,17 @@ import java.util.Date;
 
 public class Employee {
 
-    private final String employeeId;     // Mã nhân viên (12 ký tự)
-    private final Date hireDate;         // Ngày gia nhập
-    private String employeeName;   // Tên nhân viên (tối đa 50 ký tự)
-    private String position;       // Vị trí/chức danh (tối đa 50 ký tự)
-    private String departmentId;   // Mã phòng ban (5 ký tự)
-    private String email;          // Email nhân viên (tối đa 40 ký tự)
-    private String phoneNumber;    // Số điện thoại (tối đa 10 ký tự)
-    private String address;        // Địa chỉ (tối đa 255 ký tự)
-    private BigDecimal hourlyWage; // Lương theo giờ (NUMBER(15,2))
-    private BigDecimal baseSalary; // Lương cơ bản (NUMBER(15,2))
+    private final String employeeId;
+    private final Date hireDate;
+    private String employeeName;
+    private String position;
+    private String departmentId;
+    private String email;
+    private String phoneNumber;
+    private String address;
+    private BigDecimal hourlyWage;
+    private BigDecimal baseSalary;
 
-    // Constructor đầy đủ
     public Employee(String employeeId, String employeeName, String position, String departmentId,
                     Date hireDate, String email, String phoneNumber, String address,
                     BigDecimal hourlyWage, BigDecimal baseSalary) {
@@ -32,7 +31,7 @@ public class Employee {
         this.baseSalary = baseSalary;
     }
 
-    // Getters and setters
+    // Getters và setters
     public String getEmployeeId() {
         return employeeId;
     }

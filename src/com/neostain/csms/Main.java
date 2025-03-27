@@ -1,5 +1,6 @@
 package com.neostain.csms;
 
+import com.neostain.csms.service.ServiceManager;
 import com.neostain.csms.view.MainFrame;
 
 import javax.swing.*;
@@ -15,7 +16,12 @@ public class Main {
     /// @param args Các tham số dòng lệnh (không sử dụng)
     public static void main(String[] args) {
         try {
+            // Đặt look and feel của ứng dụng
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+
+            // Đặt tỷ lệ UI
+            System.setProperty("sun.java2d.uiScale", "1.0");
+            System.setProperty("sun.java2d.dpiaware", "true");
 
             // Lấy danh sách các font đã cài đặt
             Font defaultFont = getFont("Segoe UI");
@@ -30,6 +36,22 @@ public class Main {
             UIManager.put("MenuItem.font", defaultFont);
             UIManager.put("TabbedPane.font", defaultFont);
             UIManager.put("List.font", defaultFont);
+
+            // Thêm shutdown hook để cập nhật trạng thái token khi đóng ứng dụng
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                System.out.println("Shutdown hook đang chạy...");
+                try {
+                    String currentToken = ServiceManager.getInstance().getCurrentTokenValue();
+                    if (currentToken != null && !currentToken.isEmpty()) {
+                        ServiceManager.getInstance().getTokenService().updateTokenStatus(currentToken, "02");
+                        LOGGER.info("[MAIN] Đã cập nhật trạng thái token thành '02' khi đóng ứng dụng");
+                    } else {
+                        LOGGER.info("[MAIN] Token trống");
+                    }
+                } catch (Exception ex) {
+                    LOGGER.severe("[MAIN] Lỗi khi cập nhật trạng thái token: " + ex.getMessage());
+                }
+            }));
         } catch (Exception e) {
             LOGGER.severe("[MAIN] Lỗi: " + e.getMessage());
         }

@@ -6,7 +6,7 @@ public interface EmployeeService {
 
     /// Lấy dữ liệu Employee bằng EMPLOYEE_ID từ bảng EMPLOYEE
     ///
-    /// @param employeeID ACCOUNT_ID hiện tại
-    /// @return Một thể hiện đối tượng Account
+    /// @param employeeID EMPLOYEE_ID hiện tại
+    /// @return Một thể hiện đối tượng Employee
     Employee getEmployee(String employeeID);
 }

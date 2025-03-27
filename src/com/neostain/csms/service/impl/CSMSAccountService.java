@@ -15,6 +15,7 @@ public class CSMSAccountService implements AccountService {
 
     @Override
     public Account getAccount(String accountID) {
+
         if (accountID == null || accountID.trim().isEmpty()) {
             LOGGER.warning("[ACCOUNT.SERVICE.GET_ACCOUNT] ID tài khoản trống");
             return null;

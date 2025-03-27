@@ -9,6 +9,7 @@ public class Role {
         this.roleName = roleName;
     }
 
+    // Getters và Setters
     public String getRoleId() {
         return roleId;
     }

@@ -10,7 +10,7 @@ public class Token {
     private String tokenValue;
     private String tokenStatusID;
 
-    public Token(int tokenID, String accountID, String tokenValue, Timestamp issuedAt, Timestamp expiresAt, String tokenStatusID) {
+    public Token(int tokenID, String accountID, String tokenValue, Timestamp expiresAt, Timestamp issuedAt, String tokenStatusID) {
         this.tokenID = tokenID;
         this.accountID = accountID;
         this.tokenValue = tokenValue;
@@ -19,6 +19,7 @@ public class Token {
         this.tokenStatusID = tokenStatusID;
     }
 
+    // Getters và Setters
     public int getTokenID() {
         return tokenID;
     }

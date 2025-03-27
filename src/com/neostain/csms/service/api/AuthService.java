@@ -19,6 +19,5 @@ public interface AuthService {
     /// Tạo token mới cho người dùng dựa trên tên đăng nhập và lưu vào cơ sở dữ liệu.
     ///
     /// @param accountID Tên đăng nhập của người dùng.
-    /// @return Chuỗi token nếu tạo thành công, ngược lại trả về null.
     String generateToken(String accountID);
 }

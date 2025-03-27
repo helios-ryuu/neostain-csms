@@ -1,16 +1,17 @@
 package com.neostain.csms.service.impl;
 
+import com.neostain.csms.service.ServiceManager;
 import com.neostain.csms.service.api.AuthService;
 import com.neostain.csms.util.DatabaseUtils;
 
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.logging.Logger;
+
+import static com.neostain.csms.service.ServiceManager.hash;
 
 /// Implementation của AuthService cung cấp các chức năng xác thực, phân quyền và tạo token cho người dùng.
 public class CSMSAuthService implements AuthService {
@@ -36,7 +37,11 @@ public class CSMSAuthService implements AuthService {
                 if (rs.next()) {
                     String storedHash = rs.getString("PASSWORD_HASH");
                     boolean isMatch = hash(password).equals(storedHash);
-                    LOGGER.info("[AUTH.SERVICE.AUTHENTICATE] Xác thực " + (isMatch ? "Thành công" : "Thất bại") + " - Người dùng: " + username);
+                    LOGGER.info("[AUTH.SERVICE.AUTHENTICATE] Xác thực " + (isMatch ? "thành công" : "thất bại") + " - Người dùng: " + username);
+                    if (isMatch) {
+                        String tokenValue = this.generateToken(username);
+                        ServiceManager.getInstance().setCurrentTokenValue(tokenValue);
+                    }
                     return isMatch;
                 } else {
                     LOGGER.severe("[AUTH.SERVICE.AUTHENTICATE] Người dùng không tồn tại: " + username);
@@ -49,9 +54,42 @@ public class CSMSAuthService implements AuthService {
         }
     }
 
+    @Override
+    public String generateToken(String accountID) {
+        if (accountID == null || accountID.trim().isEmpty()) {
+            LOGGER.warning("[AUTH.SERVICE.GENERATE_TOKEN] Tên đăng nhập trống");
+            return null;
+        }
+
+        try (Connection conn = DatabaseUtils.getConnection()) {
+            // Tạo token dựa trên thời gian hiện tại và băm bằng SHA-256
+            String tokenValue = hash(System.currentTimeMillis() / 1000 + accountID);
+            LocalDateTime expiresAt = LocalDateTime.now().plusDays(7);
+            final String insertQuery = "INSERT INTO TOKEN (ACCOUNT_ID, TOKEN_VALUE, EXPIRES_AT, TOKEN_STATUS_ID) VALUES (?, ?, ?, '01')";
+
+            try (PreparedStatement insertStmt = conn.prepareStatement(insertQuery)) {
+                insertStmt.setString(1, accountID);
+                insertStmt.setString(2, tokenValue);
+                insertStmt.setTimestamp(3, Timestamp.valueOf(expiresAt));
+                int rowsAffected = insertStmt.executeUpdate();
+                if (rowsAffected > 0) {
+                    LOGGER.info("[AUTH.SERVICE.GENERATE_TOKEN] Tạo token thành công cho: " + accountID + "\nToken value: " + tokenValue
+                            + "\nExpires at: " + expiresAt);
+                } else {
+                    LOGGER.severe("[AUTH.SERVICE.GENERATE_TOKEN] Lỗi tạo token cho: " + accountID);
+                    return null;
+                }
+                return tokenValue;
+            }
+        } catch (Exception e) {
+            LOGGER.severe("[AUTH.SERVICE.GENERATE_TOKEN] Lỗi: " + e.getMessage());
+            return null;
+        }
+    }
 
     @Override
     public boolean isAuthorized(String username, String role) {
+        // Kiểm tra tên đăng nhập
         if (username == null || username.trim().isEmpty()) {
             LOGGER.warning("[AUTH.SERVICE.IS_AUTHORIZED] Tên đăng nhập trống");
             return false;
@@ -75,59 +113,6 @@ public class CSMSAuthService implements AuthService {
         } catch (Exception e) {
             LOGGER.severe("[AUTH.SERVICE.IS_AUTHORIZED] Lỗi: " + e.getMessage());
             return false;
-        }
-    }
-
-
-    @Override
-    public String generateToken(String accountID) {
-        if (accountID == null || accountID.trim().isEmpty()) {
-            LOGGER.warning("[AUTH.SERVICE.GENERATE_TOKEN] Tên đăng nhập trống");
-            return null;
-        }
-
-        try (Connection conn = DatabaseUtils.getConnection()) {
-            // Tạo token dựa trên thời gian hiện tại và băm bằng SHA-256
-            String tokenValue = hash(System.currentTimeMillis() / 1000 + accountID);
-            LocalDateTime expiresAt = LocalDateTime.now().plusDays(7);
-            final String insertQuery = "INSERT INTO TOKEN (ACCOUNT_ID, TOKEN_VALUE, EXPIRES_AT, TOKEN_STATUS_ID) VALUES (?, ?, ?, '01')";
-
-            try (PreparedStatement insertStmt = conn.prepareStatement(insertQuery)) {
-                insertStmt.setString(1, accountID);
-                insertStmt.setString(2, tokenValue);
-                insertStmt.setTimestamp(3, Timestamp.valueOf(expiresAt));
-                int rowsAffected = insertStmt.executeUpdate();
-                if (rowsAffected > 0) {
-                    LOGGER.info("[AUTH.SERVICE.GENERATE_TOKEN] Tạo token thành công cho: " + accountID + "\nToken value: " + tokenValue
-                            + "\nExpires at: " + expiresAt);
-                    return tokenValue;
-                } else {
-                    LOGGER.severe("[AUTH.SERVICE.GENERATE_TOKEN] Lỗi tạo token cho: " + accountID);
-                    return null;
-                }
-            }
-        } catch (Exception e) {
-            LOGGER.severe("[AUTH.SERVICE.GENERATE_TOKEN] Lỗi: " + e.getMessage());
-            return null;
-        }
-    }
-
-    /// Băm chuỗi đầu vào sử dụng thuật toán SHA-256.
-    ///
-    /// @param input Chuỗi cần băm.
-    /// @return Chuỗi băm dưới dạng hex.
-    /// @throws SecurityException Nếu có lỗi trong quá trình mã hóa.
-    private String hash(String input) {
-        try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            byte[] hashBytes = digest.digest(input.getBytes(StandardCharsets.UTF_8));
-            StringBuilder hexString = new StringBuilder();
-            for (byte b : hashBytes) {
-                hexString.append(String.format("%02x", b & 0xff));
-            }
-            return hexString.toString();
-        } catch (Exception e) {
-            throw new SecurityException("Lỗi mã hóa", e);
         }
     }
 }

@@ -9,6 +9,7 @@ public class Department {
         this.departmentName = departmentName;
     }
 
+    // Getters và Setter
     public String getDepartmentId() {
         return departmentId;
     }

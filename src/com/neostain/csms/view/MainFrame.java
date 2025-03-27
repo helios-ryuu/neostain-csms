@@ -5,14 +5,13 @@ import com.neostain.csms.view.screen.POSScreen;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.logging.Logger;
 
-/**
- * Cửa sổ chính của ứng dụng, quản lý hiển thị các màn hình khác nhau
- */
+/// Cửa sổ chính của ứng dụng, quản lý hiển thị các màn hình khác nhau
 public class MainFrame extends JFrame {
-    /**
-     * Khởi tạo cửa sổ chính với các thiết lập cơ bản
-     */
+    private static final Logger LOGGER = Logger.getLogger(MainFrame.class.getName());
+
+    /// Khởi tạo cửa sổ chính với các thiết lập cơ bản
     public MainFrame() {
         // Đặt tiêu đề cửa sổ
         super("NeoStain Convenience Store Management System");
@@ -36,9 +35,9 @@ public class MainFrame extends JFrame {
 
         // Hiển thị màn hình đăng nhập
         this.setContentPane(loginScreen);
-        this.setSize(800, 400);
+        this.setMinimumSize(new Dimension(500, 250));
+        this.setResizable(false);
         this.setLocationRelativeTo(null);
-        this.setMinimumSize(new Dimension(500, 300));
         this.revalidate();
         this.repaint();
     }
