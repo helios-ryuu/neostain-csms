@@ -15,20 +15,7 @@ public class MainFrame extends JFrame {
         // Đặt tiêu đề cửa sổ
         super("NeoStain Convenience Store Management System");
 
-        // Thêm shutdown hook để cập nhật trạng thái token khi đóng ứng dụng
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            try {
-                String currentToken = ServiceManager.getInstance().getCurrentTokenValue();
-                if (currentToken != null && !currentToken.isEmpty()) {
-                    ServiceManager.getInstance().getTokenService().updateTokenStatus(currentToken, "02");
-                    System.out.println("[MAIN] Đã cập nhật trạng thái token thành '02' khi đóng ứng dụng");
-                } else {
-                    System.out.println("[MAIN] Token trống. Không hủy Token.");
-                }
-            } catch (Exception ex) {
-                System.out.println("[MAIN] Lỗi khi cập nhật trạng thái token: " + ex.getMessage());
-            }
-        }));
+
 
         try {
             // Đặt look and feel của ứng dụng
@@ -38,8 +25,8 @@ public class MainFrame extends JFrame {
             System.setProperty("sun.java2d.uiScale", "1.0");
             System.setProperty("sun.java2d.dpiaware", "true");
 
-            // Lấy danh sách các font đã cài đặt
-            Font defaultFont = getFont("Segoe UI");
+            // Đặt font
+            Font defaultFont = new Font("Segoe UI", Font.PLAIN, 11);
             UIManager.put("Button.font", defaultFont);
             UIManager.put("Label.font", defaultFont);
             UIManager.put("TextField.font", defaultFont);
@@ -64,6 +51,21 @@ public class MainFrame extends JFrame {
         // Hiển thị màn hình đăng nhập đầu tiên
         this.showAuthorizeScreen();
         this.setVisible(true);
+
+        // Thêm shutdown hook để cập nhật trạng thái token khi đóng ứng dụng
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            try {
+                String currentToken = ServiceManager.getInstance().getCurrentTokenValue();
+                if (currentToken != null && !currentToken.isEmpty()) {
+                    ServiceManager.getInstance().getTokenService().updateTokenStatus(currentToken, "02");
+                    System.out.println("[MAIN] Đã cập nhật trạng thái token thành '02' khi đóng ứng dụng");
+                } else {
+                    System.out.println("[MAIN] Token trống. Không hủy Token.");
+                }
+            } catch (Exception ex) {
+                System.out.println("[MAIN] Lỗi khi cập nhật trạng thái token: " + ex.getMessage());
+            }
+        }));
     }
 
     private static Font getFont(String fontName) {
