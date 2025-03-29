@@ -4,11 +4,11 @@ import com.neostain.csms.model.Account;
 import com.neostain.csms.model.Employee;
 import com.neostain.csms.model.Role;
 import com.neostain.csms.service.ServiceManager;
+import com.neostain.csms.util.ColorUtils;
 import com.neostain.csms.view.MainFrame;
+import com.neostain.csms.view.components.TitledBorderPanel;
 
 import javax.swing.*;
-import javax.swing.border.Border;
-import javax.swing.border.TitledBorder;
 import java.awt.*;
 
 /**
@@ -21,28 +21,20 @@ public class AuthorizeScreen extends JPanel {
 
     // Các thành phần giao diện
     public JTabbedPane mainAuthorizePane;
-    private final JPanel loginTabPanel;
-    private final JPanel AboutTabPanel;
 
-    // Các thành phần giao diện của tab đăng nhập
-    private final JTextField usernameField;
-    private final JPasswordField passwordField;
-    private final JLabel statusLabel;
+    private final JTextField usernameField = new JTextField(30);
+    private final JPasswordField passwordField = new JPasswordField(30);
+    private final JLabel statusLabel = new JLabel("Vui lòng đăng nhập");
 
     /**
      * Khởi tạo màn hình xác thực với các thành phần giao diện
      */
     public AuthorizeScreen() {
         // Tạo Service Manager
-        serviceManager = ServiceManager.getInstance();
+        this.serviceManager = ServiceManager.getInstance();
 
         // Khởi tạo các thành phần giao diện
         this.mainAuthorizePane = new JTabbedPane();
-        this.loginTabPanel = new JPanel();
-        this.AboutTabPanel = new JPanel();
-        this.usernameField = new JTextField(30);
-        this.passwordField = new JPasswordField(30);
-        this.statusLabel = new JLabel("Vui lòng đăng nhập");
 
         // Thiết lập tab panel
         mainAuthorizePane.setTabPlacement(JTabbedPane.TOP);
@@ -50,15 +42,12 @@ public class AuthorizeScreen extends JPanel {
         mainAuthorizePane.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
         mainAuthorizePane.setFocusable(false);
 
-        // Thiết lập tab đăng nhập
-        setupLoginTab();
-
-        // Thiết lập tab đăng ký
-        setupAboutTab();
+        JPanel loginTabPanel = this.createLoginTabPanel();
+        JPanel aboutTabPanel = this.createAboutTabPanel();
 
         // Thêm các tab vào mainAuthorizePane
         mainAuthorizePane.addTab("Đăng nhập", loginTabPanel);
-        mainAuthorizePane.addTab("Thông tin dự án", AboutTabPanel);
+        mainAuthorizePane.addTab("Thông tin dự án", aboutTabPanel);
 
         // Thêm mainAuthorizePane vào AuthorizeScreen
         this.setLayout(new BorderLayout());
@@ -68,12 +57,11 @@ public class AuthorizeScreen extends JPanel {
     /**
      * Thiết lập giao diện cho tab đăng nhập
      */
-    private void setupLoginTab() {
-        // Thiết lập border cho panel
+    private JPanel createLoginTabPanel() {
+        JPanel loginTabPanel = new JPanel();
+        loginTabPanel.setBackground(ColorUtils.componentBackgroundWhite);
         loginTabPanel.setBorder(BorderFactory.createEmptyBorder(30, 15, 30, 15));
-        loginTabPanel.setBackground(new Color(249, 249, 249));
 
-        // Sử dụng GridBagLayout để bố trí các component
         loginTabPanel.setLayout(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(5, 5, 5, 5);
@@ -85,7 +73,7 @@ public class AuthorizeScreen extends JPanel {
         JLabel userLabel = new JLabel("Tên đăng nhập:");
         userLabel.setPreferredSize(new Dimension(labelFixedWidth, userLabel.getPreferredSize().height));
         gbc.fill = GridBagConstraints.NONE;
-        gbc.anchor = GridBagConstraints.WEST;
+        gbc.anchor = GridBagConstraints.CENTER;
         addComponent(loginTabPanel, userLabel, gbc, 0, 0, 1, 1);
 
         gbc.fill = GridBagConstraints.HORIZONTAL;
@@ -97,7 +85,7 @@ public class AuthorizeScreen extends JPanel {
         passLabel.setPreferredSize(new Dimension(labelFixedWidth, passLabel.getPreferredSize().height));
         gbc.fill = GridBagConstraints.NONE;
         gbc.weightx = 0;
-        gbc.anchor = GridBagConstraints.WEST;
+        gbc.anchor = GridBagConstraints.CENTER;
         addComponent(loginTabPanel, passLabel, gbc, 0, 1, 1, 1);
 
         gbc.fill = GridBagConstraints.HORIZONTAL;
@@ -122,61 +110,51 @@ public class AuthorizeScreen extends JPanel {
                 rootPane.setDefaultButton(loginButton);
             }
         });
+
+        return loginTabPanel;
     }
 
     /**
      * Thiết lập giao diện cho tab thông tin dự án
      */
-    private void setupAboutTab() {
-        // Thiết lập cho panel "AboutTabPanel"
-        AboutTabPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        AboutTabPanel.setBackground(new Color(249, 249, 249));
-        AboutTabPanel.setLayout(new GridBagLayout());
+    private JPanel createAboutTabPanel() {
+        JPanel aboutTabPanel = new JPanel();
+        aboutTabPanel.setBackground(ColorUtils.componentBackgroundWhite);
+        aboutTabPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        aboutTabPanel.setLayout(new GridBagLayout());
 
-        // -- Tạo panel chứa nội dung, đặt border với màu xám nhạt --
-        JPanel boxPanel = new JPanel(new BorderLayout(5, 5));
-        boxPanel.setBackground(new Color(249, 249, 249));
-
-        // Tạo một LineBorder màu xám nhạt
-        Border lineBorder = BorderFactory.createLineBorder(new Color(220, 220, 220), 1);
-
-        // Tạo TitledBorder từ lineBorder
-        TitledBorder titledBorder = BorderFactory.createTitledBorder(
-                lineBorder,
-                "Tác giả",
-                TitledBorder.DEFAULT_JUSTIFICATION,
-                TitledBorder.DEFAULT_POSITION
-        );
-
-        // Tạo border padding để tăng khoảng cách bên trong
-        Border marginBorder = BorderFactory.createEmptyBorder(4, 8, 4, 8);
-
-        // Kết hợp TitledBorder và padding thành 1 border duy nhất
-        boxPanel.setBorder(BorderFactory.createCompoundBorder(titledBorder, marginBorder));
-
-        // Tạo thêm label hiển thị thông tin khác (ví dụ: developingLabel)
-        JLabel developingLabel = new JLabel(
-                "<html>" +
-                        "Copyright © 2025 NeoStain<br><br>" +
-                        "Phần mềm tạo ra bởi thành viên của nhóm phát triển:<br>" +
-                        "Ngô Tiến Sỹ<br>" +
-                        "Nguyễn Văn Nam<br>" +
-                        "Võ Đức Tài<br>" +
-                        "Thiều Đinh Nam Tài<br><br>" +
-                        "Mọi nội dung, dữ liệu và mã nguồn chỉ được sử dụng cho mục đích học tập và nghiên cứu." +
-                        "</html>"
-        );
-        // Thêm label thứ hai vào dưới label thứ nhất (có thể cho vào BorderLayout.SOUTH, hoặc tạo JPanel con)
-        boxPanel.add(developingLabel, BorderLayout.CENTER);
-
-        // -- Thêm boxPanel vào AboutTabPanel với GridBagConstraints để fill toàn bộ --
+        TitledBorderPanel titledBorderPanel = getAuthorTitledBorderPanel();
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridx = 0;
         gbc.gridy = 0;
         gbc.weightx = 1.0;  // Cho phép giãn ngang
         gbc.weighty = 1.0;  // Cho phép giãn dọc
         gbc.fill = GridBagConstraints.BOTH; // Giãn đầy cả hai chiều
-        AboutTabPanel.add(boxPanel, gbc);
+        aboutTabPanel.add(titledBorderPanel, gbc);
+
+        return aboutTabPanel;
+    }
+
+    private static TitledBorderPanel getAuthorTitledBorderPanel() {
+        TitledBorderPanel titledBorderPanel = new TitledBorderPanel("Tác giả");
+        JTextArea developingTextArea = new JTextArea(
+                """
+                        Copyright © 2025 NeoStain
+                        Phần mềm tạo ra bởi thành viên của nhóm phát triển:
+                        Ngô Tiến Sỹ
+                        Nguyễn Văn Nam
+                        Võ Đức Tài
+                        Thiều Đinh Nam Tài
+                        
+                        Mọi nội dung, dữ liệu và mã nguồn chỉ được sử dụng cho mục đích học tập và nghiên cứu."""
+        );
+        developingTextArea.setEditable(false);
+        developingTextArea.setOpaque(false);
+        developingTextArea.setFont(new JLabel().getFont());
+        developingTextArea.setFocusable(false);
+        developingTextArea.setBackground(ColorUtils.componentBackgroundWhite);
+        titledBorderPanel.add(developingTextArea, BorderLayout.CENTER);
+        return titledBorderPanel;
     }
 
 
@@ -230,7 +208,9 @@ public class AuthorizeScreen extends JPanel {
 
                 // Chuyển sang màn hình POSScreen
                 MainFrame mainFrame = (MainFrame) SwingUtilities.getWindowAncestor(this);
-                mainFrame.showPOSScreen(username);
+                if (role.getRoleName().equals("Quản lý cửa hàng")) {
+                    mainFrame.showManagerScreen(username);
+                }
             } else {
                 // Đăng nhập thất bại
                 JOptionPane optionPane = new JOptionPane(

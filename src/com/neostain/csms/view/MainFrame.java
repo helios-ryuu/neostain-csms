@@ -2,6 +2,7 @@ package com.neostain.csms.view;
 
 import com.neostain.csms.service.ServiceManager;
 import com.neostain.csms.view.screen.AuthorizeScreen;
+import com.neostain.csms.view.screen.ManagerScreen;
 import com.neostain.csms.view.screen.POSScreen;
 
 import javax.swing.*;
@@ -14,16 +15,13 @@ public class MainFrame extends JFrame {
     public MainFrame() {
         // Đặt tiêu đề cửa sổ
         super("NeoStain Convenience Store Management System");
-
-
+        // Đặt tỷ lệ UI
+        System.setProperty("sun.java2d.uiScale", "1.0");
+        System.setProperty("sun.java2d.dpiaware", "true");
 
         try {
             // Đặt look and feel của ứng dụng
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-
-            // Đặt tỷ lệ UI
-            System.setProperty("sun.java2d.uiScale", "1.0");
-            System.setProperty("sun.java2d.dpiaware", "true");
 
             // Đặt font
             Font defaultFont = new Font("Segoe UI", Font.PLAIN, 11);
@@ -113,6 +111,16 @@ public class MainFrame extends JFrame {
 
         // Hiển thị màn hình POS
         this.setContentPane(posScreen);
+        this.setExtendedState(JFrame.MAXIMIZED_BOTH);
+        this.setResizable(true);
+        this.revalidate();
+        this.repaint();
+    }
+
+    public void showManagerScreen(String username) {
+        ManagerScreen managerScreen = new ManagerScreen(username);
+
+        this.setContentPane(managerScreen);
         this.setExtendedState(JFrame.MAXIMIZED_BOTH);
         this.setResizable(true);
         this.revalidate();
