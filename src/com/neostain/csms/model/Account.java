@@ -49,5 +49,4 @@ public class Account {
     public Date getAccountCreationTime() {
         return accountCreationTime;
     }
-
 }

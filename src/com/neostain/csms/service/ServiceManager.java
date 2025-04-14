@@ -1,5 +1,6 @@
 package com.neostain.csms.service;
 
+import com.neostain.csms.model.Cancellation;
 import com.neostain.csms.service.api.*;
 import com.neostain.csms.service.impl.*;
 
@@ -14,6 +15,7 @@ public class ServiceManager {
     private final AccountService accountService;
     private final RoleService roleService;
     private final TokenService tokenService;
+    private final CancellationService cancellationService;
     private String tokenValue = "";
 
     private ServiceManager() {
@@ -22,10 +24,7 @@ public class ServiceManager {
         this.accountService = new CSMSAccountService();
         this.roleService = new CSMSRoleService();
         this.tokenService = new CSMSTokenService();
-    }
-
-    private static final class InstanceHolder {
-        private static final ServiceManager instance = new ServiceManager();
+        this.cancellationService = new CSMSCancellationService();
     }
 
     public static ServiceManager getInstance() {
@@ -87,6 +86,13 @@ public class ServiceManager {
         return tokenService;
     }
 
+    public CancellationService getCancellationService() throws NoPermissionException {
+        if (validateCurrentToken()) {
+            throw new NoPermissionException("Hành động không được xác thực hoặc Token đã hết hạn.");
+        }
+        return cancellationService;
+    }
+
     public String getCurrentTokenValue() {
         return tokenValue;
     }
@@ -104,5 +110,9 @@ public class ServiceManager {
             result = tokenService.validateToken(tokenValue);
         }
         return !result;
+    }
+
+    private static final class InstanceHolder {
+        private static final ServiceManager instance = new ServiceManager();
     }
 }

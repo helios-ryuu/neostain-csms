@@ -1,4 +1,4 @@
-package com.neostain.csms.view.components;
+package com.neostain.csms.view.component;
 
 import javax.swing.*;
 import javax.swing.border.Border;
@@ -6,7 +6,6 @@ import javax.swing.border.TitledBorder;
 import java.awt.*;
 
 public class TitledBorderPanel extends JPanel {
-
     public TitledBorderPanel(String title) {
         this.setLayout(new BorderLayout(5, 5));
         this.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));

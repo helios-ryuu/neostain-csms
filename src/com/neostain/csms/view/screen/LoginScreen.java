@@ -6,7 +6,8 @@ import com.neostain.csms.model.Role;
 import com.neostain.csms.service.ServiceManager;
 import com.neostain.csms.util.ColorUtils;
 import com.neostain.csms.view.MainFrame;
-import com.neostain.csms.view.components.TitledBorderPanel;
+import com.neostain.csms.view.component.TitledBorderPanel;
+import com.neostain.csms.view.manager.ScreenManager;
 
 import javax.swing.*;
 import java.awt.*;
@@ -15,13 +16,11 @@ import java.awt.*;
  * Màn hình xác thực của ứng dụng
  * Cung cấp giao diện cho người dùng đăng nhập và đăng ký
  */
-public class AuthorizeScreen extends JPanel {
-    // Service xử lý xác thực đăng nhập
+public class LoginScreen extends JPanel {
+    // Service xử lý
     private final ServiceManager serviceManager;
 
     // Các thành phần giao diện
-    public JTabbedPane mainAuthorizePane;
-
     private final JTextField usernameField = new JTextField(30);
     private final JPasswordField passwordField = new JPasswordField(30);
     private final JLabel statusLabel = new JLabel("Vui lòng đăng nhập");
@@ -29,19 +28,15 @@ public class AuthorizeScreen extends JPanel {
     /**
      * Khởi tạo màn hình xác thực với các thành phần giao diện
      */
-    public AuthorizeScreen() {
+    public LoginScreen() {
+        // Thiết lập màn hình
+        this.setLayout(new BorderLayout());
+
         // Tạo Service Manager
         this.serviceManager = ServiceManager.getInstance();
 
         // Khởi tạo các thành phần giao diện
-        this.mainAuthorizePane = new JTabbedPane();
-
-        // Thiết lập tab panel
-        mainAuthorizePane.setTabPlacement(JTabbedPane.TOP);
-        mainAuthorizePane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
-        mainAuthorizePane.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
-        mainAuthorizePane.setFocusable(false);
-
+        JTabbedPane mainAuthorizePane = this.createMainAuthorizePane();
         JPanel loginTabPanel = this.createLoginTabPanel();
         JPanel aboutTabPanel = this.createAboutTabPanel();
 
@@ -49,9 +44,18 @@ public class AuthorizeScreen extends JPanel {
         mainAuthorizePane.addTab("Đăng nhập", loginTabPanel);
         mainAuthorizePane.addTab("Thông tin dự án", aboutTabPanel);
 
-        // Thêm mainAuthorizePane vào AuthorizeScreen
-        this.setLayout(new BorderLayout());
+        // Thêm mainAuthorizePane vào LoginScreen
         this.add(mainAuthorizePane, BorderLayout.CENTER);
+    }
+
+    private JTabbedPane createMainAuthorizePane() {
+        JTabbedPane mainAuthorizePane = new JTabbedPane();
+        mainAuthorizePane.setTabPlacement(JTabbedPane.TOP);
+        mainAuthorizePane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
+        mainAuthorizePane.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
+        mainAuthorizePane.setFocusable(false);
+
+        return mainAuthorizePane;
     }
 
     /**
@@ -123,21 +127,21 @@ public class AuthorizeScreen extends JPanel {
         aboutTabPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         aboutTabPanel.setLayout(new GridBagLayout());
 
-        TitledBorderPanel titledBorderPanel = getAuthorTitledBorderPanel();
+        TitledBorderPanel authorPanel = setupAuthorPanel();
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridx = 0;
         gbc.gridy = 0;
         gbc.weightx = 1.0;  // Cho phép giãn ngang
         gbc.weighty = 1.0;  // Cho phép giãn dọc
         gbc.fill = GridBagConstraints.BOTH; // Giãn đầy cả hai chiều
-        aboutTabPanel.add(titledBorderPanel, gbc);
+        aboutTabPanel.add(authorPanel, gbc);
 
         return aboutTabPanel;
     }
 
-    private static TitledBorderPanel getAuthorTitledBorderPanel() {
+    private static TitledBorderPanel setupAuthorPanel() {
         TitledBorderPanel titledBorderPanel = new TitledBorderPanel("Tác giả");
-        JTextArea developingTextArea = new JTextArea(
+        JTextArea authorContent = new JTextArea(
                 """
                         Copyright © 2025 NeoStain
                         Phần mềm tạo ra bởi thành viên của nhóm phát triển:
@@ -148,12 +152,12 @@ public class AuthorizeScreen extends JPanel {
                         
                         Mọi nội dung, dữ liệu và mã nguồn chỉ được sử dụng cho mục đích học tập và nghiên cứu."""
         );
-        developingTextArea.setEditable(false);
-        developingTextArea.setOpaque(false);
-        developingTextArea.setFont(new JLabel().getFont());
-        developingTextArea.setFocusable(false);
-        developingTextArea.setBackground(ColorUtils.componentBackgroundWhite);
-        titledBorderPanel.add(developingTextArea, BorderLayout.CENTER);
+        authorContent.setEditable(false);
+        authorContent.setOpaque(false);
+        authorContent.setFont(new JLabel().getFont());
+        authorContent.setFocusable(false);
+        authorContent.setBackground(ColorUtils.componentBackgroundWhite);
+        titledBorderPanel.add(authorContent, BorderLayout.CENTER);
         return titledBorderPanel;
     }
 
@@ -170,7 +174,7 @@ public class AuthorizeScreen extends JPanel {
      * @param gridheight Số hàng mà component chiếm.
      */
     private void addComponent(JPanel panel, Component comp, GridBagConstraints gbc,
-                            int gridx, int gridy, int gridwidth, int gridheight) {
+                              int gridx, int gridy, int gridwidth, int gridheight) {
         gbc.gridx = gridx;
         gbc.gridy = gridy;
         gbc.gridwidth = gridwidth;
@@ -206,10 +210,17 @@ public class AuthorizeScreen extends JPanel {
                 dialog.setFocusableWindowState(false);
                 dialog.setVisible(true);
 
-                // Chuyển sang màn hình POSScreen
                 MainFrame mainFrame = (MainFrame) SwingUtilities.getWindowAncestor(this);
-                if (role.getRoleName().equals("Quản lý cửa hàng")) {
-                    mainFrame.showManagerScreen(username);
+
+                switch (role.getRoleName()) {
+                    case "Quản lý cửa hàng":
+                        ScreenManager.getInstance(mainFrame).switchScreen(ScreenType.STORE_MANAGER, username);
+                        break;
+                    case "Nhân viên bán hàng":
+                        ScreenManager.getInstance(mainFrame).switchScreen(ScreenType.POS, username);
+                        break;
+                    default:
+                        break;
                 }
             } else {
                 // Đăng nhập thất bại

@@ -1,6 +1,7 @@
 package com.neostain.csms.view.screen;
 
 import com.neostain.csms.view.MainFrame;
+import com.neostain.csms.view.manager.ScreenManager;
 
 import javax.swing.*;
 import java.awt.*;
@@ -38,7 +39,7 @@ public class POSScreen extends JPanel {
         // Xử lý click chuột
         button.addActionListener(e -> {
             MainFrame mainFrame = (MainFrame) SwingUtilities.getWindowAncestor(this);
-            mainFrame.showAuthorizeScreen();
+            ScreenManager.getInstance(mainFrame).switchScreen(ScreenType.LOGIN);
         });
 
         // Hiệu ứng hover
