@@ -1,7 +1,7 @@
 package com.neostain.csms.view.component;
 
-import com.neostain.csms.Constants;
-import com.neostain.csms.DialogFactory;
+import com.neostain.csms.util.Constants;
+import com.neostain.csms.util.DialogFactory;
 import com.neostain.csms.ViewManager;
 import com.neostain.csms.view.MainFrame;
 

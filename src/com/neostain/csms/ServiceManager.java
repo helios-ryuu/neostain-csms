@@ -51,9 +51,9 @@ public class ServiceManager {
             registerService(CancellationService.class, new CancellationServiceImpl(cancellationDAO));
             registerService(AuthService.class, new AuthServiceImpl());
 
-            LOGGER.info(" Khởi tạo ServiceManager thành công");
+            LOGGER.info("[INIT] Khởi tạo ServiceManager thành công");
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Lỗi trong khi khởi tạo dịch vụ", e);
+            LOGGER.log(Level.SEVERE, "[INIT] Lỗi trong khi khởi tạo dịch vụ", e);
             throw new RuntimeException("Không thể khởi tạo ServiceManager", e);
         }
     }
@@ -177,11 +177,11 @@ public class ServiceManager {
                 setCurrentToken(token);
                 setCurrentUsername(username);
 
-                LOGGER.info("[LOGIN] Login successful for: " + username);
+                LOGGER.info("[LOGIN] Đăng nhâp thành công cho người dùng: " + username);
                 return token;
             }
 
-            LOGGER.warning("[LOGIN] Login failed for: " + username);
+            LOGGER.warning("[LOGIN] Đăng nhâp thất bại cho người dùng: " + username);
             return null;
         } finally {
             // Disable bypass after a login attempt completes
@@ -197,9 +197,9 @@ public class ServiceManager {
             try {
                 TokenService tokenService = getTokenService();
                 tokenService.invalidateToken(currentToken);
-                LOGGER.info("[LOGOUT] User logged out: " + currentUsername);
+                LOGGER.info("[LOGOUT] Người dùng đăng xuất: " + currentUsername);
             } catch (Exception e) {
-                LOGGER.warning("[LOGOUT] Error invalidating token: " + e.getMessage());
+                LOGGER.warning("[LOGOUT] Lỗi khi vô hiệu Token: " + e.getMessage());
             }
         }
         currentToken = null;

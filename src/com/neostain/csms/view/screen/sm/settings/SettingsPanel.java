@@ -1,6 +1,6 @@
 package com.neostain.csms.view.screen.sm.settings;
 
-import com.neostain.csms.Constants;
+import com.neostain.csms.util.Constants;
 import com.neostain.csms.view.component.StandardMenuPanel;
 import com.neostain.csms.view.component.TitledBorderPanel;
 

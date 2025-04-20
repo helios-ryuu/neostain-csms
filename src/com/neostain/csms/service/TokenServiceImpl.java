@@ -30,18 +30,18 @@ public class TokenServiceImpl implements TokenService {
 
         // Kiểm tra trạng thái token
         if (!"01".equals(token.getTokenStatusID())) {
-            LOGGER.warning("[TOKEN.SERVICE.VALIDATE_TOKEN] Token không hợp lệ");
+            LOGGER.warning("[VALIDATE_TOKEN] Token không hợp lệ");
             return false;
         }
 
         // Kiểm tra thời hạn token
         Timestamp expiresAt = token.getExpiresAt();
         if (expiresAt == null || expiresAt.before(new Timestamp(System.currentTimeMillis()))) {
-            LOGGER.warning("[TOKEN.SERVICE.VALIDATE_TOKEN] Token đã hết hạn");
+            LOGGER.warning("[VALIDATE_TOKEN] Token đã hết hạn");
             return false;
         }
 
-        LOGGER.info("[TOKEN.SERVICE.VALIDATE_TOKEN] Token hợp lệ");
+        LOGGER.info("[VALIDATE_TOKEN] Token hợp lệ");
         return true;
     }
 
@@ -52,7 +52,7 @@ public class TokenServiceImpl implements TokenService {
         try {
             int rowsAffected = dao.update(token);
             if (rowsAffected > 0) {
-                LOGGER.info("[UPDATE_STATUS] Cập nhật trạng thái token thành công");
+                LOGGER.info("[UPDATE_STATUS] Cập nhật trạng thái <" + tokenStatusID + "> cho token của user " + token.getUsername() + " thành công");
             } else {
                 LOGGER.warning("[UPDATE_STATUS] Không tìm thấy token để cập nhật");
             }

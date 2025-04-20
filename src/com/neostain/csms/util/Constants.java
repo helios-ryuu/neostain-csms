@@ -1,4 +1,4 @@
-package com.neostain.csms;
+package com.neostain.csms.util;
 
 import java.awt.*;
 

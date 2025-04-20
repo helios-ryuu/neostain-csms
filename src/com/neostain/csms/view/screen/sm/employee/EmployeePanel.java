@@ -1,6 +1,6 @@
 package com.neostain.csms.view.screen.sm.employee;
 
-import com.neostain.csms.Constants;
+import com.neostain.csms.util.Constants;
 import com.neostain.csms.view.component.PaginationPanel;
 import com.neostain.csms.view.component.ScrollableContentTable;
 import com.neostain.csms.view.component.StandardMenuPanel;

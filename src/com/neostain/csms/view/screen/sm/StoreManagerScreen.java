@@ -1,6 +1,6 @@
 package com.neostain.csms.view.screen.sm;
 
-import com.neostain.csms.Constants;
+import com.neostain.csms.util.Constants;
 import com.neostain.csms.ServiceManager;
 import com.neostain.csms.model.Account;
 import com.neostain.csms.model.Employee;
@@ -40,10 +40,9 @@ public class StoreManagerScreen extends JPanel {
         this.employee = serviceManager.getEmployeeService().getById(account.getEmployeeID());
         this.role = serviceManager.getRoleService().getRole(this.account.getRoleID());
 
-        LOGGER.info("Store Manager Screen initialized for user: " + username);
-
         // Call to set up the UI components
         initializeComponents();
+        LOGGER.info("[INIT] Màn hình Store Manager được khởi tạo cho người dùng: " + username);
     }
 
     /**

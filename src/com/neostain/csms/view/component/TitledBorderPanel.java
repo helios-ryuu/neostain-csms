@@ -1,6 +1,6 @@
 package com.neostain.csms.view.component;
 
-import com.neostain.csms.Constants;
+import com.neostain.csms.util.Constants;
 
 import javax.swing.*;
 import javax.swing.border.Border;

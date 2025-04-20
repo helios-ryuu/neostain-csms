@@ -1,6 +1,6 @@
 package com.neostain.csms.view;
 
-import com.neostain.csms.Constants;
+import com.neostain.csms.util.Constants;
 import com.neostain.csms.ServiceManager;
 import com.neostain.csms.ViewManager;
 import com.neostain.csms.util.FontUtils;
@@ -40,28 +40,33 @@ public class MainFrame extends JFrame {
         this.setVisible(true);
 
         // Setup application shutdown handler
-        this.setupShutdownHook();
+        this.shutdownHook();
 
-        LOGGER.info("Hoàn tất quá trình khởi tạo cửa sổ ứng dụng");
+        LOGGER.info("[INIT] Hoàn tất quá trình khởi tạo cửa sổ ứng dụng");
     }
 
     /**
      * Sets up a shutdown hook to handle cleanup when the application closes.
      */
-    private void setupShutdownHook() {
+    private void shutdownHook() {
         // Add a shutdown hook to update token status when the application closes
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             try {
+                System.out.println("INFO: [SHUTDOWN_HOOK] Kích hoạt các sự kiện sau khi tắt ứng dụng");
                 String currentToken = ServiceManager.getInstance().getCurrentToken();
                 if (!StringUtils.isNullOrEmpty(currentToken)) {
                     ServiceManager.getInstance().getTokenService().updateStatus(
                             currentToken, Constants.TokenStatus.EXPIRED);
-                    System.out.println("Updated token status to EXPIRED on application shutdown.");
+                    System.out.println("INFO: [SHUTDOWN_HOOK] Token đang hoạt động hiện tại: " + currentToken);
+                    System.out.println("INFO: [SHUTDOWN_HOOK] Tiến hành vô hiệu Token...");
+                    ServiceManager.getInstance().getTokenService().updateStatus(
+                            currentToken, Constants.TokenStatus.EXPIRED);
+                    System.out.println("INFO: [SHUTDOWN_HOOK] Hoàn thành vô hiệu Token.");
                 } else {
-                    System.out.println("No active token found. No token invalidation needed.");
+                    System.out.println("INFO: [SHUTDOWN_HOOK] Không có Token đang hoạt động hiện tại. Không cần vô hiệu Token.");
                 }
             } catch (Exception ex) {
-                System.out.println("Error updating token status on shutdown: " + ex);
+                System.out.println("ERROR: [SHUTDOWN_HOOK] Lỗi khi vô hiệu Token: " + ex);
             }
         }));
     }
