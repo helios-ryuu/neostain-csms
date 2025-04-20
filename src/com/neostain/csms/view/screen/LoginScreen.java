@@ -1,142 +1,50 @@
 package com.neostain.csms.view.screen;
 
+import com.neostain.csms.Constants;
+import com.neostain.csms.DialogFactory;
+import com.neostain.csms.ServiceManager;
+import com.neostain.csms.ViewManager;
 import com.neostain.csms.model.Account;
 import com.neostain.csms.model.Employee;
 import com.neostain.csms.model.Role;
-import com.neostain.csms.service.ServiceManager;
-import com.neostain.csms.util.ColorUtils;
+import com.neostain.csms.util.ScreenType;
+import com.neostain.csms.util.StringUtils;
 import com.neostain.csms.view.MainFrame;
+import com.neostain.csms.view.component.StandardButton;
+import com.neostain.csms.view.component.StandardTabbedPane;
 import com.neostain.csms.view.component.TitledBorderPanel;
-import com.neostain.csms.view.manager.ScreenManager;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Màn hình xác thực của ứng dụng
  * Cung cấp giao diện cho người dùng đăng nhập và đăng ký
  */
 public class LoginScreen extends JPanel {
-    // Service xử lý
-    private final ServiceManager serviceManager;
+    private static final Logger LOGGER = Logger.getLogger(LoginScreen.class.getName());
+    private static final ServiceManager serviceManager = ServiceManager.getInstance();
 
     // Các thành phần giao diện
-    private final JTextField usernameField = new JTextField(30);
-    private final JPasswordField passwordField = new JPasswordField(30);
-    private final JLabel statusLabel = new JLabel("Vui lòng đăng nhập");
+    private final JTextField usernameField;
+    private final JPasswordField passwordField;
+    private final JLabel statusLabel;
 
     /**
      * Khởi tạo màn hình xác thực với các thành phần giao diện
      */
     public LoginScreen() {
-        // Thiết lập màn hình
-        this.setLayout(new BorderLayout());
+        super(); // Calls BaseScreen constructor
+        // Initialize fields before parent class constructor is called
+        this.usernameField = new JTextField(30);
+        this.passwordField = new JPasswordField(30);
+        this.statusLabel = new JLabel("Vui lòng đăng nhập");
 
-        // Tạo Service Manager
-        this.serviceManager = ServiceManager.getInstance();
 
-        // Khởi tạo các thành phần giao diện
-        JTabbedPane mainAuthorizePane = this.createMainAuthorizePane();
-        JPanel loginTabPanel = this.createLoginTabPanel();
-        JPanel aboutTabPanel = this.createAboutTabPanel();
-
-        // Thêm các tab vào mainAuthorizePane
-        mainAuthorizePane.addTab("Đăng nhập", loginTabPanel);
-        mainAuthorizePane.addTab("Thông tin dự án", aboutTabPanel);
-
-        // Thêm mainAuthorizePane vào LoginScreen
-        this.add(mainAuthorizePane, BorderLayout.CENTER);
-    }
-
-    private JTabbedPane createMainAuthorizePane() {
-        JTabbedPane mainAuthorizePane = new JTabbedPane();
-        mainAuthorizePane.setTabPlacement(JTabbedPane.TOP);
-        mainAuthorizePane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
-        mainAuthorizePane.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
-        mainAuthorizePane.setFocusable(false);
-
-        return mainAuthorizePane;
-    }
-
-    /**
-     * Thiết lập giao diện cho tab đăng nhập
-     */
-    private JPanel createLoginTabPanel() {
-        JPanel loginTabPanel = new JPanel();
-        loginTabPanel.setBackground(ColorUtils.componentBackgroundWhite);
-        loginTabPanel.setBorder(BorderFactory.createEmptyBorder(30, 15, 30, 15));
-
-        loginTabPanel.setLayout(new GridBagLayout());
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(5, 5, 5, 5);
-
-        // Kích thước cố định cho cột label
-        int labelFixedWidth = 100;
-
-        // Hàng 0: Label "Tên đăng nhập:" và TextField
-        JLabel userLabel = new JLabel("Tên đăng nhập:");
-        userLabel.setPreferredSize(new Dimension(labelFixedWidth, userLabel.getPreferredSize().height));
-        gbc.fill = GridBagConstraints.NONE;
-        gbc.anchor = GridBagConstraints.CENTER;
-        addComponent(loginTabPanel, userLabel, gbc, 0, 0, 1, 1);
-
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.weightx = 1.0;
-        addComponent(loginTabPanel, usernameField, gbc, 1, 0, 2, 1);
-
-        // Hàng 1: Label "Mật khẩu:" và PasswordField
-        JLabel passLabel = new JLabel("Mật khẩu:");
-        passLabel.setPreferredSize(new Dimension(labelFixedWidth, passLabel.getPreferredSize().height));
-        gbc.fill = GridBagConstraints.NONE;
-        gbc.weightx = 0;
-        gbc.anchor = GridBagConstraints.CENTER;
-        addComponent(loginTabPanel, passLabel, gbc, 0, 1, 1, 1);
-
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.weightx = 1.0;
-        addComponent(loginTabPanel, passwordField, gbc, 1, 1, 2, 1);
-
-        // Hàng 2: Nút "Đăng nhập" và status label
-        JButton loginButton = new JButton("Đăng nhập");
-        gbc.fill = GridBagConstraints.NONE;
-        gbc.weightx = 0;
-        gbc.anchor = GridBagConstraints.CENTER;
-        addComponent(loginTabPanel, loginButton, gbc, 0, 2, 1, 1);
-        addComponent(loginTabPanel, statusLabel, gbc, 2, 2, 1, 1);
-
-        // Thêm xử lý sự kiện cho nút đăng nhập
-        loginButton.addActionListener(e -> this.login());
-
-        // Nhấn đăng nhập khi enter
-        SwingUtilities.invokeLater(() -> {
-            JRootPane rootPane = SwingUtilities.getRootPane(loginButton);
-            if (rootPane != null) {
-                rootPane.setDefaultButton(loginButton);
-            }
-        });
-
-        return loginTabPanel;
-    }
-
-    /**
-     * Thiết lập giao diện cho tab thông tin dự án
-     */
-    private JPanel createAboutTabPanel() {
-        JPanel aboutTabPanel = new JPanel();
-        aboutTabPanel.setBackground(ColorUtils.componentBackgroundWhite);
-        aboutTabPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        aboutTabPanel.setLayout(new GridBagLayout());
-
-        TitledBorderPanel authorPanel = setupAuthorPanel();
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        gbc.weightx = 1.0;  // Cho phép giãn ngang
-        gbc.weighty = 1.0;  // Cho phép giãn dọc
-        gbc.fill = GridBagConstraints.BOTH; // Giãn đầy cả hai chiều
-        aboutTabPanel.add(authorPanel, gbc);
-
-        return aboutTabPanel;
+        // Now call initializeContent which will call our initializeComponents() method
+        initializeComponents();
     }
 
     private static TitledBorderPanel setupAuthorPanel() {
@@ -156,11 +64,119 @@ public class LoginScreen extends JPanel {
         authorContent.setOpaque(false);
         authorContent.setFont(new JLabel().getFont());
         authorContent.setFocusable(false);
-        authorContent.setBackground(ColorUtils.componentBackgroundWhite);
+        authorContent.setBackground(Constants.Color.COMPONENT_BACKGROUND_WHITE);
         titledBorderPanel.add(authorContent, BorderLayout.CENTER);
         return titledBorderPanel;
     }
 
+    /**
+     * Initialize the screen components
+     */
+    private void initializeComponents() {
+        // Khởi tạo các thành phần giao diện
+        JTabbedPane mainAuthorizePane = this.createStandardTabbedPane();
+        JPanel loginTabPanel = this.createLoginTabPanel();
+        JPanel aboutTabPanel = this.createAboutTabPanel();
+
+        // Thêm các tab vào mainAuthorizePane
+        mainAuthorizePane.addTab("Đăng nhập", loginTabPanel);
+        mainAuthorizePane.addTab("Thông tin dự án", aboutTabPanel);
+
+        // Thêm mainAuthorizePane vào LoginScreen
+        this.add(mainAuthorizePane, BorderLayout.CENTER);
+    }
+
+    private JTabbedPane createStandardTabbedPane() {
+        return new StandardTabbedPane();
+    }
+
+    // Method removed as it's now in BaseScreen
+
+    /**
+     * Thiết lập giao diện cho tab đăng nhập
+     */
+    private JPanel createLoginTabPanel() {
+        JPanel panel = new JPanel(new GridBagLayout());
+        panel.setBackground(Constants.Color.COMPONENT_BACKGROUND_WHITE);
+        panel.setBorder(BorderFactory.createEmptyBorder(
+                Constants.View.CONTENT_INSETS.top,
+                Constants.View.CONTENT_INSETS.left,
+                Constants.View.CONTENT_INSETS.bottom,
+                Constants.View.CONTENT_INSETS.right
+        ));
+
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(6, 15, 6, 15);
+
+        // Username
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.anchor = GridBagConstraints.WEST;
+        panel.add(new JLabel("Tên đăng nhập"), gbc);
+
+        gbc.gridx = 1;
+        gbc.weightx = 1.0;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        panel.add(usernameField, gbc);
+
+        // Password
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        gbc.weightx = 0;
+        gbc.fill = GridBagConstraints.NONE;
+        panel.add(new JLabel("Mật khẩu"), gbc);
+
+        gbc.gridx = 1;
+        gbc.weightx = 1.0;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        panel.add(passwordField, gbc);
+
+        // Login button
+        JButton loginButton = new StandardButton(this, "Đăng nhập");
+        loginButton.addActionListener(e -> this.login());
+
+        gbc.gridx = 0;
+        gbc.gridy = 2;
+        gbc.gridwidth = 1;
+        gbc.fill = GridBagConstraints.NONE;
+        gbc.anchor = GridBagConstraints.CENTER;
+        gbc.weightx = 0;
+        panel.add(loginButton, gbc);
+
+        // Status label
+        gbc.gridx = 1;
+        gbc.gridwidth = 2;
+        panel.add(statusLabel, gbc);
+
+        // Enter key = login
+        SwingUtilities.invokeLater(() -> {
+            JRootPane root = SwingUtilities.getRootPane(loginButton);
+            if (root != null) root.setDefaultButton(loginButton);
+        });
+
+        return panel;
+    }
+
+    /**
+     * Thiết lập giao diện cho tab thông tin dự án
+     */
+    private JPanel createAboutTabPanel() {
+        JPanel aboutTabPanel = new JPanel();
+        aboutTabPanel.setBackground(Constants.Color.COMPONENT_BACKGROUND_WHITE);
+        aboutTabPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        aboutTabPanel.setLayout(new GridBagLayout());
+
+        TitledBorderPanel authorPanel = setupAuthorPanel();
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.weightx = 1.0;  // Cho phép giãn ngang
+        gbc.weighty = 1.0;  // Cho phép giãn dọc
+        gbc.fill = GridBagConstraints.BOTH; // Giãn đầy cả hai chiều
+        aboutTabPanel.add(authorPanel, gbc);
+
+        return aboutTabPanel;
+    }
 
     /**
      * Phương thức tiện ích để thêm component vào layout với GridBagConstraints.
@@ -173,8 +189,8 @@ public class LoginScreen extends JPanel {
      * @param gridwidth  Số cột mà component chiếm.
      * @param gridheight Số hàng mà component chiếm.
      */
-    private void addComponent(JPanel panel, Component comp, GridBagConstraints gbc,
-                              int gridx, int gridy, int gridwidth, int gridheight) {
+    public void addComponent(JPanel panel, Component comp, GridBagConstraints gbc,
+                             int gridx, int gridy, int gridwidth, int gridheight) {
         gbc.gridx = gridx;
         gbc.gridy = gridy;
         gbc.gridwidth = gridwidth;
@@ -186,58 +202,103 @@ public class LoginScreen extends JPanel {
      * Thực hiện đăng nhập với thông tin người dùng đã nhập
      */
     private void login() {
-        String username = this.usernameField.getText();
+        String username = this.usernameField.getText().trim();
         String password = new String(this.passwordField.getPassword());
 
+        // Validate input
+        if (StringUtils.isNullOrEmpty(username) || StringUtils.isNullOrEmpty(password)) {
+            this.statusLabel.setText("Vui lòng nhập tên đăng nhập và mật khẩu");
+            this.statusLabel.setForeground(Color.RED);
+            DialogFactory.showErrorDialog(
+                    this,
+                    "Vui lòng nhập tên đăng nhập và mật khẩu",
+                    "Lỗi đăng nhập"
+            );
+            return;
+        }
+
         try {
-            if (this.serviceManager.getAuthService().authenticate(username, password)) {
-                // Đăng nhập thành công
-                this.statusLabel.setText("Đăng nhập thành công!");
-                this.statusLabel.setForeground(Color.GREEN);
+            // Sử dụng phương thức login của ServiceManager để xử lý đăng nhập và tạo token
+            String token = serviceManager.login(username, password);
+
+            if (token == null) {
+                String errorMessage = "Sai tên đăng nhập hoặc mật khẩu";
+                this.statusLabel.setText(errorMessage);
+                this.statusLabel.setForeground(Color.RED);
+                DialogFactory.showErrorDialog(
+                        this,
+                        "Lỗi đăng nhập",
+                        errorMessage
+                );
+            } else {
+                // Login successful - process the login
+                // Lấy thông tin người dùng từ token
+                String currentUsername = serviceManager.getCurrentUsername();
+
+                // Reset input fields
                 this.passwordField.setText("");
                 this.usernameField.setText("");
+                this.statusLabel.setText("Đăng nhập thành công!");
+                this.statusLabel.setForeground(Color.GREEN);
 
-                // Khởi tạo đối tượng tin đăng nhập hiện tại
-                Account account = this.serviceManager.getAccountService().getAccount(username);
-                Employee employee = this.serviceManager.getEmployeeService().getEmployee(username);
-                Role role = this.serviceManager.getRoleService().getRole(account.getRoleID());
+                try {
+                    // Khởi tạo đối tượng thông tin đăng nhập hiện tại
+                    Account account = serviceManager.getAccountService().getByUsername(currentUsername);
+                    Employee employee = serviceManager.getEmployeeService().getById(account.getEmployeeID());
+                    Role role = serviceManager.getRoleService().getRole(account.getRoleID());
 
-                JOptionPane optionPane = new JOptionPane(
-                        "Đăng nhập thành công!\nChào mừng, " + employee.getEmployeeId() + " - " + employee.getEmployeeName() +
-                                "\nPhân quyền: " + role.getRoleId() + " - " + role.getRoleName(),
-                        JOptionPane.INFORMATION_MESSAGE);
-                JDialog dialog = optionPane.createDialog("Thành công");
-                dialog.setFocusableWindowState(false);
-                dialog.setVisible(true);
+                    // Hiển thị thông báo chào mừng
+                    String message = "Đăng nhập thành công!\nChào mừng, " +
+                            employee.getEmployeeId() + " - " + employee.getEmployeeName() +
+                            "\nPhân quyền: " + role.getRoleId() + " - " + role.getRoleName();
+                    DialogFactory.showInfoDialog(
+                            this,
+                            "Thành công",
+                            message
+                    );
 
-                MainFrame mainFrame = (MainFrame) SwingUtilities.getWindowAncestor(this);
-
-                switch (role.getRoleName()) {
-                    case "Quản lý cửa hàng":
-                        ScreenManager.getInstance(mainFrame).switchScreen(ScreenType.STORE_MANAGER, username);
-                        break;
-                    case "Nhân viên bán hàng":
-                        ScreenManager.getInstance(mainFrame).switchScreen(ScreenType.POS, username);
-                        break;
-                    default:
-                        break;
+                    // Chuyển đến màn hình chức năng tương ứng
+                    navigateToFunctionalScreen(username, role.getRoleName());
+                } catch (Exception e) {
+                    LOGGER.log(Level.SEVERE, "Lỗi sau khi đăng nhập: " + e.getMessage(), e);
+                    DialogFactory.showErrorDialog(
+                            this,
+                            "Lỗi hệ thống",
+                            "Đăng nhập thành công nhưng không thể chuyển màn hình"
+                    );
                 }
-            } else {
-                // Đăng nhập thất bại
-                JOptionPane optionPane = new JOptionPane(
-                        "Đăng nhập không thành công!",
-                        JOptionPane.ERROR_MESSAGE);
-                JDialog dialog = optionPane.createDialog("Lỗi");
-                dialog.setFocusableWindowState(false);
-                dialog.setVisible(true);
-
-                this.statusLabel.setText("Sai tên đăng nhập hoặc mật khẩu");
-                this.statusLabel.setForeground(Color.RED);
             }
         } catch (Exception ex) {
-            // Hiển thị lỗi
-            this.statusLabel.setText("Lỗi: " + ex.getMessage());
+            LOGGER.log(Level.SEVERE, "Lỗi đăng nhập: " + ex.getMessage(), ex);
+
+            // Sử dụng thông báo lỗi trực tiếp
+            String errorMessage = "Có lỗi xảy ra khi đăng nhập, vui lòng thử lại";
+            this.statusLabel.setText(errorMessage);
             this.statusLabel.setForeground(Color.RED);
+            DialogFactory.showErrorDialog(
+                    this,
+                    "Lỗi đăng nhập",
+                    errorMessage
+            );
+        }
+    }
+
+    /**
+     * Chuyển đến màn hình chức năng dựa trên vai trò người dùng
+     */
+    private void navigateToFunctionalScreen(String username, String roleName) {
+        MainFrame mainFrame = (MainFrame) SwingUtilities.getWindowAncestor(this);
+
+        switch (roleName) {
+            case "Quản lý cửa hàng":
+                ViewManager.getInstance(mainFrame).switchScreen(ScreenType.STORE_MANAGER, username);
+                break;
+            case "Nhân viên bán hàng":
+                ViewManager.getInstance(mainFrame).switchScreen(ScreenType.POS, username);
+                break;
+            default:
+                LOGGER.warning("Không tìm thấy màn hình phù hợp cho vai trò: " + roleName);
+                break;
         }
     }
 }

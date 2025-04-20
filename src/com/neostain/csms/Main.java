@@ -3,16 +3,20 @@ package com.neostain.csms;
 import com.neostain.csms.view.MainFrame;
 
 import javax.swing.*;
+import java.util.logging.Logger;
 
-/// Điểm khởi đầu của ứng dụng
+/**
+ * Entry point of the application.
+ */
 public class Main {
+    private static final Logger LOGGER = Logger.getLogger(Main.class.getName());
 
-    /// Phương thức khởi đầu của ứng dụng
-    ///
-    /// @param args Các tham số dòng lệnh (không sử dụng)
+    /**
+     * Main method that starts the application.
+     *
+     * @param args Command line arguments (not used)
+     */
     public static void main(String[] args) {
-
-        // Khởi động ứng dụng
         SwingUtilities.invokeLater(MainFrame::new);
     }
 }

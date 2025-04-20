@@ -1,7 +1,7 @@
 package com.neostain.csms.model;
 
 public class Role {
-    private final String roleId;
+    private String roleId;
     private String roleName;
 
     public Role(String roleId, String roleName) {
@@ -9,9 +9,12 @@ public class Role {
         this.roleName = roleName;
     }
 
-    // Getters và Setters
     public String getRoleId() {
         return roleId;
+    }
+
+    public void setRoleId(String roleId) {
+        this.roleId = roleId;
     }
 
     public String getRoleName() {

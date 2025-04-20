@@ -1,5 +1,7 @@
 package com.neostain.csms.view.component;
 
+import com.neostain.csms.Constants;
+
 import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
@@ -9,7 +11,7 @@ public class TitledBorderPanel extends JPanel {
     public TitledBorderPanel(String title) {
         this.setLayout(new BorderLayout(5, 5));
         this.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        this.setBackground(new Color(249, 249, 249));
+        this.setBackground(Constants.Color.COMPONENT_BACKGROUND_WHITE);
 
         Border lineBorder = BorderFactory.createLineBorder(new Color(220, 220, 220), 1);
         Border marginBorder = BorderFactory.createEmptyBorder(5, 5, 5, 5);

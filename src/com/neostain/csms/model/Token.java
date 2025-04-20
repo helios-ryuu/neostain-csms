@@ -3,16 +3,19 @@ package com.neostain.csms.model;
 import java.sql.Timestamp;
 
 public class Token {
-    private final int tokenID;
-    private final String accountID;
-    private final Timestamp issuedAt;
-    private final Timestamp expiresAt;
+    private int tokenID;
+    private String username;
+    private Timestamp issuedAt;
+    private Timestamp expiresAt;
     private String tokenValue;
     private String tokenStatusID;
 
-    public Token(int tokenID, String accountID, String tokenValue, Timestamp expiresAt, Timestamp issuedAt, String tokenStatusID) {
+    public Token() {
+    }
+
+    public Token(int tokenID, String username, String tokenValue, Timestamp expiresAt, Timestamp issuedAt, String tokenStatusID) {
         this.tokenID = tokenID;
-        this.accountID = accountID;
+        this.username = username;
         this.tokenValue = tokenValue;
         this.issuedAt = issuedAt;
         this.expiresAt = expiresAt;
@@ -24,8 +27,16 @@ public class Token {
         return tokenID;
     }
 
-    public String getAccountID() {
-        return accountID;
+    public void setTokenID(int tokenID) {
+        this.tokenID = tokenID;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
     }
 
     public String getTokenValue() {
@@ -40,8 +51,16 @@ public class Token {
         return issuedAt;
     }
 
+    public void setIssuedAt(Timestamp issuedAt) {
+        this.issuedAt = issuedAt;
+    }
+
     public Timestamp getExpiresAt() {
         return expiresAt;
+    }
+
+    public void setExpiresAt(Timestamp expiresAt) {
+        this.expiresAt = expiresAt;
     }
 
     public String getTokenStatusID() {

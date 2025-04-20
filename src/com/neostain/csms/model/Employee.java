@@ -1,12 +1,12 @@
 package com.neostain.csms.model;
 
 import java.math.BigDecimal;
-import java.util.Date;
+import java.sql.Date;
 
 public class Employee {
 
-    private final String employeeId;
-    private final Date hireDate;
+    private String employeeId;
+    private Date hireDate;
     private String employeeName;
     private String position;
     private String departmentId;
@@ -15,10 +15,11 @@ public class Employee {
     private String address;
     private BigDecimal hourlyWage;
     private BigDecimal baseSalary;
+    private String employeeStatusId;
 
     public Employee(String employeeId, String employeeName, String position, String departmentId,
                     Date hireDate, String email, String phoneNumber, String address,
-                    BigDecimal hourlyWage, BigDecimal baseSalary) {
+                    BigDecimal hourlyWage, BigDecimal baseSalary, String employeeStatusId) {
         this.employeeId = employeeId;
         this.employeeName = employeeName;
         this.position = position;
@@ -29,11 +30,16 @@ public class Employee {
         this.address = address;
         this.hourlyWage = hourlyWage;
         this.baseSalary = baseSalary;
+        this.employeeStatusId = employeeStatusId;
     }
 
     // Getters và setters
     public String getEmployeeId() {
         return employeeId;
+    }
+
+    public void setEmployeeId(String employeeId) {
+        this.employeeId = employeeId;
     }
 
     public String getEmployeeName() {
@@ -60,8 +66,12 @@ public class Employee {
         this.departmentId = departmentId;
     }
 
-    public Date getHireDate() {
+    public java.sql.Date getHireDate() {
         return hireDate;
+    }
+
+    public void setHireDate(Date hireDate) {
+        this.hireDate = hireDate;
     }
 
     public String getEmail() {
@@ -102,5 +112,13 @@ public class Employee {
 
     public void setBaseSalary(BigDecimal baseSalary) {
         this.baseSalary = baseSalary;
+    }
+
+    public String getEmployeeStatusId() {
+        return employeeStatusId;
+    }
+
+    public void setEmployeeStatusId(String employeeStatusId) {
+        this.employeeStatusId = employeeStatusId;
     }
 }

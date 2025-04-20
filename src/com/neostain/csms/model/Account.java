@@ -3,14 +3,16 @@ package com.neostain.csms.model;
 import java.sql.Date;
 
 public class Account {
-    private final String accountID;
-    private final Date accountCreationTime;
+    private int accountID;
+    private String employeeID;
+    private Date accountCreationTime;
     private String username;
     private String passwordHash;
     private String roleID;
 
-    public Account(String accountID, String username, String passwordHash, String roleID, Date accountCreationTime) {
+    public Account(int accountID, String employeeID, String username, String passwordHash, String roleID, Date accountCreationTime) {
         this.accountID = accountID;
+        this.employeeID = employeeID;
         this.username = username;
         this.passwordHash = passwordHash;
         this.roleID = roleID;
@@ -18,8 +20,20 @@ public class Account {
     }
 
     // Getters và Setters
-    public String getAccountID() {
+    public int getAccountID() {
         return accountID;
+    }
+
+    public void setAccountID(int accountID) {
+        this.accountID = accountID;
+    }
+
+    public String getEmployeeID() {
+        return employeeID;
+    }
+
+    public void setEmployeeID(String employeeID) {
+        this.employeeID = employeeID;
     }
 
     public String getUsername() {
@@ -48,5 +62,9 @@ public class Account {
 
     public Date getAccountCreationTime() {
         return accountCreationTime;
+    }
+
+    public void setAccountCreationTime(Date accountCreationTime) {
+        this.accountCreationTime = accountCreationTime;
     }
 }

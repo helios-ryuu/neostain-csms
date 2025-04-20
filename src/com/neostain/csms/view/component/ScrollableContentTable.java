@@ -1,5 +1,7 @@
 package com.neostain.csms.view.component;
 
+import com.neostain.csms.Constants;
+
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
@@ -29,7 +31,7 @@ public class ScrollableContentTable extends JScrollPane {
 
         // Đặt font in đậm cho tiêu đề cột
         JTableHeader header = table.getTableHeader();
-        header.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        header.setFont(new Font(Constants.Font.DEFAULT_FONT_NAME, Font.BOLD, Constants.Font.DEFAULT_SIZE));
 
         // Sử dụng setViewportView để thêm table vào JScrollPane
         this.setViewportView(table);
