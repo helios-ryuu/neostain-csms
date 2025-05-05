@@ -1,10 +1,9 @@
 package com.neostain.csms.view.screen.sm.employee;
 
 import com.neostain.csms.util.Constants;
-import com.neostain.csms.view.component.PaginationPanel;
-import com.neostain.csms.view.component.ScrollableContentTable;
-import com.neostain.csms.view.component.StandardMenuPanel;
-import com.neostain.csms.view.component.TitledBorderPanel;
+import com.neostain.csms.view.component.BorderedPanel;
+import com.neostain.csms.view.component.ScrollableTable;
+import com.neostain.csms.view.component.StandardMenu;
 
 import javax.swing.*;
 import java.awt.*;
@@ -34,7 +33,7 @@ public class EmployeePanel extends JPanel {
         gbc.insets = new Insets(5, 5, 5, 5);
 
         // Create menu panel with standardized component
-        StandardMenuPanel menuPanel = createMenuPanel();
+        StandardMenu menuPanel = createMenuPanel();
 
         // Set preferred size for menu panel
         menuPanel.setPreferredSize(new Dimension(Constants.View.MENU_PANEL_WIDTH, 600));
@@ -48,7 +47,7 @@ public class EmployeePanel extends JPanel {
         this.add(menuPanel, gbc);
 
         // Create employee panel with controls and data
-        TitledBorderPanel employeeListPanel = createEmployeeListPanel();
+        BorderedPanel employeeListPanel = createEmployeeListPanel();
 
         // Set preferred size for employee list panel
         employeeListPanel.setPreferredSize(new Dimension(800, 600));
@@ -61,8 +60,8 @@ public class EmployeePanel extends JPanel {
         this.add(employeeListPanel, gbc);
     }
 
-    private StandardMenuPanel createMenuPanel() {
-        StandardMenuPanel menuPanel = new StandardMenuPanel("Quản lý nhân viên");
+    private StandardMenu createMenuPanel() {
+        StandardMenu menuPanel = new StandardMenu("Quản lý nhân viên");
         menuPanel.addMenuItem("Danh sách nhân viên", item -> {
             LOGGER.info("Employee list selected");
             // Future functionality for employee list
@@ -81,8 +80,8 @@ public class EmployeePanel extends JPanel {
         return menuPanel;
     }
 
-    private TitledBorderPanel createEmployeeListPanel() {
-        TitledBorderPanel employeeListPanel = new TitledBorderPanel("Danh sách nhân viên");
+    private BorderedPanel createEmployeeListPanel() {
+        BorderedPanel employeeListPanel = new BorderedPanel("Danh sách nhân viên");
         employeeListPanel.setLayout(new BorderLayout(10, 10));
 
         // Create search and action toolbar
@@ -117,17 +116,8 @@ public class EmployeePanel extends JPanel {
         };
 
         // Add table with scrolling
-        ScrollableContentTable employeeTable = new ScrollableContentTable(columnNames, data);
+        ScrollableTable employeeTable = new ScrollableTable(columnNames, data);
         employeeListPanel.add(employeeTable, BorderLayout.CENTER);
-
-        // Add pagination controls with our reusable component
-        PaginationPanel paginationPanel = new PaginationPanel(10, data.length);
-        paginationPanel.setPageChangeListener(page -> {
-            // This would load the appropriate page of data in a real application
-            LOGGER.info("Loading employee page: " + page);
-        });
-
-        employeeListPanel.add(paginationPanel, BorderLayout.SOUTH);
 
         return employeeListPanel;
     }

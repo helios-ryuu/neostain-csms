@@ -1,10 +1,9 @@
 package com.neostain.csms.view.screen.sm.invoice;
 
 import com.neostain.csms.util.Constants;
-import com.neostain.csms.view.component.PaginationPanel;
-import com.neostain.csms.view.component.ScrollableContentTable;
-import com.neostain.csms.view.component.StandardMenuPanel;
-import com.neostain.csms.view.component.TitledBorderPanel;
+import com.neostain.csms.view.component.BorderedPanel;
+import com.neostain.csms.view.component.ScrollableTable;
+import com.neostain.csms.view.component.StandardMenu;
 
 import javax.swing.*;
 import java.awt.*;
@@ -34,7 +33,7 @@ public class InvoicePanel extends JPanel {
         gbc.insets = new Insets(5, 5, 5, 5);
 
         // Create menu panel with standardized component
-        StandardMenuPanel menuPanel = createMenuPanel();
+        StandardMenu menuPanel = createMenuPanel();
 
         // Set preferred size for menu panel - sử dụng View.MENU_PANEL_WIDTH
         menuPanel.setPreferredSize(new Dimension(Constants.View.MENU_PANEL_WIDTH, 600));
@@ -55,10 +54,10 @@ public class InvoicePanel extends JPanel {
         JPanel searchPanel = createSearchPanel();
 
         // Create invoice table panel
-        TitledBorderPanel invoiceTablePanel = createInvoiceTablePanel();
+        BorderedPanel invoiceTablePanel = createInvoiceTablePanel();
 
         // Create cancel request panel
-        TitledBorderPanel cancelRequestPanel = createCancelRequestPanel();
+        BorderedPanel cancelRequestPanel = createCancelRequestPanel();
 
         // Create JSplitPane to divide the layout
         JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
@@ -78,7 +77,7 @@ public class InvoicePanel extends JPanel {
         invoiceContent.add(splitPane, BorderLayout.CENTER);
 
         // Create overall invoice management panel
-        TitledBorderPanel invoicePanel = createTitledPanel("Quản lý hóa đơn");
+        BorderedPanel invoicePanel = createTitledPanel("Quản lý hóa đơn");
         invoicePanel.setLayout(new BorderLayout());
         invoicePanel.add(invoiceContent, BorderLayout.CENTER);
 
@@ -93,26 +92,16 @@ public class InvoicePanel extends JPanel {
         this.add(invoicePanel, gbc);
     }
 
-    private StandardMenuPanel createMenuPanel() {
-        StandardMenuPanel menuPanel = new StandardMenuPanel("Quản lý hoá đơn");
-        menuPanel.addMenuItem("Tất cả hóa đơn", item -> {
+    private StandardMenu createMenuPanel() {
+        StandardMenu menuPanel = new StandardMenu("Quản lý hoá đơn");
+        menuPanel.addMenuItem("Tra cứu hóa đơn", item -> {
             LOGGER.info("All invoices selected");
             // Future functionality for all invoices
-        });
-
-        menuPanel.addMenuItem("Tìm kiếm hóa đơn", item -> {
-            LOGGER.info("Search invoices selected");
-            // Future functionality for search invoices
         });
 
         menuPanel.addMenuItem("Yêu cầu hủy hóa đơn", item -> {
             LOGGER.info("Cancel invoice requests selected");
             // Future functionality for cancel requests
-        });
-
-        menuPanel.addMenuItem("Xuất hóa đơn", item -> {
-            LOGGER.info("Export invoice selected");
-            // Future functionality for invoice export
         });
 
         return menuPanel;
@@ -167,8 +156,8 @@ public class InvoicePanel extends JPanel {
         return searchPanel;
     }
 
-    private TitledBorderPanel createInvoiceTablePanel() {
-        TitledBorderPanel invoiceTablePanel = createTitledPanel("Danh sách hóa đơn");
+    private BorderedPanel createInvoiceTablePanel() {
+        BorderedPanel invoiceTablePanel = createTitledPanel("Danh sách hóa đơn");
         invoiceTablePanel.setLayout(new BorderLayout());
 
         // Create toolbar for invoice actions
@@ -205,18 +194,14 @@ public class InvoicePanel extends JPanel {
         };
 
         // Create table with data
-        ScrollableContentTable invoiceTable = new ScrollableContentTable(columnNames, data);
+        ScrollableTable invoiceTable = new ScrollableTable(columnNames, data);
         invoiceTablePanel.add(invoiceTable, BorderLayout.CENTER);
-
-        // Add pagination panel
-        PaginationPanel paginationPanel = new PaginationPanel(10, data.length);
-        invoiceTablePanel.add(paginationPanel, BorderLayout.SOUTH);
 
         return invoiceTablePanel;
     }
 
-    private TitledBorderPanel createCancelRequestPanel() {
-        TitledBorderPanel cancelRequestPanel = createTitledPanel("Yêu cầu hủy hóa đơn");
+    private BorderedPanel createCancelRequestPanel() {
+        BorderedPanel cancelRequestPanel = createTitledPanel("Yêu cầu hủy hóa đơn");
         cancelRequestPanel.setLayout(new BorderLayout());
 
         // Create sample cancel request data
@@ -227,7 +212,7 @@ public class InvoicePanel extends JPanel {
         };
 
         // Create table for cancel requests
-        ScrollableContentTable requestTable = new ScrollableContentTable(requestColumnNames, requestData);
+        ScrollableTable requestTable = new ScrollableTable(requestColumnNames, requestData);
         cancelRequestPanel.add(requestTable, BorderLayout.CENTER);
 
         // Create toolbar for request actions
@@ -247,8 +232,8 @@ public class InvoicePanel extends JPanel {
         return cancelRequestPanel;
     }
 
-    private TitledBorderPanel createTitledPanel(String title) {
-        TitledBorderPanel panel = new TitledBorderPanel(title);
+    private BorderedPanel createTitledPanel(String title) {
+        BorderedPanel panel = new BorderedPanel(title);
         panel.setBackground(Color.WHITE);
         return panel;
     }

@@ -1,9 +1,8 @@
 package com.neostain.csms.view.screen.sm.workshift;
 
 import com.neostain.csms.util.Constants;
-import com.neostain.csms.view.component.PaginationPanel;
-import com.neostain.csms.view.component.ScrollableContentTable;
-import com.neostain.csms.view.component.TitledBorderPanel;
+import com.neostain.csms.view.component.BorderedPanel;
+import com.neostain.csms.view.component.ScrollableTable;
 
 import javax.swing.*;
 import java.awt.*;
@@ -74,7 +73,7 @@ public class WorkShiftPanel extends JPanel {
         leavePanel.setBackground(Constants.Color.COMPONENT_BACKGROUND_WHITE);
 
         // Create request form for leave
-        TitledBorderPanel leaveFormPanel = createTitledPanel("Đơn xin nghỉ phép");
+        BorderedPanel leaveFormPanel = createTitledPanel("Đơn xin nghỉ phép");
         leaveFormPanel.setPreferredSize(new Dimension(300, 0));
 
         // Add form components here
@@ -150,7 +149,7 @@ public class WorkShiftPanel extends JPanel {
                 {"Hoàng Văn E", "156.5", "39.0", "8.0", "5.0"}
         };
 
-        ScrollableContentTable summaryTable = new ScrollableContentTable(summaryColumns, summaryData);
+        ScrollableTable summaryTable = new ScrollableTable(summaryColumns, summaryData);
         summaryPanel.add(summaryTable, BorderLayout.CENTER);
 
         // Create detailed panel
@@ -172,12 +171,8 @@ public class WorkShiftPanel extends JPanel {
                 {"Phạm Thị D", "15/06/2023", "Ca sáng", "07:02", "12:00", "5.0", ""}
         };
 
-        ScrollableContentTable detailedTable = new ScrollableContentTable(detailedColumns, detailedData);
+        ScrollableTable detailedTable = new ScrollableTable(detailedColumns, detailedData);
         detailedPanel.add(detailedTable, BorderLayout.CENTER);
-
-        // Add pagination for detailed records
-        PaginationPanel paginationPanel = new PaginationPanel(10, detailedData.length);
-        detailedPanel.add(paginationPanel, BorderLayout.SOUTH);
 
         // Add panels to tabbed pane
         trackingTabs.addTab("Tổng hợp", summaryPanel);
@@ -205,8 +200,8 @@ public class WorkShiftPanel extends JPanel {
         return panel;
     }
 
-    private TitledBorderPanel createTitledPanel(String title) {
-        TitledBorderPanel panel = new TitledBorderPanel(title);
+    private BorderedPanel createTitledPanel(String title) {
+        BorderedPanel panel = new BorderedPanel(title);
         panel.setBackground(Color.WHITE);
         return panel;
     }

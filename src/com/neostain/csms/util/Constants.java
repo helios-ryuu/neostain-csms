@@ -2,6 +2,9 @@ package com.neostain.csms.util;
 
 import java.awt.*;
 
+import static com.neostain.csms.util.Constants.Font.DEFAULT_FONT_NAME;
+import static com.neostain.csms.util.Constants.Font.DEFAULT_SIZE;
+
 /**
  * Constants used throughout the application.
  * Centralizes all hardcoded values to make them easier to manage and update.
@@ -15,11 +18,11 @@ public class Constants {
         /**
          * Active token status
          */
-        public static final String ACTIVE = "01";
+        public static final String ACTIVE = "Có hiệu lực";
         /**
          * Inactive token status
          */
-        public static final String EXPIRED = "02";
+        public static final String EXPIRED = "Vô hiệu";
     }
 
     /**
@@ -46,7 +49,7 @@ public class Constants {
 
     public static class View {
         // Application name
-        public static final String APP_NAME = "Coffee Shop Management System";
+        public static final String APP_NAME = "Convenience Store Management System";
         public static final String APP_VERSION = "1.0.0";
         // Standard sizes
         public static final Dimension STANDARD_BUTTON_SIZE = new Dimension(120, 30);
@@ -70,6 +73,7 @@ public class Constants {
         public static final java.awt.Font TITLE_FONT = new java.awt.Font("Dialog", java.awt.Font.BOLD, 16);
         public static final java.awt.Font LABEL_FONT = new java.awt.Font("Dialog", java.awt.Font.PLAIN, 12);
         public static final java.awt.Font BUTTON_FONT = new java.awt.Font("Dialog", java.awt.Font.BOLD, 12);
+        public static final java.awt.Font DEFAULT_FONT = new java.awt.Font(DEFAULT_FONT_NAME, java.awt.Font.PLAIN, DEFAULT_SIZE);
         // Dialog constants
         public static final String ERROR_DIALOG_TITLE = "Lỗi";
         public static final String INFO_DIALOG_TITLE = "Thông tin";

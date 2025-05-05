@@ -16,16 +16,11 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public Account getByUsername(String username) {
-        if (StringUtils.isNullOrEmpty(username)) {
-            LOGGER.warning("[GET_BY_USERNAME] Username tài khoản trống");
-            return null;
-        }
-
+    public Account getAccountByUsername(String username) {
         try {
             return dao.findByUsername(username);
         } catch (Exception e) {
-            LOGGER.warning("[GET_BY_USERNAME] Lỗi: " + e.getMessage());
+            LOGGER.warning("[GET_ACCOUNT_BY_USERNAME] Lỗi: " + e.getMessage());
             return null;
         }
     }
@@ -66,7 +61,7 @@ public class AccountServiceImpl implements AccountService {
                 return false;
             }
             String hashed = PasswordUtils.hash(newPlainPassword);
-            return dao.updatePassword(username, hashed);
+            return dao.updatePasswordHash(username, hashed);
         } catch (Exception e) {
             LOGGER.severe("[CHANGE_PWD] Lỗi: " + e.getMessage());
             return false;
@@ -74,25 +69,25 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public boolean remove(String username) {
+    public boolean removeByUsername(String username) {
         if (StringUtils.isNullOrEmpty(username)) {
-            LOGGER.warning("[REMOVE] Username tài khoản trống");
+            LOGGER.warning("[REMOVE_BY_USERNAME] Username tài khoản trống");
             return false;
         }
         try {
             Account acc = dao.findByUsername(username);
             if (acc == null) {
-                LOGGER.warning("[REMOVE] Account không tồn tại: " + username);
+                LOGGER.warning("[REMOVE_BY_USERNAME] Account không tồn tại: " + username);
                 return false;
             }
-            if ("ADMIN".equalsIgnoreCase(acc.getRoleID())) {
-                LOGGER.warning("[REMOVE] Không được xóa account ADMIN");
+            if ("ADMIN".equalsIgnoreCase(acc.getRoleId())) {
+                LOGGER.warning("[REMOVE_BY_USERNAME] Không được xóa account ADMIN");
                 return false;
             }
             dao.delete(username);
             return true;
         } catch (Exception e) {
-            LOGGER.severe("[REMOVE] Lỗi: " + e.getMessage());
+            LOGGER.severe("[REMOVE_BY_USERNAME] Lỗi: " + e.getMessage());
             return false;
         }
     }

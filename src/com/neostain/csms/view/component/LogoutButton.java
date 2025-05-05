@@ -1,8 +1,8 @@
 package com.neostain.csms.view.component;
 
+import com.neostain.csms.ViewManager;
 import com.neostain.csms.util.Constants;
 import com.neostain.csms.util.DialogFactory;
-import com.neostain.csms.ViewManager;
 import com.neostain.csms.view.MainFrame;
 
 import javax.swing.*;
@@ -24,10 +24,10 @@ public class LogoutButton extends StandardButton {
     }
 
     public void event() {
-        boolean choice = DialogFactory.showConfirmDialog(
+        boolean choice = DialogFactory.showConfirmYesNoDialog(
                 this.parent,
-                "Bạn có chắc chắn muốn đăng xuất khỏi hệ thống?",
-                "Xác nhận đăng xuất"
+                "Xác nhận đăng xuất",
+                "Bạn có chắc chắn muốn đăng xuất khỏi hệ thống?"
         );
         if (choice) {
             try {
@@ -39,8 +39,8 @@ public class LogoutButton extends StandardButton {
                 LOGGER.severe("Error during logout: " + e.getMessage());
                 DialogFactory.showErrorDialog(
                         this.parent,
-                        "Có lỗi xảy ra khi đăng xuất: " + e.getMessage(),
-                        "Lỗi"
+                        "Lỗi",
+                        "Có lỗi xảy ra khi đăng xuất: " + e.getMessage()
                 );
             }
         }

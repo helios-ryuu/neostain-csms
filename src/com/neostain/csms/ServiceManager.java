@@ -39,16 +39,20 @@ public class ServiceManager {
             // Register DAOs
             AccountDAO accountDAO = new AccountDAOImpl(connection);
             EmployeeDAO employeeDAO = new EmployeeDAOImpl(connection);
+            MemberDAO memberDAO = new MemberDAOImpl(connection);
             TokenDAO tokenDAO = new TokenDAOImpl(connection);
+            StoreDAO storeDAO = new StoreDAOImpl(connection);
             RoleDAO roleDAO = new RoleDAOImpl(connection);
-            CancellationDAO cancellationDAO = new CancellationDAOImpl(connection);
 
             // Register Services
-            registerService(TokenService.class, new TokenServiceImpl(tokenDAO));
             registerService(AccountService.class, new AccountServiceImpl(accountDAO));
             registerService(EmployeeService.class, new EmployeeServiceImpl(employeeDAO));
+            registerService(MemberService.class, new MemberServiceImpl(memberDAO));
+            registerService(TokenService.class, new TokenServiceImpl(tokenDAO));
+            registerService(StoreService.class, new StoreServiceImpl(storeDAO));
             registerService(RoleService.class, new RoleServiceImpl(roleDAO));
-            registerService(CancellationService.class, new CancellationServiceImpl(cancellationDAO));
+
+
             registerService(AuthService.class, new AuthServiceImpl());
 
             LOGGER.info("[INIT] Khởi tạo ServiceManager thành công");
@@ -91,9 +95,6 @@ public class ServiceManager {
         }
     }
 
-    /**
-     * Public service getters with appropriate authentication requirements
-     */
     public AuthService getAuthService() {
         // Auth service never requires authentication
         return getServiceWithAuthCheck(AuthService.class, false);
@@ -112,17 +113,18 @@ public class ServiceManager {
         return getServiceWithAuthCheck(EmployeeService.class, true);
     }
 
+    public MemberService getMemberService() {
+        return getServiceWithAuthCheck(MemberService.class, true);
+    }
+
     public RoleService getRoleService() {
         return getServiceWithAuthCheck(RoleService.class, true);
     }
 
-    public CancellationService getCancellationService() {
-        return getServiceWithAuthCheck(CancellationService.class, true);
+    public StoreService getStoreService() {
+        return getServiceWithAuthCheck(StoreService.class, true);
     }
 
-    /**
-     * Token and session management
-     */
     public String getCurrentToken() {
         return currentToken;
     }
@@ -188,6 +190,8 @@ public class ServiceManager {
             bypassAuth = false;
         }
     }
+
+    // TODO: loại bỏ phân ca, thêm logic đóng ca làm việc khi tổng kết ca làm
 
     /**
      * Logs out the current user.

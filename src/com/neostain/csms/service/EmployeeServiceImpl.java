@@ -15,16 +15,16 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
-    public Employee getById(String id) {
+    public Employee getEmployeeById(String id) {
         if (StringUtils.isNullOrEmpty(id)) {
-            LOGGER.warning("[GET_BY_ID] ID nhân viên trống");
+            LOGGER.warning("[GET_EMPLOYEE_BY_ID] ID nhân viên trống");
             return null;
         }
 
         try {
             return dao.findById(id);
         } catch (Exception e) {
-            LOGGER.warning("[GET_BY_ID] Lỗi: " + e.getMessage());
+            LOGGER.warning("[GET_EMPLOYEE_BY_ID] Lỗi: " + e.getMessage());
             return null;
         }
     }
@@ -41,24 +41,25 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
-    public boolean remove(String id) {
+    public boolean removeById(String id) {
         if (StringUtils.isNullOrEmpty(id)) {
-            LOGGER.warning("[REMOVE] ID nhân viên trống");
+            LOGGER.warning("[REMOVE_BY_ID] ID nhân viên trống");
             return false;
         }
         try {
             Employee emp = dao.findById(id);
             if (emp == null) {
-                LOGGER.warning("[REMOVE] Nhân viên không tồn tại: " + id);
+                LOGGER.warning("[REMOVE_BY_ID] Nhân viên không tồn tại: " + id);
                 return false;
             }
             if ("Nhân viên quản trị cơ sở dữ liệu".equalsIgnoreCase(emp.getPosition())) {
-                LOGGER.warning("[REMOVE] Không được xóa nhân viên quản trị cơ sở dữ liệu");
+                LOGGER.warning("[REMOVE_BY_ID] Không được xóa nhân viên quản trị cơ sở dữ liệu");
                 return false;
             }
+            dao.delete(id);
             return true;
         } catch (Exception e) {
-            LOGGER.severe("[REMOVE] Lỗi: " + e.getMessage());
+            LOGGER.severe("[REMOVE_BY_ID] Lỗi: " + e.getMessage());
             return false;
         }
     }

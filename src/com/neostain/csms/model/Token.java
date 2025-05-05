@@ -3,32 +3,31 @@ package com.neostain.csms.model;
 import java.sql.Timestamp;
 
 public class Token {
-    private int tokenID;
+    private String tokenId;
     private String username;
-    private Timestamp issuedAt;
-    private Timestamp expiresAt;
     private String tokenValue;
-    private String tokenStatusID;
+    private Timestamp expiresAt;
+    private Timestamp issuedAt;
+    private String tokenStatus;
 
     public Token() {
     }
 
-    public Token(int tokenID, String username, String tokenValue, Timestamp expiresAt, Timestamp issuedAt, String tokenStatusID) {
-        this.tokenID = tokenID;
+    public Token(String tokenId, String username, String tokenValue, Timestamp expiresAt, Timestamp issuedAt, String tokenStatus) {
+        this.tokenId = tokenId;
         this.username = username;
         this.tokenValue = tokenValue;
         this.issuedAt = issuedAt;
         this.expiresAt = expiresAt;
-        this.tokenStatusID = tokenStatusID;
+        this.tokenStatus = tokenStatus;
     }
 
-    // Getters và Setters
-    public int getTokenID() {
-        return tokenID;
+    public String getTokenId() {
+        return tokenId;
     }
 
-    public void setTokenID(int tokenID) {
-        this.tokenID = tokenID;
+    public void setTokenId(String tokenId) {
+        this.tokenId = tokenId;
     }
 
     public String getUsername() {
@@ -63,11 +62,11 @@ public class Token {
         this.expiresAt = expiresAt;
     }
 
-    public String getTokenStatusID() {
-        return tokenStatusID;
+    public String getTokenStatus() {
+        return tokenStatus;
     }
 
-    public void setTokenStatusID(String tokenStatusID) {
-        this.tokenStatusID = tokenStatusID;
+    public void setTokenStatus(String tokenStatus) {
+        this.tokenStatus = tokenStatus;
     }
 }

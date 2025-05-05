@@ -2,33 +2,35 @@ package com.neostain.csms.dao;
 
 import com.neostain.csms.model.Employee;
 
-import java.sql.SQLException;
+import java.math.BigDecimal;
+import java.util.List;
 
 public interface EmployeeDAO {
-    /**
-     * Tìm nhân viên theo ID
-     *
-     * @param id ID của nhân viên
-     * @return Đối tượng Employee hoặc null nếu không tìm thấy
-     * @throws SQLException Nếu có lỗi truy vấn
-     */
-    Employee findById(String id) throws SQLException;
+    Employee findById(String id);
 
-    /**
-     * Tạo mới nhân viên
-     *
-     * @param employee Nhân viên cần tạo
-     * @return Số bản ghi đã thêm (thường là 1 nếu thành công)
-     * @throws SQLException Nếu có lỗi truy vấn
-     */
-    int create(Employee employee) throws SQLException;
+    List<Employee> findByName(String name);
 
-    /**
-     * Xóa nhân viên
-     *
-     * @param id ID của nhân viên
-     * @return Số bản ghi đã xóa (thường là 1 nếu thành công)
-     * @throws SQLException Nếu có lỗi truy vấn
-     */
-    int delete(String id) throws SQLException;
+    List<Employee> findByPosition(String position);
+
+    List<Employee> findByStatus(String status);
+
+    List<Employee> findAll();
+
+    boolean create(Employee employee);
+
+    boolean updateName(String id, String name);
+
+    boolean updatePosition(String id, String position);
+
+    boolean updateEmail(String id, String email);
+
+    boolean updatePhoneNumber(String id, String phoneNumber);
+
+    boolean updateAddress(String id, String address);
+
+    boolean updateHourlyWage(String id, BigDecimal hourlyWage);
+
+    boolean updateStatus(String id, String status);
+
+    boolean delete(String id);
 }

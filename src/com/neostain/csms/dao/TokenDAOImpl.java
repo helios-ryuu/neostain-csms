@@ -24,75 +24,105 @@ public class TokenDAOImpl implements TokenDAO {
     }
 
     @Override
-    public Token findByValue(String value) throws SQLException {
+    public Token findByValue(String value) {
         try (PreparedStatement ps = conn.prepareStatement(SQLQueries.TOKEN_FIND_BY_VALUE)) {
             ps.setString(1, value);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    return new Token(
-                            rs.getInt("TOKEN_ID"),
-                            rs.getString("USERNAME"),
-                            rs.getString("TOKEN_VALUE"),
-                            rs.getTimestamp("EXPIRES_AT"),
-                            rs.getTimestamp("ISSUED_AT"),
-                            rs.getString("TOKEN_STATUS_ID")
-                    );
+                    return mapResultSetToToken(rs);
                 } else {
                     LOGGER.warning("[FIND_BY_VALUE] Token không tồn tại: " + value);
                     return null;
                 }
             }
+        } catch (SQLException e) {
+            LOGGER.severe("[FIND_BY_VALUE] Lỗi: " + e.getMessage());
+            return null;
         }
     }
 
     @Override
-    public List<Token> findByUsername(String username) throws SQLException {
+    public Token findById(String id) {
+        try (PreparedStatement ps = conn.prepareStatement(SQLQueries.TOKEN_FIND_BY_ID)) {
+            ps.setString(1, id);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return mapResultSetToToken(rs);
+                } else {
+                    LOGGER.warning("[FIND_BY_ID] Token không tồn tại: " + id);
+                    return null;
+                }
+            }
+        } catch (SQLException e) {
+            LOGGER.severe("[FIND_BY_ID] Lỗi: " + e.getMessage());
+            return null;
+        }
+    }
+
+    @Override
+    public List<Token> findByUsername(String username) {
         List<Token> tokens = new ArrayList<>();
         try (PreparedStatement ps = conn.prepareStatement(SQLQueries.TOKEN_FIND_BY_USERNAME)) {
             ps.setString(1, username);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    tokens.add(new Token(
-                            rs.getInt("TOKEN_ID"),
-                            rs.getString("USERNAME"),
-                            rs.getString("TOKEN_VALUE"),
-                            rs.getTimestamp("EXPIRES_AT"),
-                            rs.getTimestamp("ISSUED_AT"),
-                            rs.getString("TOKEN_STATUS_ID")
-                    ));
+                    tokens.add(mapResultSetToToken(rs));
                 }
                 return tokens;
             }
+        } catch (SQLException e) {
+            LOGGER.severe("[FIND_BY_USERNAME] Lỗi: " + e.getMessage());
+            return null;
         }
     }
 
     @Override
-    public int create(Token token) throws SQLException {
+    public boolean create(Token token) {
         try (PreparedStatement ps = conn.prepareStatement(SQLQueries.TOKEN_CREATE)) {
             ps.setString(1, token.getUsername());
             ps.setString(2, token.getTokenValue());
             ps.setTimestamp(3, token.getExpiresAt());
             ps.setTimestamp(4, token.getIssuedAt());
-            ps.setString(5, token.getTokenStatusID());
-            return ps.executeUpdate();
+            ps.setString(5, token.getTokenStatus());
+            return ps.executeUpdate() == 1;
+        } catch (SQLException e) {
+            LOGGER.severe("[CREATE] Lỗi: " + e.getMessage());
+            return false;
         }
     }
 
     @Override
-    public int update(Token token) throws SQLException {
-        try (PreparedStatement ps = conn.prepareStatement(SQLQueries.TOKEN_UPDATE)) {
-            ps.setString(1, token.getTokenValue());
-            ps.setString(2, token.getTokenStatusID());
-            ps.setInt(3, token.getTokenID());
-            return ps.executeUpdate();
+    public boolean updateValue(String id, String tokenValue) {
+        try (PreparedStatement ps = conn.prepareStatement(SQLQueries.TOKEN_UPDATE_VALUE)) {
+            ps.setString(1, tokenValue);
+            ps.setString(2, id);
+            return ps.executeUpdate() == 1;
+        } catch (SQLException e) {
+            LOGGER.severe("[UPDATE_VALUE] Lỗi: " + e.getMessage());
+            return false;
         }
     }
 
     @Override
-    public int delete(String value) throws SQLException {
-        try (PreparedStatement ps = conn.prepareStatement(SQLQueries.TOKEN_DELETE)) {
-            ps.setString(1, value);
-            return ps.executeUpdate();
+    public boolean updateStatus(String id, String tokenStatus) {
+        try (PreparedStatement ps = conn.prepareStatement(SQLQueries.TOKEN_UPDATE_STATUS)) {
+            ps.setString(1, tokenStatus);
+            ps.setString(2, id);
+            return ps.executeUpdate() == 1;
+        } catch (SQLException e) {
+            LOGGER.severe("[UPDATE_STATUS] Lỗi: " + e.getMessage());
+            return false;
         }
+    }
+
+    private Token mapResultSetToToken(ResultSet rs) throws SQLException {
+        return new Token(
+                rs.getString("TOKEN_ID"),
+                rs.getString("USERNAME"),
+                rs.getString("TOKEN_VALUE"),
+                rs.getTimestamp("EXPIRES_AT"),
+                rs.getTimestamp("ISSUED_AT"),
+                rs.getString("TOKEN_STATUS")
+        );
     }
 }

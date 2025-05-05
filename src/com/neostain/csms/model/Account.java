@@ -1,39 +1,40 @@
 package com.neostain.csms.model;
 
-import java.sql.Date;
+import java.sql.Timestamp;
 
 public class Account {
-    private int accountID;
-    private String employeeID;
-    private Date accountCreationTime;
+    private String accountId;
+    private String employeeId;
     private String username;
     private String passwordHash;
-    private String roleID;
+    private String roleId;
+    private Timestamp accountCreationTime;
+    private String accountStatus;
 
-    public Account(int accountID, String employeeID, String username, String passwordHash, String roleID, Date accountCreationTime) {
-        this.accountID = accountID;
-        this.employeeID = employeeID;
+    public Account(String accountId, String employeeId, String username, String passwordHash, String roleId, Timestamp accountCreationTime, String accountStatus) {
+        this.accountId = accountId;
+        this.employeeId = employeeId;
         this.username = username;
         this.passwordHash = passwordHash;
-        this.roleID = roleID;
+        this.roleId = roleId;
         this.accountCreationTime = accountCreationTime;
+        this.accountStatus = accountStatus;
     }
 
-    // Getters và Setters
-    public int getAccountID() {
-        return accountID;
+    public String getAccountId() {
+        return accountId;
     }
 
-    public void setAccountID(int accountID) {
-        this.accountID = accountID;
+    public void setAccountId(String accountId) {
+        this.accountId = accountId;
     }
 
-    public String getEmployeeID() {
-        return employeeID;
+    public String getEmployeeId() {
+        return employeeId;
     }
 
-    public void setEmployeeID(String employeeID) {
-        this.employeeID = employeeID;
+    public void setEmployeeId(String employeeId) {
+        this.employeeId = employeeId;
     }
 
     public String getUsername() {
@@ -52,19 +53,27 @@ public class Account {
         this.passwordHash = passwordHash;
     }
 
-    public String getRoleID() {
-        return roleID;
+    public String getRoleId() {
+        return roleId;
     }
 
-    public void setRoleID(String roleID) {
-        this.roleID = roleID;
+    public void setRoleId(String roleId) {
+        this.roleId = roleId;
     }
 
-    public Date getAccountCreationTime() {
+    public Timestamp getAccountCreationTime() {
         return accountCreationTime;
     }
 
-    public void setAccountCreationTime(Date accountCreationTime) {
+    public void setAccountCreationTime(Timestamp accountCreationTime) {
         this.accountCreationTime = accountCreationTime;
+    }
+
+    public String getAccountStatus() {
+        return accountStatus;
+    }
+
+    public void setAccountStatus(String accountStatus) {
+        this.accountStatus = accountStatus;
     }
 }

@@ -33,7 +33,7 @@ public class AuthServiceImpl implements AuthService {
         }
 
         try (Connection conn = DatabaseUtils.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(SQLQueries.ACCOUNT_AUTH)) {
+             PreparedStatement stmt = conn.prepareStatement(SQLQueries.ACCOUNT_GET_PASSWORD_HASH)) {
 
             stmt.setString(1, username);
             try (ResultSet rs = stmt.executeQuery()) {
@@ -63,7 +63,7 @@ public class AuthServiceImpl implements AuthService {
         }
 
         try (Connection conn = DatabaseUtils.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(SQLQueries.ACCOUNT_GET_ROLE)) {
+             PreparedStatement stmt = conn.prepareStatement(SQLQueries.ACCOUNT_GET_ROLE_NAME)) {
 
             stmt.setString(1, username);
             try (ResultSet rs = stmt.executeQuery()) {

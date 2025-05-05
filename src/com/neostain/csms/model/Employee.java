@@ -1,39 +1,34 @@
 package com.neostain.csms.model;
 
 import java.math.BigDecimal;
-import java.sql.Date;
+import java.sql.Timestamp;
 
 public class Employee {
 
     private String employeeId;
-    private Date hireDate;
     private String employeeName;
     private String position;
-    private String departmentId;
+    private Timestamp hireDate;
     private String email;
     private String phoneNumber;
     private String address;
     private BigDecimal hourlyWage;
-    private BigDecimal baseSalary;
-    private String employeeStatusId;
+    private String employeeStatus;
 
-    public Employee(String employeeId, String employeeName, String position, String departmentId,
-                    Date hireDate, String email, String phoneNumber, String address,
-                    BigDecimal hourlyWage, BigDecimal baseSalary, String employeeStatusId) {
+    public Employee(String employeeId, String employeeName, String position,
+                    Timestamp hireDate, String email, String phoneNumber, String address,
+                    BigDecimal hourlyWage, String employeeStatus) {
         this.employeeId = employeeId;
         this.employeeName = employeeName;
         this.position = position;
-        this.departmentId = departmentId;
         this.hireDate = hireDate;
         this.email = email;
         this.phoneNumber = phoneNumber;
         this.address = address;
         this.hourlyWage = hourlyWage;
-        this.baseSalary = baseSalary;
-        this.employeeStatusId = employeeStatusId;
+        this.employeeStatus = employeeStatus;
     }
 
-    // Getters và setters
     public String getEmployeeId() {
         return employeeId;
     }
@@ -58,19 +53,11 @@ public class Employee {
         this.position = position;
     }
 
-    public String getDepartmentId() {
-        return departmentId;
-    }
-
-    public void setDepartmentId(String departmentId) {
-        this.departmentId = departmentId;
-    }
-
-    public java.sql.Date getHireDate() {
+    public Timestamp getHireDate() {
         return hireDate;
     }
 
-    public void setHireDate(Date hireDate) {
+    public void setHireDate(Timestamp hireDate) {
         this.hireDate = hireDate;
     }
 
@@ -106,19 +93,11 @@ public class Employee {
         this.hourlyWage = hourlyWage;
     }
 
-    public BigDecimal getBaseSalary() {
-        return baseSalary;
+    public String getEmployeeStatus() {
+        return employeeStatus;
     }
 
-    public void setBaseSalary(BigDecimal baseSalary) {
-        this.baseSalary = baseSalary;
-    }
-
-    public String getEmployeeStatusId() {
-        return employeeStatusId;
-    }
-
-    public void setEmployeeStatusId(String employeeStatusId) {
-        this.employeeStatusId = employeeStatusId;
+    public void setEmployeeStatus(String employeeStatus) {
+        this.employeeStatus = employeeStatus;
     }
 }

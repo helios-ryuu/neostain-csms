@@ -1,18 +1,18 @@
 package com.neostain.csms.view.screen;
 
-import com.neostain.csms.util.Constants;
-import com.neostain.csms.util.DialogFactory;
 import com.neostain.csms.ServiceManager;
 import com.neostain.csms.ViewManager;
 import com.neostain.csms.model.Account;
 import com.neostain.csms.model.Employee;
 import com.neostain.csms.model.Role;
+import com.neostain.csms.util.Constants;
+import com.neostain.csms.util.DialogFactory;
 import com.neostain.csms.util.ScreenType;
 import com.neostain.csms.util.StringUtils;
 import com.neostain.csms.view.MainFrame;
+import com.neostain.csms.view.component.BorderedPanel;
 import com.neostain.csms.view.component.StandardButton;
 import com.neostain.csms.view.component.StandardTabbedPane;
-import com.neostain.csms.view.component.TitledBorderPanel;
 
 import javax.swing.*;
 import java.awt.*;
@@ -47,8 +47,8 @@ public class LoginScreen extends JPanel {
         initializeComponents();
     }
 
-    private static TitledBorderPanel setupAuthorPanel() {
-        TitledBorderPanel titledBorderPanel = new TitledBorderPanel("Tác giả");
+    private static BorderedPanel setupAuthorPanel() {
+        BorderedPanel borderedPanel = new BorderedPanel("Tác giả");
         JTextArea authorContent = new JTextArea(
                 """
                         Copyright © 2025 NeoStain
@@ -62,11 +62,11 @@ public class LoginScreen extends JPanel {
         );
         authorContent.setEditable(false);
         authorContent.setOpaque(false);
-        authorContent.setFont(new JLabel().getFont());
+        authorContent.setFont(Constants.View.DEFAULT_FONT);
         authorContent.setFocusable(false);
         authorContent.setBackground(Constants.Color.COMPONENT_BACKGROUND_WHITE);
-        titledBorderPanel.add(authorContent, BorderLayout.CENTER);
-        return titledBorderPanel;
+        borderedPanel.add(authorContent, BorderLayout.CENTER);
+        return borderedPanel;
     }
 
     /**
@@ -166,7 +166,7 @@ public class LoginScreen extends JPanel {
         aboutTabPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         aboutTabPanel.setLayout(new GridBagLayout());
 
-        TitledBorderPanel authorPanel = setupAuthorPanel();
+        BorderedPanel authorPanel = setupAuthorPanel();
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridx = 0;
         gbc.gridy = 0;
@@ -188,13 +188,21 @@ public class LoginScreen extends JPanel {
      * @param gridy      Vị trí hàng.
      * @param gridwidth  Số cột mà component chiếm.
      * @param gridheight Số hàng mà component chiếm.
+     * @param anchor     Vị trí neo component trong ô lưới.
+     * @param fill       Cách thức điền đầy không gian được cấp phát.
+     * @param weightx    Trọng số phân bổ không gian dư theo chiều ngang.
+     * @param weighty    Trọng số phân bổ không gian dư theo chiều dọc.
      */
     public void addComponent(JPanel panel, Component comp, GridBagConstraints gbc,
-                             int gridx, int gridy, int gridwidth, int gridheight) {
+                             int gridx, int gridy, int gridwidth, int gridheight, int anchor, int fill, double weightx, double weighty) {
         gbc.gridx = gridx;
         gbc.gridy = gridy;
         gbc.gridwidth = gridwidth;
         gbc.gridheight = gridheight;
+        gbc.anchor = anchor;
+        gbc.fill = fill;
+        gbc.weightx = weightx;
+        gbc.weighty = weighty;
         panel.add(comp, gbc);
     }
 
@@ -211,8 +219,8 @@ public class LoginScreen extends JPanel {
             this.statusLabel.setForeground(Color.RED);
             DialogFactory.showErrorDialog(
                     this,
-                    "Vui lòng nhập tên đăng nhập và mật khẩu",
-                    "Lỗi đăng nhập"
+                    "Lỗi đăng nhập",
+                    "Vui lòng nhập tên đăng nhập và mật khẩu"
             );
             return;
         }
@@ -243,9 +251,9 @@ public class LoginScreen extends JPanel {
 
                 try {
                     // Khởi tạo đối tượng thông tin đăng nhập hiện tại
-                    Account account = serviceManager.getAccountService().getByUsername(currentUsername);
-                    Employee employee = serviceManager.getEmployeeService().getById(account.getEmployeeID());
-                    Role role = serviceManager.getRoleService().getRole(account.getRoleID());
+                    Account account = serviceManager.getAccountService().getAccountByUsername(currentUsername);
+                    Employee employee = serviceManager.getEmployeeService().getEmployeeById(account.getEmployeeId());
+                    Role role = serviceManager.getRoleService().getRoleById(account.getRoleId());
 
                     // Hiển thị thông báo chào mừng
                     String message = "Đăng nhập thành công!\nChào mừng, " +
@@ -290,7 +298,7 @@ public class LoginScreen extends JPanel {
         MainFrame mainFrame = (MainFrame) SwingUtilities.getWindowAncestor(this);
 
         switch (roleName) {
-            case "Quản lý cửa hàng":
+            case "Nhân viên quản lý cửa hàng":
                 ViewManager.getInstance(mainFrame).switchScreen(ScreenType.STORE_MANAGER, username);
                 break;
             case "Nhân viên bán hàng":

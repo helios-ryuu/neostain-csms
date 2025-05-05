@@ -2,47 +2,26 @@ package com.neostain.csms.dao;
 
 import com.neostain.csms.model.Account;
 
-import java.sql.SQLException;
+import java.util.List;
 
-/**
- * Interface định nghĩa các thao tác cơ bản với tài khoản người dùng
- * Theo mô hình DAO (Data Access Object)
- */
 public interface AccountDAO {
-    /**
-     * Tìm tài khoản theo ID
-     *
-     * @param username ID của tài khoản
-     * @return Đối tượng Account hoặc null nếu không tìm thấy
-     * @throws SQLException Nếu có lỗi truy vấn
-     */
-    Account findByUsername(String username) throws SQLException;
+    List<Account> findByEmployeeId(String employeeId);
 
-    /**
-     * Tạo mới tài khoản
-     *
-     * @param acc Tài khoản cần tạo
-     * @return Số bản ghi đã thêm (thường là 1 nếu thành công)
-     * @throws SQLException Nếu có lỗi truy vấn
-     */
-    int create(Account acc) throws SQLException;
+    Account findById(String id);
 
-    /**
-     * Cập nhật mật khẩu
-     *
-     * @param username Tên người dùng
-     * @param newHash  Mật khẩu đã hash mới
-     * @return true nếu cập nhật thành công, ngược lại false
-     * @throws SQLException Nếu có lỗi truy vấn
-     */
-    boolean updatePassword(String username, String newHash) throws SQLException;
+    Account findByUsername(String username);
 
-    /**
-     * Xóa tài khoản
-     *
-     * @param username Tên người dùng
-     * @return Số bản ghi đã xóa (thường là 1 nếu thành công)
-     * @throws SQLException Nếu có lỗi truy vấn
-     */
-    int delete(String username) throws SQLException;
+    List<Account> findByRoleId(String roleId);
+
+    List<Account> findByStatus(String status);
+
+    List<Account> findAll();
+
+    boolean create(Account acc);
+
+    boolean updatePasswordHash(String username, String newHash);
+
+    boolean updateStatus(String username, String status);
+
+    boolean delete(String username);
 }

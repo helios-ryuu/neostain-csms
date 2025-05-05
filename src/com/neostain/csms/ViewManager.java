@@ -44,7 +44,7 @@ public class ViewManager {
         // Kiểm tra quyền truy cập màn hình
         if (screenType != ScreenType.LOGIN && !serviceManager.isLoggedIn()) {
             LOGGER.warning("[AUTHENTICATION_ERROR] Attempting to access " + screenType + " without valid token");
-            DialogFactory.showConfirmDialog(mainFrame, "Authentication Error", "Vui lòng đăng nhập để tiếp tục");
+            DialogFactory.showWarningDialog(mainFrame, "Authentication Error", "Vui lòng đăng nhập để tiếp tục");
             this.switchScreen(ScreenType.LOGIN, username);
             return;
         }
@@ -74,14 +74,12 @@ public class ViewManager {
     }
 
     private void updateFrameProperties(ScreenType screenType) {
-        String username = serviceManager.getCurrentUsername();
+        String username = this.getCurrentUser();
 
         switch (screenType) {
             case LOGIN -> {
-                // Then set the other properties
                 mainFrame.setMinimumSize(new Dimension(50, 50));
                 mainFrame.pack();
-                // First, reset the extended state to ensure we're not in maximized mode
                 mainFrame.setExtendedState(JFrame.NORMAL);
                 mainFrame.setResizable(false);
                 mainFrame.setLocationRelativeTo(null);
@@ -106,9 +104,8 @@ public class ViewManager {
         mainFrame.validate();
         mainFrame.repaint();
 
-        // Force the window manager to recognize the size changes
+        // Ensure window size is applied properly for login screen
         if (newScreen instanceof LoginScreen) {
-            // Ensure window size is applied properly for login screen
             mainFrame.pack();
             mainFrame.setLocationRelativeTo(null);
         }

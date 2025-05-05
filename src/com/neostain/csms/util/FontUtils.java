@@ -10,7 +10,7 @@ public class FontUtils {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 
             // Đặt font
-            Font defaultFont = new Font(fontName, Font.PLAIN, 11);
+            Font defaultFont = new Font(fontName, Font.PLAIN, Constants.Font.DEFAULT_SIZE);
             UIManager.put("Button.font", defaultFont);
             UIManager.put("Label.font", defaultFont);
             UIManager.put("TextField.font", defaultFont);

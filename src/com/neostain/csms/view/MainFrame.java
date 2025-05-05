@@ -1,8 +1,8 @@
 package com.neostain.csms.view;
 
-import com.neostain.csms.util.Constants;
 import com.neostain.csms.ServiceManager;
 import com.neostain.csms.ViewManager;
+import com.neostain.csms.util.Constants;
 import com.neostain.csms.util.FontUtils;
 import com.neostain.csms.util.ScreenType;
 import com.neostain.csms.util.StringUtils;

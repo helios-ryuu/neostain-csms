@@ -5,7 +5,6 @@ import com.neostain.csms.dao.TokenDAO;
 import com.neostain.csms.model.Token;
 import com.neostain.csms.util.StringUtils;
 
-import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.logging.Logger;
@@ -22,14 +21,14 @@ public class TokenServiceImpl implements TokenService {
 
     @Override
     public boolean validate(String tokenValue) {
-        Token token = this.getByValue(tokenValue);
+        Token token = this.getTokenByValue(tokenValue);
         if (token == null) {
             LOGGER.warning("[VALIDATE_TOKEN] Token không tồn tại");
             return false;
         }
 
         // Kiểm tra trạng thái token
-        if (!"01".equals(token.getTokenStatusID())) {
+        if (!"Có hiệu lực".equals(token.getTokenStatus())) {
             LOGGER.warning("[VALIDATE_TOKEN] Token không hợp lệ");
             return false;
         }
@@ -46,52 +45,29 @@ public class TokenServiceImpl implements TokenService {
     }
 
     @Override
-    public void updateStatus(String tokenValue, String tokenStatusID) {
-        Token token = this.getByValue(tokenValue);
-        token.setTokenStatusID(tokenStatusID);
-        try {
-            int rowsAffected = dao.update(token);
-            if (rowsAffected > 0) {
-                LOGGER.info("[UPDATE_STATUS] Cập nhật trạng thái <" + tokenStatusID + "> cho token của user " + token.getUsername() + " thành công");
-            } else {
-                LOGGER.warning("[UPDATE_STATUS] Không tìm thấy token để cập nhật");
-            }
-        } catch (SQLException e) {
-            LOGGER.warning("[UPDATE_STATUS] Lỗi: " + e.getMessage());
+    public void updateStatus(String tokenValue, String tokenStatus) {
+        Token token = this.getTokenByValue(tokenValue);
+
+        boolean affected = dao.updateStatus(tokenValue, tokenStatus);
+        if (affected) {
+            LOGGER.info("[UPDATE_STATUS] Cập nhật trạng thái <" + tokenStatus + "> cho token của user " + token.getUsername() + " thành công");
+        } else {
+            LOGGER.warning("[UPDATE_STATUS] Không tìm thấy token để cập nhật");
         }
+
     }
 
     @Override
-    public boolean remove(String tokenValue) {
+    public Token getTokenByValue(String tokenValue) {
         if (StringUtils.isNullOrEmpty(tokenValue)) {
-            LOGGER.warning("[REMOVE] Giá trị token trống");
-            return false;
-        }
-        try {
-            Token token = dao.findByValue(tokenValue);
-            if (token == null) {
-                LOGGER.warning("[REMOVE] Token không tồn tại: " + tokenValue);
-                return false;
-            }
-            dao.delete(tokenValue);
-            return true;
-        } catch (SQLException e) {
-            LOGGER.severe("[REMOVE] Lỗi: " + e.getMessage());
-            return false;
-        }
-    }
-
-    @Override
-    public Token getByValue(String tokenValue) {
-        if (StringUtils.isNullOrEmpty(tokenValue)) {
-            LOGGER.warning("[GET_BY_VALUE] Giá trị token trống");
+            LOGGER.warning("[GET_TOKEN_BY_VALUE] Giá trị token trống");
             return null;
         }
 
         try {
             return dao.findByValue(tokenValue);
         } catch (Exception e) {
-            LOGGER.warning("[GET_BY_VALUE] Lỗi: " + e.getMessage());
+            LOGGER.warning("[GET_TOKEN_BY_VALUE] Lỗi: " + e.getMessage());
             return null;
         }
     }
@@ -107,10 +83,10 @@ public class TokenServiceImpl implements TokenService {
             token.setTokenValue(tokenValue);
             token.setIssuedAt(Timestamp.valueOf(LocalDateTime.now()));
             token.setExpiresAt(Timestamp.valueOf(expiresAt));
-            token.setTokenStatusID("01");
+            token.setTokenStatus("Có hiệu lực");
 
-            int rowsAffected = dao.create(token);
-            if (rowsAffected > 0) {
+            boolean affected = dao.create(token);
+            if (affected) {
                 LOGGER.info("[GENERATE_TOKEN] Tạo token thành công cho: " + username + "\nToken value: " + tokenValue
                         + "\nExpires at: " + expiresAt);
                 return tokenValue;
@@ -126,6 +102,6 @@ public class TokenServiceImpl implements TokenService {
 
     @Override
     public void invalidateToken(String currentToken) {
-        ServiceManager.getInstance().getTokenService().updateStatus(currentToken, "02");
+        ServiceManager.getInstance().getTokenService().updateStatus(currentToken, "Vô hiệu");
     }
 }
