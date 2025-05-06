@@ -238,44 +238,48 @@ CREATE OR REPLACE PROCEDURE PRC_CALC_PAYCHECK(
     P_PAYCHECK_ID OUT PAYCHECK.PAYCHECK_ID%TYPE
 )
 AS
-    v_hours      NUMBER; -- tổng số giờ (có decimal)
-    v_wage       EMPLOYEE.HOURLY_WAGE%TYPE; -- lương theo giờ
-    v_gross      PAYCHECK.GROSS_AMOUNT%TYPE; -- tổng trước khấu trừ
-    v_deductions PAYCHECK.DEDUCTIONS%type := P_DEDUCTIONS_ID;
-    v_net        PAYCHECK.NET_AMOUNT%TYPE; -- thực nhận (ở đây = v_gross vì không khấu trừ)
+    v_hours      NUMBER; -- tổng số giờ (decimal)
+    v_wage       EMPLOYEE.HOURLY_WAGE%TYPE;
+    v_gross      PAYCHECK.GROSS_AMOUNT%TYPE;
+    v_deductions PAYCHECK.DEDUCTIONS%TYPE := P_DEDUCTIONS_ID;
+    v_net        PAYCHECK.NET_AMOUNT%TYPE;
 BEGIN
-    -- 2) Lấy lương giờ
+    -- 1) Lấy lương theo giờ
     SELECT HOURLY_WAGE
     INTO v_wage
     FROM EMPLOYEE
     WHERE EMPLOYEE_ID = P_EMP_ID;
 
-    -- 3) Tính tổng giờ làm:
-    --    Sử dụng EXTRACT để lấy đầy đủ ngày/giờ/phút/giây từ INTERVAL
+    -- 2) Tính tổng giờ làm *trong assignment* và trong kỳ
     SELECT NVL(SUM(
-                       EXTRACT(DAY FROM (SHIFT_END_TIME - SHIFT_START_TIME)) * 24
-                           + EXTRACT(HOUR FROM (SHIFT_END_TIME - SHIFT_START_TIME))
-                           + EXTRACT(MINUTE FROM (SHIFT_END_TIME - SHIFT_START_TIME)) / 60
-                           + EXTRACT(SECOND FROM (SHIFT_END_TIME - SHIFT_START_TIME)) / 3600
+                       EXTRACT(DAY FROM (overlap_end - overlap_start)) * 24
+                           + EXTRACT(HOUR FROM (overlap_end - overlap_start))
+                           + EXTRACT(MINUTE FROM (overlap_end - overlap_start)) / 60
+                           + EXTRACT(SECOND FROM (overlap_end - overlap_start)) / 3600
                ), 0)
     INTO v_hours
-    FROM SHIFT_REPORT
-    WHERE EMPLOYEE_ID = P_EMP_ID
-      AND SHIFT_START_TIME >= P_PERIOD_START
-      AND SHIFT_START_TIME < P_PERIOD_END
-      AND SHIFT_END_TIME IS NOT NULL;
+    FROM (SELECT GREATEST(sr.shift_start_time, a.start_time, P_PERIOD_START) AS overlap_start,
+                 LEAST(sr.shift_end_time, a.end_time, P_PERIOD_END)          AS overlap_end
+          FROM SHIFT_REPORT sr
+                   JOIN ASSIGNMENT a
+                        ON sr.employee_id = a.employee_id
+                            AND sr.shift_start_time < a.end_time
+                            AND sr.shift_end_time > a.start_time
+          WHERE sr.employee_id = P_EMP_ID
+            AND sr.shift_start_time < P_PERIOD_END
+            AND sr.shift_end_time > P_PERIOD_START)
+    WHERE overlap_end > overlap_start;
 
-    -- 4) Tính gross và net
+    -- 3) Tính gross và net
     v_gross := v_hours * v_wage;
     v_net := v_gross - v_deductions;
-    -- nếu có khấu trừ, thay đổi v_net = v_gross - v_deductions
 
-    -- 5) Lưu paycheck
-    INSERT INTO PAYCHECK(EMPLOYEE_ID,
-                         GROSS_AMOUNT,
-                         DEDUCTIONS, -- nếu không khấu trừ, mặc định 0
-                         NET_AMOUNT,
-                         PAY_DATE)
+    -- 4) Lưu paycheck
+    INSERT INTO PAYCHECK (EMPLOYEE_ID,
+                          GROSS_AMOUNT,
+                          DEDUCTIONS,
+                          NET_AMOUNT,
+                          PAY_DATE)
     VALUES (P_EMP_ID,
             v_gross,
             v_deductions,
@@ -321,9 +325,9 @@ DECLARE
     V_INVOICE_ID_2 INVOICE.INVOICE_ID%TYPE;
     V_SHIFT_ID     SHIFT_REPORT.SHIFT_REPORT_ID%TYPE;
     V_POINT_GAINED MEMBER.LOYALTY_POINTS%TYPE;
-    V_MEMBER_ID    MEMBER.MEMBER_ID%TYPE      := '09412345672505050001';
+    V_MEMBER_ID    MEMBER.MEMBER_ID%TYPE      := '09412345672505060001';
     V_STORE_ID     SHIFT_REPORT.STORE_ID%TYPE := 'VN000001';
-    V_EMPLOYEE_ID  EMPLOYEE.EMPLOYEE_ID%TYPE  := '250505000001';
+    V_EMPLOYEE_ID  EMPLOYEE.EMPLOYEE_ID%TYPE  := '250506000001';
 BEGIN
     PRC_INITIATE_SHIFT(
             P_STORE_ID => V_STORE_ID,
@@ -404,7 +408,7 @@ BEGIN
 
     PRC_GENERATE_PAYCHECKS(
             P_PERIOD_START => TIMESTAMP '2025-05-01 00:00:00',
-            P_PERIOD_END => SYSTIMESTAMP
+            P_PERIOD_END => TIMESTAMP '2025-05-31 00:00:00'
     );
 
     DBMS_OUTPUT.PUT_LINE('== Các hóa đơn của thành viên: ' || V_MEMBER_ID || ' ==');

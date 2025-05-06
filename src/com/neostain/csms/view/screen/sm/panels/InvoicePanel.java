@@ -1,4 +1,4 @@
-package com.neostain.csms.view.screen.sm.invoice;
+package com.neostain.csms.view.screen.sm.panels;
 
 import com.neostain.csms.util.Constants;
 import com.neostain.csms.view.component.BorderedPanel;
@@ -10,20 +10,20 @@ import java.awt.*;
 import java.util.logging.Logger;
 
 /**
- * Invoice management panel for Store Manager screen
+ * Invoice management panels for Store Manager screen
  */
 public class InvoicePanel extends JPanel {
     private static final Logger LOGGER = Logger.getLogger(InvoicePanel.class.getName());
 
     /**
-     * Creates a new invoice panel
+     * Creates a new invoice panels
      */
     public InvoicePanel() {
         initializeComponents();
     }
 
     private void initializeComponents() {
-        // Create panel with GridBagLayout
+        // Create panels with GridBagLayout
         this.setLayout(new GridBagLayout());
         this.setBackground(Color.WHITE);
 
@@ -32,14 +32,14 @@ public class InvoicePanel extends JPanel {
         gbc.fill = GridBagConstraints.BOTH;
         gbc.insets = new Insets(5, 5, 5, 5);
 
-        // Create menu panel with standardized component
+        // Create menu panels with standardized component
         StandardMenu menuPanel = createMenuPanel();
 
-        // Set preferred size for menu panel - sử dụng View.MENU_PANEL_WIDTH
+        // Set preferred size for menu panels - sử dụng View.MENU_PANEL_WIDTH
         menuPanel.setPreferredSize(new Dimension(Constants.View.MENU_PANEL_WIDTH, 600));
         menuPanel.setMinimumSize(new Dimension(Constants.View.MENU_PANEL_WIDTH, 200));
 
-        // Add menu panel to left side
+        // Add menu panels to left side
         gbc.gridx = 0;
         gbc.gridy = 0;
         gbc.weightx = 0;
@@ -50,13 +50,13 @@ public class InvoicePanel extends JPanel {
         JPanel invoiceContent = new JPanel(new BorderLayout(10, 10));
         invoiceContent.setBackground(Constants.Color.COMPONENT_BACKGROUND_WHITE);
 
-        // Create search and filter panel
+        // Create search and filter panels
         JPanel searchPanel = createSearchPanel();
 
-        // Create invoice table panel
+        // Create invoice table panels
         BorderedPanel invoiceTablePanel = createInvoiceTablePanel();
 
-        // Create cancel request panel
+        // Create cancel request panels
         BorderedPanel cancelRequestPanel = createCancelRequestPanel();
 
         // Create JSplitPane to divide the layout
@@ -65,7 +65,7 @@ public class InvoicePanel extends JPanel {
         splitPane.setDividerSize(5);
         splitPane.setBorder(null);
 
-        // Create upper panel containing search and invoice list
+        // Create upper panels containing search and invoice list
         JPanel upperPanel = new JPanel(new BorderLayout());
         upperPanel.add(searchPanel, BorderLayout.NORTH);
         upperPanel.add(invoiceTablePanel, BorderLayout.CENTER);
@@ -76,15 +76,15 @@ public class InvoicePanel extends JPanel {
         // Add splitPane to invoiceContent
         invoiceContent.add(splitPane, BorderLayout.CENTER);
 
-        // Create overall invoice management panel
+        // Create overall invoice management panels
         BorderedPanel invoicePanel = createTitledPanel("Quản lý hóa đơn");
         invoicePanel.setLayout(new BorderLayout());
         invoicePanel.add(invoiceContent, BorderLayout.CENTER);
 
-        // Set preferred size for invoice panel
+        // Set preferred size for invoice panels
         invoicePanel.setPreferredSize(new Dimension(800, 600));
 
-        // Add invoice panel to right side
+        // Add invoice panels to right side
         gbc.gridx = 1;
         gbc.gridy = 0;
         gbc.weightx = 0.7;
@@ -137,7 +137,7 @@ public class InvoicePanel extends JPanel {
         JButton searchButton = createStandardButton("Tìm kiếm", null);
         JButton resetButton = createStandardButton("Đặt lại", null);
 
-        // Add components to search panel
+        // Add components to search panels
         searchPanel.add(new JLabel("Mã hóa đơn:"));
         searchPanel.add(invoiceIdField);
         searchPanel.add(new JLabel("Khách hàng:"));

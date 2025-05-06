@@ -17,7 +17,7 @@ import java.util.logging.Logger;
  */
 public class ServiceManager {
     private static final Logger LOGGER = Logger.getLogger(ServiceManager.class.getName());
-    private static ServiceManager INSTANCE;
+    private static volatile ServiceManager INSTANCE;
 
     // Registry for created services
     private final Map<Class<?>, Object> registry = new ConcurrentHashMap<>();
@@ -73,32 +73,26 @@ public class ServiceManager {
         registry.put(serviceClass, implementation);
     }
 
-    @SuppressWarnings("unchecked")
     private <T> T getServiceWithAuthCheck(Class<T> serviceClass, boolean requiresAuth) {
-        // Skip authentication check if not required or if bypass is active
-        if (!requiresAuth) {
-            Object svc = registry.get(serviceClass);
-            if (svc == null) {
-                throw new IllegalStateException("Service " + serviceClass.getSimpleName() + " chưa được khởi tạo!");
-            }
-            return (T) svc;
-        }
-        // Check authentication
-        if (isLoggedIn()) {
-            Object svc = registry.get(serviceClass);
-            if (svc == null) {
-                throw new IllegalStateException("Service " + serviceClass.getSimpleName() + " chưa được khởi tạo!");
-            }
-            return (T) svc;
-        } else {
+        // Kiểm tra authentication nếu cần
+        if (requiresAuth && !isLoggedIn()) {
             String serviceName = serviceClass.getSimpleName();
             LOGGER.log(Level.WARNING, "[GET_" + serviceName + "] Access denied to " + serviceName);
             throw new SecurityException("Access denied to " + serviceName);
         }
+
+        // Lấy service từ registry
+        Object svc = registry.get(serviceClass);
+        if (svc == null) {
+            throw new IllegalStateException("Service " + serviceClass.getSimpleName() + " chưa được khởi tạo!");
+        }
+
+        // Type‑safe cast
+        return serviceClass.cast(svc);
     }
 
+    // Auth service never requires authentication
     public AuthService getAuthService() {
-        // Auth service never requires authentication
         return getServiceWithAuthCheck(AuthService.class, false);
     }
 

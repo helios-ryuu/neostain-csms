@@ -1,7 +1,7 @@
 package com.neostain.csms.dao;
 
-import com.neostain.csms.dao.sql.SQLQueries;
 import com.neostain.csms.model.Token;
+import com.neostain.csms.util.SQLQueries;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

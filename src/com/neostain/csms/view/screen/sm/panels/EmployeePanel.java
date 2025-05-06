@@ -1,4 +1,4 @@
-package com.neostain.csms.view.screen.sm.employee;
+package com.neostain.csms.view.screen.sm.panels;
 
 import com.neostain.csms.util.Constants;
 import com.neostain.csms.view.component.BorderedPanel;
@@ -10,20 +10,20 @@ import java.awt.*;
 import java.util.logging.Logger;
 
 /**
- * Employee management panel for Store Manager screen
+ * Employee management panels for Store Manager screen
  */
 public class EmployeePanel extends JPanel {
     private static final Logger LOGGER = Logger.getLogger(EmployeePanel.class.getName());
 
     /**
-     * Creates a new employee panel
+     * Creates a new employee panels
      */
     public EmployeePanel() {
         initializeComponents();
     }
 
     private void initializeComponents() {
-        // Create a panel with GridBagLayout
+        // Create a panels with GridBagLayout
         this.setLayout(new GridBagLayout());
         this.setBackground(Color.WHITE);
 
@@ -32,24 +32,24 @@ public class EmployeePanel extends JPanel {
         gbc.fill = GridBagConstraints.BOTH;
         gbc.insets = new Insets(5, 5, 5, 5);
 
-        // Create menu panel with standardized component
+        // Create menu panels with standardized component
         StandardMenu menuPanel = createMenuPanel();
 
-        // Set preferred size for menu panel
+        // Set preferred size for menu panels
         menuPanel.setPreferredSize(new Dimension(Constants.View.MENU_PANEL_WIDTH, 600));
         menuPanel.setMinimumSize(new Dimension(Constants.View.MENU_PANEL_WIDTH, 200));
 
-        // Add menu panel to left side
+        // Add menu panels to left side
         gbc.gridx = 0;
         gbc.gridy = 0;
         gbc.weightx = 0;
         gbc.weighty = 1.0;
         this.add(menuPanel, gbc);
 
-        // Create employee panel with controls and data
+        // Create employee panels with controls and data
         BorderedPanel employeeListPanel = createEmployeeListPanel();
 
-        // Set preferred size for employee list panel
+        // Set preferred size for employee list panels
         employeeListPanel.setPreferredSize(new Dimension(800, 600));
 
         // Add employeeListPanel to right side

@@ -4,7 +4,7 @@ BEGIN
         SELECT table_name
         FROM user_tables
         WHERE table_name IN (
-                             'PAYCHECK', 'TOKEN', 'POINT_UPDATE_LOG', 'INVOICE_DETAIL',
+                             'ASSIGNMENT', 'PAYCHECK', 'TOKEN', 'POINT_UPDATE_LOG', 'INVOICE_DETAIL',
                              'SHIFT_REPORT', 'INVOICE', 'ACCOUNT', 'PROMOTION', 'MEMBER',
                              'PRODUCT', 'STORE', 'EMPLOYEE', 'CATEGORY', 'PAYMENT', 'ROLE'
             )

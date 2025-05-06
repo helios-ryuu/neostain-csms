@@ -10,21 +10,6 @@ import static com.neostain.csms.util.Constants.Font.DEFAULT_SIZE;
  * Centralizes all hardcoded values to make them easier to manage and update.
  */
 public class Constants {
-
-    /**
-     * Token status constants
-     */
-    public static class TokenStatus {
-        /**
-         * Active token status
-         */
-        public static final String ACTIVE = "Có hiệu lực";
-        /**
-         * Inactive token status
-         */
-        public static final String EXPIRED = "Vô hiệu";
-    }
-
     /**
      * Database configuration constants
      * Note: In a production environment, these should be moved to a secure configuration file

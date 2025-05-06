@@ -8,10 +8,10 @@ import com.neostain.csms.util.Constants;
 import com.neostain.csms.util.StringUtils;
 import com.neostain.csms.view.component.ScreenHeader;
 import com.neostain.csms.view.component.StandardTabbedPane;
-import com.neostain.csms.view.screen.sm.dashboard.DashboardPanel;
-import com.neostain.csms.view.screen.sm.employee.EmployeePanel;
-import com.neostain.csms.view.screen.sm.invoice.InvoicePanel;
-import com.neostain.csms.view.screen.sm.workshift.WorkShiftPanel;
+import com.neostain.csms.view.screen.sm.panels.DashboardPanel;
+import com.neostain.csms.view.screen.sm.panels.EmployeePanel;
+import com.neostain.csms.view.screen.sm.panels.InvoicePanel;
+import com.neostain.csms.view.screen.sm.panels.WorkShiftPanel;
 
 import javax.swing.*;
 import java.awt.*;
@@ -49,7 +49,7 @@ public class StoreManagerScreen extends JPanel {
      */
     private void initializeComponents(String username) {
         try {
-            // Set the layout for this panel first
+            // Set the layout for this panels first
             this.setLayout(new BorderLayout());
             this.setBackground(Constants.Color.COMPONENT_BACKGROUND_WHITE);
 
@@ -91,9 +91,9 @@ public class StoreManagerScreen extends JPanel {
     }
 
     /**
-     * Creates a header panel with user info and logout button
+     * Creates a header panels with user info and logout button
      *
-     * @return Configured header panel
+     * @return Configured header panels
      */
     private JPanel createHeaderPanel() {
         return new ScreenHeader(

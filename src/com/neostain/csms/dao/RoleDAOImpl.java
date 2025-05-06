@@ -1,7 +1,7 @@
 package com.neostain.csms.dao;
 
-import com.neostain.csms.dao.sql.SQLQueries;
 import com.neostain.csms.model.Role;
+import com.neostain.csms.util.SQLQueries;
 import com.neostain.csms.util.StringUtils;
 
 import java.sql.Connection;

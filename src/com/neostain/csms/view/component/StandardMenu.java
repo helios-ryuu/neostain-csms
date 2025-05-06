@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.function.Consumer;
 
 /**
- * Standardized menu panel component used across the application
+ * Standardized menu panels component used across the application
  * Provides consistent styling and behavior for menu panels
  */
 public class StandardMenu extends BorderedPanel {
@@ -20,14 +20,14 @@ public class StandardMenu extends BorderedPanel {
     private ItemPanel selectedItem = null;
 
     /**
-     * Creates a standard menu panel with the specified title
+     * Creates a standard menu panels with the specified title
      *
      * @param title Panel title
      */
     public StandardMenu(String title) {
         super(title);
 
-        // Configure the panel với preferred và minimum size
+        // Configure the panels với preferred và minimum size
         this.setPreferredSize(new Dimension(Constants.View.MENU_PANEL_WIDTH, 0));
         this.setMinimumSize(new Dimension(Constants.View.MENU_PANEL_WIDTH, 0));
         this.setBackground(Constants.Color.COMPONENT_BACKGROUND_WHITE);
@@ -38,12 +38,12 @@ public class StandardMenu extends BorderedPanel {
         menuItemsContainer.setBackground(Constants.Color.COMPONENT_BACKGROUND_WHITE);
         menuItemsContainer.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
 
-        // Create a footer panel for logout button
+        // Create a footer panels for logout button
         footerPanel = new JPanel(new BorderLayout());
         footerPanel.setBackground(Constants.Color.COMPONENT_BACKGROUND_WHITE);
         footerPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        // Create the main content panel that includes menu items and footer
+        // Create the main content panels that includes menu items and footer
         JPanel contentPanel = new JPanel(new BorderLayout());
         contentPanel.setBackground(Constants.Color.COMPONENT_BACKGROUND_WHITE);
         contentPanel.add(menuItemsContainer, BorderLayout.CENTER);
@@ -55,7 +55,7 @@ public class StandardMenu extends BorderedPanel {
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
         scrollPane.getVerticalScrollBar().setUnitIncrement(16);
 
-        // Add to the panel
+        // Add to the panels
         this.setLayout(new BorderLayout());
         this.add(scrollPane, BorderLayout.CENTER);
     }
@@ -118,7 +118,7 @@ public class StandardMenu extends BorderedPanel {
     }
 
     /**
-     * Returns the list of menu items in this panel
+     * Returns the list of menu items in this panels
      *
      * @return List of menu items
      */
@@ -147,7 +147,7 @@ public class StandardMenu extends BorderedPanel {
     }
 
     /**
-     * Clears all menu items from the panel
+     * Clears all menu items from the panels
      */
     public void clearMenuItems() {
         menuItems.clear();

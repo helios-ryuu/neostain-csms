@@ -1,7 +1,7 @@
 package com.neostain.csms.dao;
 
-import com.neostain.csms.dao.sql.SQLQueries;
 import com.neostain.csms.model.Member;
+import com.neostain.csms.util.SQLQueries;
 import com.neostain.csms.util.StringUtils;
 import com.neostain.csms.util.exception.DuplicateFieldException;
 
@@ -121,7 +121,7 @@ public class MemberDAOImpl implements MemberDAO {
 
     @Override
     public boolean updateName(String id, String name) {
-        try (PreparedStatement ps = conn.prepareStatement(SQLQueries.EMPLOYEE_UPDATE_NAME)) {
+        try (PreparedStatement ps = conn.prepareStatement(SQLQueries.MEMBER_UPDATE_NAME)) {
             ps.setString(1, name);
             ps.setString(2, id);
             return ps.executeUpdate() == 1;

@@ -1,4 +1,4 @@
-package com.neostain.csms.view.screen.sm.workshift;
+package com.neostain.csms.view.screen.sm.panels;
 
 import com.neostain.csms.util.Constants;
 import com.neostain.csms.view.component.BorderedPanel;
@@ -22,7 +22,7 @@ public class WorkShiftPanel extends JPanel {
     }
 
     /**
-     * Initialize all panel components
+     * Initialize all panels components
      */
     private void initializeComponents() {
         setLayout(new BorderLayout());
@@ -31,13 +31,13 @@ public class WorkShiftPanel extends JPanel {
         // Create tabbed pane for different work shift management views
         JTabbedPane workShiftTabs = new JTabbedPane();
 
-        // Create schedule panel
+        // Create schedule panels
         JPanel schedulePanel = createSchedulePanel();
 
-        // Create time tracking panel 
+        // Create time tracking panels
         JPanel timeTrackingPanel = createTimeTrackingPanel();
 
-        // Create leave management panel
+        // Create leave management panels
         JPanel leavePanel = createLeavePanel();
 
         // Add panels to tabbed pane
@@ -45,28 +45,28 @@ public class WorkShiftPanel extends JPanel {
         workShiftTabs.addTab("Chấm công", timeTrackingPanel);
         workShiftTabs.addTab("Quản lý nghỉ phép", leavePanel);
 
-        // Add tabbed pane to main panel
+        // Add tabbed pane to main panels
         add(workShiftTabs, BorderLayout.CENTER);
     }
 
     /**
-     * Creates the schedule management panel
+     * Creates the schedule management panels
      *
-     * @return Configured schedule panel
+     * @return Configured schedule panels
      */
     private JPanel createSchedulePanel() {
         JPanel schedulePanel = new JPanel(new BorderLayout(10, 10));
         schedulePanel.setBackground(Constants.Color.COMPONENT_BACKGROUND_WHITE);
 
-        // TODO: Implement schedule management panel
+        // TODO: Implement schedule management panels
 
         return schedulePanel;
     }
 
     /**
-     * Creates the leave management panel
+     * Creates the leave management panels
      *
-     * @return Configured leave panel
+     * @return Configured leave panels
      */
     private JPanel createLeavePanel() {
         JPanel leavePanel = new JPanel(new BorderLayout(10, 10));
@@ -79,7 +79,7 @@ public class WorkShiftPanel extends JPanel {
         // Add form components here
         // ...
 
-        // Create buttons panel
+        // Create buttons panels
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         buttonPanel.setOpaque(false);
 
@@ -100,7 +100,7 @@ public class WorkShiftPanel extends JPanel {
         JPanel timeTrackingPanel = new JPanel(new BorderLayout(10, 10));
         timeTrackingPanel.setBackground(Constants.Color.COMPONENT_BACKGROUND_WHITE);
 
-        // Create filter panel for time tracking
+        // Create filter panels for time tracking
         JPanel filterPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
         filterPanel.setBackground(Constants.Color.COMPONENT_BACKGROUND_WHITE);
         filterPanel.setBorder(BorderFactory.createTitledBorder("Bộ lọc"));
@@ -135,7 +135,7 @@ public class WorkShiftPanel extends JPanel {
         // Create tabbed pane for different time tracking views
         JTabbedPane trackingTabs = new JTabbedPane();
 
-        // Create summary panel
+        // Create summary panels
         JPanel summaryPanel = new JPanel(new BorderLayout());
         summaryPanel.setBackground(Constants.Color.COMPONENT_BACKGROUND_WHITE);
 
@@ -152,7 +152,7 @@ public class WorkShiftPanel extends JPanel {
         ScrollableTable summaryTable = new ScrollableTable(summaryColumns, summaryData);
         summaryPanel.add(summaryTable, BorderLayout.CENTER);
 
-        // Create detailed panel
+        // Create detailed panels
         JPanel detailedPanel = new JPanel(new BorderLayout());
         detailedPanel.setBackground(Constants.Color.COMPONENT_BACKGROUND_WHITE);
 

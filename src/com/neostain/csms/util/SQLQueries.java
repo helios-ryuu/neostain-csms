@@ -1,4 +1,4 @@
-package com.neostain.csms.dao.sql;
+package com.neostain.csms.util;
 
 /**
  * Class chứa tất cả các SQL query sử dụng trong ứng dụng
@@ -23,6 +23,18 @@ public class SQLQueries {
     public static final String ACCOUNT_UPDATE_PASSWORD_HASH = "UPDATE ACCOUNT SET PASSWORD_HASH = ? WHERE USERNAME = ?";
     public static final String ACCOUNT_UPDATE_STATUS = "UPDATE ACCOUNT SET PASSWORD_HASH = ? WHERE USERNAME = ?";
     public static final String ACCOUNT_DELETE = "DELETE FROM ACCOUNT WHERE USERNAME = ?";
+
+    // Assignment queries
+    public static final String ASSIGNMENT_FIND_BY_ID = "SELECT * FROM ASSIGNMENT WHERE ASSIGNMENT_ID = ?";
+    public static final String ASSIGNMENT_FIND_BY_EMPLOYEE_ID = "SELECT * FROM ASSIGNMENT WHERE EMPLOYEE_ID = ?";
+    public static final String ASSIGNMENT_FIND_BY_STORE_ID = "SELECT * FROM ASSIGNMENT WHERE STORE_ID = ?";
+    public static final String ASSIGNMENT_FIND_BY_RANGE = "SELECT * FROM ASSIGNMENT WHERE SYSTIMESTAMP IS BETWEEN START_TIME AND END_TIME AND EMPLOYEE_ID = ? AND STORE_ID = ?";
+    public static final String ASSIGNMENT_FIND_ALL = "SELECT * FROM ASSIGNMENT";
+
+    public static final String ASSIGNMENT_CREATE = "INSERT INTO ASSIGNMENT(STORE_ID, EMPLOYEE_ID, START_TIME, END_TIME) VALUES(?,?,?,?)";
+    public static final String ASSIGNMENT_UPDATE_START_TIME = "UPDATE ASSIGNMENT SET START_TIME = ? WHERE ASSIGNMENT_ID = ?";
+    public static final String ASSIGNMENT_UPDATE_END_TIME = "UPDATE ASSIGNMENT SET END_TIME = ? WHERE ASSIGNMENT_ID = ?";
+    public static final String ASSIGNMENT_DELETE = "DELETE FROM ASSIGNMENT WHERE ASSIGNMENT_ID = ?";
 
     // Category queries
     public static final String CATEGORY_FIND_BY_ID = "SELECT * FROM CATEGORY WHERE CATEGORY_ID = ?";
@@ -123,7 +135,7 @@ public class SQLQueries {
     // Promotion queries
     public static final String PROMOTION_FIND_BY_ID = "SELECT * FROM PROMOTION WHERE PROMOTION_ID = ?";
     public static final String PROMOTION_FIND_BY_NAME = "SELECT * FROM PROMOTION WHERE PROMOTION_NAME = ?";
-    public static final String PROMOTION_FIND_RANGE = "SELECT * FROM PROMOTION WHERE SYSTIMESTAMP IS BETWEEN PROMOTION_START_TIME AND PROMOTION_END_TIME";
+    public static final String PROMOTION_FIND_RANGE = "SELECT * FROM PROMOTION WHERE SYSTIMESTAMP IS BETWEEN ? AND ?";
     public static final String PROMOTION_FIND_BY_PRODUCT_ID = "SELECT * FROM PROMOTION WHERE PRODUCT_ID = ?";
     public static final String PROMOTION_FIND_ALL = "SELECT * FROM PROMOTION";
 

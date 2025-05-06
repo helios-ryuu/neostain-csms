@@ -1,4 +1,4 @@
-package com.neostain.csms.view.screen.sm.dashboard;
+package com.neostain.csms.view.screen.sm.panels;
 
 import com.neostain.csms.ServiceManager;
 import com.neostain.csms.model.Account;
@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.logging.Logger;
 
 /**
- * Dashboard panel for the store manager screen
+ * Dashboard panels for the store manager screen
  */
 public class DashboardPanel extends JPanel {
     private static final Logger LOGGER = Logger.getLogger(DashboardPanel.class.getName());
@@ -42,7 +42,7 @@ public class DashboardPanel extends JPanel {
     private ScrollableTable memberTable;
 
     /**
-     * Creates a new dashboard panel
+     * Creates a new dashboard panels
      */
     public DashboardPanel(String username) {
         this.username = username;
@@ -50,7 +50,7 @@ public class DashboardPanel extends JPanel {
     }
 
     private void initializeComponents() {
-        // Create panel with GridBagLayout
+        // Create panels with GridBagLayout
         this.setLayout(new GridBagLayout());
         this.setBackground(Constants.Color.COMPONENT_BACKGROUND_WHITE);
 
@@ -59,12 +59,12 @@ public class DashboardPanel extends JPanel {
         gbc.fill = GridBagConstraints.BOTH;
         gbc.insets = new Insets(5, 5, 5, 5);
 
-        // Create a menu panel with a standardized component
+        // Create a menu panels with a standardized component
         StandardMenu menuPanel = createMenuPanel();
         menuPanel.setPreferredSize(new Dimension(Constants.View.MENU_PANEL_WIDTH, 600));
         menuPanel.setMinimumSize(new Dimension(Constants.View.MENU_PANEL_WIDTH, 200));
 
-        // Add menu panel to left side
+        // Add menu panels to left side
         gbc.gridx = 0;
         gbc.gridy = 0;
         gbc.weightx = 0;
@@ -88,23 +88,23 @@ public class DashboardPanel extends JPanel {
         cardPanel.add(memberContentPanel, MEMBER_PANEL);
         cardPanel.add(employeeContentPanel, EMPLOYEE_PANEL);
 
-        // Create overall dashboard panel
+        // Create overall dashboard panels
         mainDashboardPanel = new BorderedPanel("Thống kê bán hàng");
         mainDashboardPanel.setBackground(Constants.Color.COMPONENT_BACKGROUND_WHITE);
         mainDashboardPanel.setLayout(new BorderLayout());
         mainDashboardPanel.add(cardPanel, BorderLayout.CENTER);
 
-        // Set the preferred size for a dashboard panel
+        // Set the preferred size for a dashboard panels
         mainDashboardPanel.setPreferredSize(new Dimension(800, 600));
 
-        // Add a dashboard panel to the right side
+        // Add a dashboard panels to the right side
         gbc.gridx = 1;
         gbc.gridy = 0;
         gbc.weightx = 0.7;
         gbc.weighty = 1.0;
         this.add(mainDashboardPanel, gbc);
 
-        // Show default panel (sales statistics)
+        // Show default panels (sales statistics)
         cardLayout.show(cardPanel, SALES_STATISTICS_PANEL);
     }
 
@@ -112,21 +112,21 @@ public class DashboardPanel extends JPanel {
         StandardMenu menuPanel = new StandardMenu("Dashboard");
         menuPanel.addMenuItem("Thống kê bán hàng", item -> {
             LOGGER.info("Sales statistics selected");
-            // Show sales statistics panel
+            // Show sales statistics panels
             mainDashboardPanel.setTitle("Thống kê bán hàng");
             cardLayout.show(cardPanel, SALES_STATISTICS_PANEL);
         });
 
         menuPanel.addMenuItem("Thông tin cửa hàng", item -> {
             LOGGER.info("Store information selected");
-            // Show store information panel
+            // Show store information panels
             mainDashboardPanel.setTitle("Thông tin cửa hàng");
             cardLayout.show(cardPanel, STORE_INFO_PANEL);
         });
 
         menuPanel.addMenuItem("Khách hàng thành viên", item -> {
             LOGGER.info("Member customers selected");
-            // Show member customers panel
+            // Show member customers panels
             mainDashboardPanel.setTitle("Quản lý thành viên");
             cardLayout.show(cardPanel, MEMBER_PANEL);
         });
@@ -138,7 +138,7 @@ public class DashboardPanel extends JPanel {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBackground(Constants.Color.COMPONENT_BACKGROUND_WHITE);
 
-        // Create dashboard tiles panel
+        // Create dashboard tiles panels
         JPanel tilesPanel = createTilesPanel();
         tilesPanel.setOpaque(false);
         tilesPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
@@ -170,7 +170,7 @@ public class DashboardPanel extends JPanel {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBackground(Constants.Color.COMPONENT_BACKGROUND_WHITE);
 
-        // Create store information panel
+        // Create store information panels
         JPanel storeInfoPanel = createStoreInfoPanel();
         panel.add(storeInfoPanel, BorderLayout.CENTER);
 
@@ -185,7 +185,7 @@ public class DashboardPanel extends JPanel {
         JPanel storeInfoPanel = new JPanel(new BorderLayout());
         storeInfoPanel.setBackground(Constants.Color.COMPONENT_BACKGROUND_WHITE);
 
-        // Tool panel for store info actions
+        // Tool panels for store info actions
         JPanel storeToolPanel = new JPanel();
 
         storeToolPanel.setLayout(new BoxLayout(storeToolPanel, BoxLayout.Y_AXIS));
@@ -196,7 +196,7 @@ public class DashboardPanel extends JPanel {
             // 1. Lấy tên cũ từ model
             String currentName = store.getStoreName();
 
-            // 2. Tạo panel chứa label + field
+            // 2. Tạo panels chứa label + field
             JTextField nameField = new JTextField(currentName, 25);
             JPanel inputPanel = new JPanel(new GridLayout(2, 2, 8, 8));
             inputPanel.add(new JLabel("Tên cửa hàng hiện tại:"));
@@ -252,7 +252,7 @@ public class DashboardPanel extends JPanel {
             // 1. Lấy địa chỉ cũ từ model
             String currentAddress = store.getStoreAddress();
 
-            // 2. Tạo panel chứa label + field
+            // 2. Tạo panels chứa label + field
             JTextField addressField = new JTextField(currentAddress, 25);
             JPanel inputPanel = new JPanel(new GridLayout(2, 2, 8, 8));
             inputPanel.add(new JLabel("Địa chỉ cửa hàng hiện tại:"));
@@ -358,7 +358,7 @@ public class DashboardPanel extends JPanel {
     }
 
     /**
-     * Thêm một dòng gồm label và component vào panel GridBagLayout.
+     * Thêm một dòng gồm label và component vào panels GridBagLayout.
      */
     private void addRow(JPanel panel, String labelText, JComponent dataComp, int row) {
         JLabel label = new JLabel(labelText);
@@ -371,7 +371,7 @@ public class DashboardPanel extends JPanel {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBackground(Constants.Color.COMPONENT_BACKGROUND_WHITE);
 
-        // Create member panel
+        // Create member panels
         JPanel memberPanel = createMemberPanel();
         panel.add(memberPanel, BorderLayout.CENTER);
 
@@ -382,7 +382,7 @@ public class DashboardPanel extends JPanel {
         JPanel memberPanel = new JPanel(new BorderLayout());
         memberPanel.setBackground(Constants.Color.COMPONENT_BACKGROUND_WHITE);
 
-        // Tool panel for member actions
+        // Tool panels for member actions
         JPanel memberToolPanel = new JPanel();
         memberToolPanel.setLayout(new BoxLayout(memberToolPanel, BoxLayout.Y_AXIS));
         memberToolPanel.setBackground(Constants.Color.COMPONENT_BACKGROUND_WHITE);
@@ -678,7 +678,7 @@ public class DashboardPanel extends JPanel {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBackground(Constants.Color.COMPONENT_BACKGROUND_WHITE);
 
-        // Create member panel
+        // Create member panels
         JPanel employeePanel = createEmployeePanel();
         panel.add(employeePanel, BorderLayout.CENTER);
 
@@ -689,7 +689,7 @@ public class DashboardPanel extends JPanel {
         JPanel employeePanel = new JPanel(new BorderLayout());
         employeePanel.setBackground(Constants.Color.COMPONENT_BACKGROUND_WHITE);
 
-        // Tool panel for employee actions
+        // Tool panels for employee actions
         JPanel employeeToolPanel = new JPanel();
         employeeToolPanel.setLayout(new BoxLayout(employeeToolPanel, BoxLayout.Y_AXIS));
         employeePanel.setBackground(Constants.Color.COMPONENT_BACKGROUND_WHITE);

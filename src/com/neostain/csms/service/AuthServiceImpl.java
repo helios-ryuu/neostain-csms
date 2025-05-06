@@ -3,12 +3,12 @@ package com.neostain.csms.service;
 import com.neostain.csms.dao.AccountDAO;
 import com.neostain.csms.dao.RoleDAO;
 import com.neostain.csms.dao.TokenDAO;
-import com.neostain.csms.dao.sql.SQLQueries;
 import com.neostain.csms.model.Account;
 import com.neostain.csms.model.Role;
 import com.neostain.csms.model.Token;
 import com.neostain.csms.util.DatabaseUtils;
 import com.neostain.csms.util.PasswordUtils;
+import com.neostain.csms.util.SQLQueries;
 import com.neostain.csms.util.StringUtils;
 
 import java.sql.Connection;
