@@ -35,9 +35,9 @@ public class StoreManagerScreen extends JPanel {
         }
 
         // Load user data
-        this.account = serviceManager.getAccountService().getAccountByUsername(username);
+        this.account = serviceManager.getAuthService().getAccountByUsername(username);
         this.employee = serviceManager.getEmployeeService().getEmployeeById(account.getEmployeeId());
-        this.role = serviceManager.getRoleService().getRoleById(this.account.getRoleId());
+        this.role = serviceManager.getAuthService().getRoleById(this.account.getRoleId());
 
         // Call to set up the UI components
         initializeComponents(username);

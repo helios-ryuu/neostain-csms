@@ -12,4 +12,5 @@ public interface StoreService {
     boolean changeStoreName(String id, String name);
 
     boolean changeStoreAddress(String id, String address);
+
 }

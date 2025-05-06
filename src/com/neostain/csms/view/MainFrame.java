@@ -2,7 +2,6 @@ package com.neostain.csms.view;
 
 import com.neostain.csms.ServiceManager;
 import com.neostain.csms.ViewManager;
-import com.neostain.csms.util.Constants;
 import com.neostain.csms.util.FontUtils;
 import com.neostain.csms.util.ScreenType;
 import com.neostain.csms.util.StringUtils;
@@ -55,12 +54,9 @@ public class MainFrame extends JFrame {
                 System.out.println("INFO: [SHUTDOWN_HOOK] Kích hoạt các sự kiện sau khi tắt ứng dụng");
                 String currentToken = ServiceManager.getInstance().getCurrentToken();
                 if (!StringUtils.isNullOrEmpty(currentToken)) {
-                    ServiceManager.getInstance().getTokenService().updateStatus(
-                            currentToken, Constants.TokenStatus.EXPIRED);
                     System.out.println("INFO: [SHUTDOWN_HOOK] Token đang hoạt động hiện tại: " + currentToken);
                     System.out.println("INFO: [SHUTDOWN_HOOK] Tiến hành vô hiệu Token...");
-                    ServiceManager.getInstance().getTokenService().updateStatus(
-                            currentToken, Constants.TokenStatus.EXPIRED);
+                    ServiceManager.getInstance().getAuthService().invalidateToken(currentToken);
                     System.out.println("INFO: [SHUTDOWN_HOOK] Hoàn thành vô hiệu Token.");
                 } else {
                     System.out.println("INFO: [SHUTDOWN_HOOK] Không có Token đang hoạt động hiện tại. Không cần vô hiệu Token.");

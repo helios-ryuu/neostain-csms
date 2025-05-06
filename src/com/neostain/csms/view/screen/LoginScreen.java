@@ -251,9 +251,9 @@ public class LoginScreen extends JPanel {
 
                 try {
                     // Khởi tạo đối tượng thông tin đăng nhập hiện tại
-                    Account account = serviceManager.getAccountService().getAccountByUsername(currentUsername);
+                    Account account = serviceManager.getAuthService().getAccountByUsername(currentUsername);
                     Employee employee = serviceManager.getEmployeeService().getEmployeeById(account.getEmployeeId());
-                    Role role = serviceManager.getRoleService().getRoleById(account.getRoleId());
+                    Role role = serviceManager.getAuthService().getRoleById(account.getRoleId());
 
                     // Hiển thị thông báo chào mừng
                     String message = "Đăng nhập thành công!\nChào mừng, " +

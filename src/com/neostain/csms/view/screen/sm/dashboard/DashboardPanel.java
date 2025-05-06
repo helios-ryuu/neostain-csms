@@ -178,7 +178,7 @@ public class DashboardPanel extends JPanel {
     }
 
     private JPanel createStoreInfoPanel() {
-        Account account = serviceManager.getAccountService().getAccountByUsername(this.username);
+        Account account = serviceManager.getAuthService().getAccountByUsername(this.username);
         Store store = serviceManager.getStoreService().getStoreByManagerId(account.getEmployeeId());
         Employee employee = serviceManager.getEmployeeService().getEmployeeById(store.getManagerId());
 

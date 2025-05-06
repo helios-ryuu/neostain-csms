@@ -6,8 +6,8 @@ import com.neostain.csms.util.DatabaseUtils;
 import com.neostain.csms.util.StringUtils;
 
 import java.sql.Connection;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -20,16 +20,13 @@ public class ServiceManager {
     private static ServiceManager INSTANCE;
 
     // Registry for created services
-    private final Map<Class<?>, Object> serviceRegistry = new HashMap<>();
+    private final Map<Class<?>, Object> registry = new ConcurrentHashMap<>();
 
     // Current authentication token
     private String currentToken = null;
 
     // Currently logged-in username
     private String currentUsername = null;
-
-    // Flag to bypass authentication during the login process
-    private boolean bypassAuth = false;
 
     private ServiceManager() {
         try {
@@ -45,15 +42,11 @@ public class ServiceManager {
             RoleDAO roleDAO = new RoleDAOImpl(connection);
 
             // Register Services
-            registerService(AccountService.class, new AccountServiceImpl(accountDAO));
-            registerService(EmployeeService.class, new EmployeeServiceImpl(employeeDAO));
-            registerService(MemberService.class, new MemberServiceImpl(memberDAO));
-            registerService(TokenService.class, new TokenServiceImpl(tokenDAO));
-            registerService(StoreService.class, new StoreServiceImpl(storeDAO));
-            registerService(RoleService.class, new RoleServiceImpl(roleDAO));
+            register(EmployeeService.class, new EmployeeServiceImpl(employeeDAO));
+            register(MemberService.class, new MemberServiceImpl(memberDAO));
+            register(StoreService.class, new StoreServiceImpl(storeDAO));
 
-
-            registerService(AuthService.class, new AuthServiceImpl());
+            register(AuthService.class, new AuthServiceImpl(tokenDAO, accountDAO, roleDAO));
 
             LOGGER.info("[INIT] Khởi tạo ServiceManager thành công");
         } catch (Exception e) {
@@ -69,25 +62,34 @@ public class ServiceManager {
      */
     public static ServiceManager getInstance() {
         if (INSTANCE == null) {
-            INSTANCE = new ServiceManager();
+            synchronized (ServiceManager.class) {
+                if (INSTANCE == null) INSTANCE = new ServiceManager();
+            }
         }
         return INSTANCE;
     }
 
-    private <T> void registerService(Class<T> serviceClass, T implementation) {
-        serviceRegistry.put(serviceClass, implementation);
+    private <T> void register(Class<T> serviceClass, T implementation) {
+        registry.put(serviceClass, implementation);
     }
 
     @SuppressWarnings("unchecked")
     private <T> T getServiceWithAuthCheck(Class<T> serviceClass, boolean requiresAuth) {
         // Skip authentication check if not required or if bypass is active
-        if (!requiresAuth || bypassAuth) {
-            return (T) serviceRegistry.get(serviceClass);
+        if (!requiresAuth) {
+            Object svc = registry.get(serviceClass);
+            if (svc == null) {
+                throw new IllegalStateException("Service " + serviceClass.getSimpleName() + " chưa được khởi tạo!");
+            }
+            return (T) svc;
         }
-
         // Check authentication
         if (isLoggedIn()) {
-            return (T) serviceRegistry.get(serviceClass);
+            Object svc = registry.get(serviceClass);
+            if (svc == null) {
+                throw new IllegalStateException("Service " + serviceClass.getSimpleName() + " chưa được khởi tạo!");
+            }
+            return (T) svc;
         } else {
             String serviceName = serviceClass.getSimpleName();
             LOGGER.log(Level.WARNING, "[GET_" + serviceName + "] Access denied to " + serviceName);
@@ -100,25 +102,12 @@ public class ServiceManager {
         return getServiceWithAuthCheck(AuthService.class, false);
     }
 
-    public TokenService getTokenService() {
-        // Token service used for both auth and non-auth operations
-        return getServiceWithAuthCheck(TokenService.class, false);
-    }
-
-    public AccountService getAccountService() {
-        return getServiceWithAuthCheck(AccountService.class, true);
-    }
-
     public EmployeeService getEmployeeService() {
         return getServiceWithAuthCheck(EmployeeService.class, true);
     }
 
     public MemberService getMemberService() {
         return getServiceWithAuthCheck(MemberService.class, true);
-    }
-
-    public RoleService getRoleService() {
-        return getServiceWithAuthCheck(RoleService.class, true);
     }
 
     public StoreService getStoreService() {
@@ -151,8 +140,8 @@ public class ServiceManager {
             return false;
         }
 
-        TokenService tokenService = getServiceWithAuthCheck(TokenService.class, false);
-        return tokenService.validate(currentToken);
+        AuthService authService = getServiceWithAuthCheck(AuthService.class, false);
+        return authService.validate(currentToken);
     }
 
     /**
@@ -164,31 +153,22 @@ public class ServiceManager {
      * @return Token if login successful, null if failed
      */
     public String login(String username, String password) {
-        try {
-            // Enable bypass during a login process
-            bypassAuth = true;
+        // Get services without auth check
+        AuthService authService = getAuthService();
 
-            // Get services without auth check
-            AuthService authService = getAuthService();
-            TokenService tokenService = getTokenService();
+        // Authenticate user
+        if (authService.authenticate(username, password)) {
+            // Generate and store token
+            String token = authService.generateToken(username);
+            setCurrentToken(token);
+            setCurrentUsername(username);
 
-            // Authenticate user
-            if (authService.authenticate(username, password)) {
-                // Generate and store token
-                String token = tokenService.generateToken(username);
-                setCurrentToken(token);
-                setCurrentUsername(username);
-
-                LOGGER.info("[LOGIN] Đăng nhâp thành công cho người dùng: " + username);
-                return token;
-            }
-
-            LOGGER.warning("[LOGIN] Đăng nhâp thất bại cho người dùng: " + username);
-            return null;
-        } finally {
-            // Disable bypass after a login attempt completes
-            bypassAuth = false;
+            LOGGER.info("[LOGIN] Đăng nhâp thành công cho người dùng: " + username);
+            return token;
         }
+
+        LOGGER.warning("[LOGIN] Đăng nhâp thất bại cho người dùng: " + username);
+        return null;
     }
 
     // TODO: loại bỏ phân ca, thêm logic đóng ca làm việc khi tổng kết ca làm
@@ -199,8 +179,8 @@ public class ServiceManager {
     public void logout() {
         if (!StringUtils.isNullOrEmpty(currentToken)) {
             try {
-                TokenService tokenService = getTokenService();
-                tokenService.invalidateToken(currentToken);
+                AuthService authService = getServiceWithAuthCheck(AuthService.class, false);
+                authService.invalidateToken(currentToken);
                 LOGGER.info("[LOGOUT] Người dùng đăng xuất: " + currentUsername);
             } catch (Exception e) {
                 LOGGER.warning("[LOGOUT] Lỗi khi vô hiệu Token: " + e.getMessage());
