@@ -238,28 +238,31 @@ CREATE OR REPLACE PROCEDURE PRC_CALC_PAYCHECK(
     P_PAYCHECK_ID OUT PAYCHECK.PAYCHECK_ID%TYPE
 )
 AS
-    v_hours      NUMBER; -- tổng số giờ (decimal)
-    v_wage       EMPLOYEE.HOURLY_WAGE%TYPE;
-    v_gross      PAYCHECK.GROSS_AMOUNT%TYPE;
-    v_deductions PAYCHECK.DEDUCTIONS%TYPE := P_DEDUCTIONS_ID;
-    v_net        PAYCHECK.NET_AMOUNT%TYPE;
+    v_hours       NUMBER; -- tổng số giờ (decimal)
+    v_night_hours NUMBER; -- số giờ trong khung 22:00–06:00
+    v_wage        EMPLOYEE.HOURLY_WAGE%TYPE;
+    v_gross       PAYCHECK.GROSS_AMOUNT%TYPE;
+    v_deductions  PAYCHECK.DEDUCTIONS%TYPE := P_DEDUCTIONS_ID;
+    v_net         PAYCHECK.NET_AMOUNT%TYPE;
 BEGIN
-    -- 1) Lấy lương theo giờ
+    -- 1) Lấy lương giờ
     SELECT HOURLY_WAGE
     INTO v_wage
     FROM EMPLOYEE
     WHERE EMPLOYEE_ID = P_EMP_ID;
 
-    -- 2) Tính tổng giờ làm *trong assignment* và trong kỳ
+    ----------------------------------------------------------------
+    -- 2a) Tổng giờ làm trong assignment & kỳ
+    ----------------------------------------------------------------
     SELECT NVL(SUM(
-                       EXTRACT(DAY FROM (overlap_end - overlap_start)) * 24
-                           + EXTRACT(HOUR FROM (overlap_end - overlap_start))
-                           + EXTRACT(MINUTE FROM (overlap_end - overlap_start)) / 60
-                           + EXTRACT(SECOND FROM (overlap_end - overlap_start)) / 3600
+                       EXTRACT(DAY FROM (ovl.o_end - ovl.o_start)) * 24
+                           + EXTRACT(HOUR FROM (ovl.o_end - ovl.o_start))
+                           + EXTRACT(MINUTE FROM (ovl.o_end - ovl.o_start)) / 60
+                           + EXTRACT(SECOND FROM (ovl.o_end - ovl.o_start)) / 3600
                ), 0)
     INTO v_hours
-    FROM (SELECT GREATEST(sr.shift_start_time, a.start_time, P_PERIOD_START) AS overlap_start,
-                 LEAST(sr.shift_end_time, a.end_time, P_PERIOD_END)          AS overlap_end
+    FROM (SELECT GREATEST(sr.shift_start_time, a.start_time, P_PERIOD_START) AS o_start,
+                 LEAST(sr.shift_end_time, a.end_time, P_PERIOD_END)          AS o_end
           FROM SHIFT_REPORT sr
                    JOIN ASSIGNMENT a
                         ON sr.employee_id = a.employee_id
@@ -267,24 +270,55 @@ BEGIN
                             AND sr.shift_end_time > a.start_time
           WHERE sr.employee_id = P_EMP_ID
             AND sr.shift_start_time < P_PERIOD_END
-            AND sr.shift_end_time > P_PERIOD_START)
-    WHERE overlap_end > overlap_start;
+            AND sr.shift_end_time > P_PERIOD_START) ovl
+    WHERE ovl.o_end > ovl.o_start;
 
-    -- 3) Tính gross và net
-    v_gross := v_hours * v_wage;
+    ----------------------------------------------------------------
+    -- 2b) Giờ ca đêm (22:00–24:00 và 00:00–06:00)
+    ----------------------------------------------------------------
+    SELECT NVL(SUM(n1 + n2), 0)
+    INTO v_night_hours
+    FROM (SELECT
+              -- phần 22→24
+              CASE
+                  WHEN o_start < TRUNC(o_start) + INTERVAL '1' DAY
+                      AND o_end > TRUNC(o_start) + INTERVAL '22' HOUR
+                      THEN LEAST(o_end, TRUNC(o_start) + INTERVAL '1' DAY)
+                      - GREATEST(o_start, TRUNC(o_start) + INTERVAL '22' HOUR)
+                  ELSE INTERVAL '0' HOUR
+                  END / INTERVAL '1' HOUR AS n1,
+              -- phần 00→06
+              CASE
+                  WHEN o_start < TRUNC(o_end) + INTERVAL '06' HOUR
+                      AND o_end > TRUNC(o_end) + INTERVAL '0' HOUR
+                      THEN LEAST(o_end, TRUNC(o_end) + INTERVAL '06' HOUR)
+                      - GREATEST(o_start, TRUNC(o_end) + INTERVAL '0' HOUR)
+                  ELSE INTERVAL '0' HOUR
+                  END / INTERVAL '1' HOUR AS n2
+          FROM (SELECT GREATEST(sr.shift_start_time, a.start_time, P_PERIOD_START) AS o_start,
+                       LEAST(sr.shift_end_time, a.end_time, P_PERIOD_END)          AS o_end
+                FROM SHIFT_REPORT sr
+                         JOIN ASSIGNMENT a
+                              ON sr.employee_id = a.employee_id
+                                  AND sr.shift_start_time < a.end_time
+                                  AND sr.shift_end_time > a.start_time
+                WHERE sr.employee_id = P_EMP_ID
+                  AND sr.shift_start_time < P_PERIOD_END
+                  AND sr.shift_end_time > P_PERIOD_START) ov2
+          WHERE ov2.o_end > ov2.o_start);
+
+    ----------------------------------------------------------------
+    -- 3) Tính gross (30% phụ cấp đêm)
+    ----------------------------------------------------------------
+    v_gross := (v_hours - v_night_hours) * v_wage
+        + v_night_hours * v_wage * 1.3;
     v_net := v_gross - v_deductions;
 
+    ----------------------------------------------------------------
     -- 4) Lưu paycheck
-    INSERT INTO PAYCHECK (EMPLOYEE_ID,
-                          GROSS_AMOUNT,
-                          DEDUCTIONS,
-                          NET_AMOUNT,
-                          PAY_DATE)
-    VALUES (P_EMP_ID,
-            v_gross,
-            v_deductions,
-            v_net,
-            SYSTIMESTAMP)
+    ----------------------------------------------------------------
+    INSERT INTO PAYCHECK (EMPLOYEE_ID, GROSS_AMOUNT, DEDUCTIONS, NET_AMOUNT, PAY_DATE)
+    VALUES (P_EMP_ID, v_gross, v_deductions, v_net, SYSTIMESTAMP)
     RETURNING PAYCHECK_ID
         INTO P_PAYCHECK_ID;
 END PRC_CALC_PAYCHECK;

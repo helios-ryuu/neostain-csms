@@ -43,7 +43,7 @@ CREATE TABLE EMPLOYEE
     CONSTRAINT CHK_EMPLOYEE_HOURLY_WAGE CHECK (HOURLY_WAGE >= 0),
     CONSTRAINT CHK_EMPLOYEE_STATUS CHECK (EMPLOYEE_STATUS IN ('Đang hoạt động', 'Tạm ngừng hoạt động', 'Đã nghỉ việc')),
     CONSTRAINT CHK_EMPLOYEE_POSITION CHECK (POSITION IN
-                                            ('Nhân viên quản lý cửa hàng', 'Nhân viên bán hàng', 'Nhân viên kho'))
+                                            ('Nhân viên quản lý cửa hàng', 'Nhân viên bán hàng'))
 );
 
 -- Create STORE table
