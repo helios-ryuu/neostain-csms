@@ -63,12 +63,13 @@ CREATE OR REPLACE PROCEDURE PRC_INITIATE_INVOICE(
     P_MEMBER_ID IN CSMS_ADMIN.INVOICE.MEMBER_ID%type,
     P_PAYMENT_ID IN CSMS_ADMIN.INVOICE.PAYMENT_ID%type,
     P_EMPLOYEE_ID IN CSMS_ADMIN.INVOICE.EMPLOYEE_ID%type,
+    P_POINT_USED IN CSMS_ADMIN.INVOICE.POINT_USED%type DEFAULT 0,
     P_INVOICE_ID OUT CSMS_ADMIN.INVOICE.INVOICE_ID%type
 )
 AS
 BEGIN
-    INSERT INTO INVOICE(STORE_ID, MEMBER_ID, PAYMENT_ID, EMPLOYEE_ID)
-    VALUES (P_STORE_ID, P_MEMBER_ID, P_PAYMENT_ID, P_EMPLOYEE_ID)
+    INSERT INTO INVOICE(STORE_ID, MEMBER_ID, PAYMENT_ID, EMPLOYEE_ID, POINT_USED)
+    VALUES (P_STORE_ID, P_MEMBER_ID, P_PAYMENT_ID, P_EMPLOYEE_ID, P_POINT_USED)
     RETURNING INVOICE_ID
         INTO P_INVOICE_ID;
 END PRC_INITIATE_INVOICE;
@@ -84,7 +85,6 @@ AS
     v_promo_price   PRODUCT.UNIT_PRICE%TYPE;
     v_sets          NUMBER;
     v_free_qty      NUMBER;
-    v_discount_rate PROMOTION.DISCOUNT_RATE%TYPE;
 BEGIN
     ----------------------------------------
     -- 1) Chèn hoặc cộng dồn sản phẩm chính
@@ -164,34 +164,32 @@ END PRC_ADD_ITEM_TO_INVOICE;
 /
 
 CREATE OR REPLACE PROCEDURE PRC_CALC_TOTAL(
-    P_INVOICE_ID IN INVOICE.INVOICE_ID%TYPE,
-    P_POINT_USE IN NUMBER DEFAULT 0
+    P_INVOICE_ID IN INVOICE.INVOICE_ID%TYPE
 )
 AS
-    V_INVOICE_ID INVOICE.INVOICE_ID%TYPE;
-    V_INVOICE    INVOICE%ROWTYPE;
+    V_NET_AMOUNT INVOICE.NET_AMOUNT%TYPE;
+    V_MEMBER_ID  INVOICE.MEMBER_ID%TYPE;
+    V_POINT_USED INVOICE.POINT_USED%TYPE;
 BEGIN
-    SELECT *
-    INTO V_INVOICE
+
+    SELECT NET_AMOUNT, MEMBER_ID, POINT_USED
+    INTO V_NET_AMOUNT, V_MEMBER_ID, V_POINT_USED
     FROM INVOICE
     WHERE INVOICE_ID = P_INVOICE_ID;
 
-    IF V_INVOICE.MEMBER_ID IS NOT NULL AND V_INVOICE.NET_AMOUNT > 0 THEN
+
+    IF V_MEMBER_ID IS NOT NULL AND V_NET_AMOUNT > 0 THEN
         INSERT INTO POINT_UPDATE_LOG (MEMBER_ID, INVOICE_ID, POINT_CHANGE)
-        VALUES (V_INVOICE.MEMBER_ID, V_INVOICE.INVOICE_ID, TRUNC(V_INVOICE.NET_AMOUNT / 1000));
+        VALUES (V_MEMBER_ID, P_INVOICE_ID, TRUNC(V_NET_AMOUNT / 1000));
 
-        IF P_POINT_USE > 0 THEN
+        IF V_POINT_USED > 0 THEN
             INSERT INTO POINT_UPDATE_LOG (MEMBER_ID, INVOICE_ID, POINT_CHANGE)
-            VALUES (V_INVOICE.MEMBER_ID, V_INVOICE.INVOICE_ID, -P_POINT_USE);
-
-            UPDATE INVOICE
-            SET POINT_USED = P_POINT_USE
-            WHERE INVOICE_ID = P_INVOICE_ID;
+            VALUES (V_MEMBER_ID, P_INVOICE_ID, V_POINT_USED);
         END IF;
     END IF;
 
     UPDATE INVOICE
-    SET DISCOUNT = DISCOUNT + P_POINT_USE * 40 -- Không được để sử dụng điểm vượt quá net amount
+    SET DISCOUNT = DISCOUNT + V_POINT_USED * 40 -- Không được để sử dụng điểm vượt quá net amount
     WHERE INVOICE_ID = P_INVOICE_ID;
 
     UPDATE INVOICE
@@ -231,19 +229,19 @@ END PRC_CANCEL_INVOICE;
 /
 
 CREATE OR REPLACE PROCEDURE PRC_CALC_PAYCHECK(
-    P_EMP_ID IN EMPLOYEE.EMPLOYEE_ID%TYPE,
-    P_DEDUCTIONS_ID IN PAYCHECK.DEDUCTIONS%TYPE DEFAULT 0,
-    P_PERIOD_START IN TIMESTAMP,
-    P_PERIOD_END IN TIMESTAMP,
-    P_PAYCHECK_ID OUT PAYCHECK.PAYCHECK_ID%TYPE
+    P_EMP_ID        IN EMPLOYEE.EMPLOYEE_ID%TYPE,
+    P_DEDUCTIONS    IN PAYCHECK.DEDUCTIONS%TYPE DEFAULT 0,
+    P_PERIOD_START  IN TIMESTAMP,
+    P_PERIOD_END    IN TIMESTAMP,
+    P_PAYCHECK_ID   OUT PAYCHECK.PAYCHECK_ID%TYPE
 )
 AS
-    v_hours       NUMBER; -- tổng số giờ (decimal)
-    v_night_hours NUMBER; -- số giờ trong khung 22:00–06:00
-    v_wage        EMPLOYEE.HOURLY_WAGE%TYPE;
-    v_gross       PAYCHECK.GROSS_AMOUNT%TYPE;
-    v_deductions  PAYCHECK.DEDUCTIONS%TYPE := P_DEDUCTIONS_ID;
-    v_net         PAYCHECK.NET_AMOUNT%TYPE;
+    v_hours        NUMBER;  -- tổng số giờ làm việc
+    v_night_hours  NUMBER;  -- số giờ trong khung 22:00–06:00
+    v_wage         EMPLOYEE.HOURLY_WAGE%TYPE;
+    v_gross        PAYCHECK.GROSS_AMOUNT%TYPE;
+    v_deductions   PAYCHECK.DEDUCTIONS%TYPE := P_DEDUCTIONS;
+    v_net          PAYCHECK.NET_AMOUNT%TYPE;
 BEGIN
     -- 1) Lấy lương giờ
     SELECT HOURLY_WAGE
@@ -251,83 +249,118 @@ BEGIN
     FROM EMPLOYEE
     WHERE EMPLOYEE_ID = P_EMP_ID;
 
-    ----------------------------------------------------------------
-    -- 2a) Tổng giờ làm trong assignment & kỳ
-    ----------------------------------------------------------------
+    -- 2a) Tính tổng giờ làm trong ca và kỳ
     SELECT NVL(SUM(
-                       EXTRACT(DAY FROM (ovl.o_end - ovl.o_start)) * 24
-                           + EXTRACT(HOUR FROM (ovl.o_end - ovl.o_start))
-                           + EXTRACT(MINUTE FROM (ovl.o_end - ovl.o_start)) / 60
-                           + EXTRACT(SECOND FROM (ovl.o_end - ovl.o_start)) / 3600
-               ), 0)
+                       (EXTRACT(DAY    FROM (o_end - o_start)) * 86400
+                           + EXTRACT(HOUR   FROM (o_end - o_start)) * 3600
+                           + EXTRACT(MINUTE FROM (o_end - o_start)) * 60
+                           + EXTRACT(SECOND FROM (o_end - o_start)))
+               )/3600, 0)
     INTO v_hours
-    FROM (SELECT GREATEST(sr.shift_start_time, a.start_time, P_PERIOD_START) AS o_start,
-                 LEAST(sr.shift_end_time, a.end_time, P_PERIOD_END)          AS o_end
-          FROM SHIFT_REPORT sr
-                   JOIN ASSIGNMENT a
-                        ON sr.employee_id = a.employee_id
-                            AND sr.shift_start_time < a.end_time
-                            AND sr.shift_end_time > a.start_time
-          WHERE sr.employee_id = P_EMP_ID
-            AND sr.shift_start_time < P_PERIOD_END
-            AND sr.shift_end_time > P_PERIOD_START) ovl
+    FROM (
+             SELECT
+                 GREATEST(sr.shift_start_time, a.start_time, P_PERIOD_START) AS o_start,
+                 LEAST(  sr.shift_end_time,   a.end_time,   P_PERIOD_END)   AS o_end
+             FROM SHIFT_REPORT sr
+                      JOIN ASSIGNMENT    a
+                           ON sr.employee_id     = a.employee_id
+                               AND sr.shift_start_time < a.end_time
+                               AND sr.shift_end_time   > a.start_time
+             WHERE sr.employee_id      = P_EMP_ID
+               AND sr.shift_start_time < P_PERIOD_END
+               AND sr.shift_end_time   > P_PERIOD_START
+         ) ovl
     WHERE ovl.o_end > ovl.o_start;
 
-    ----------------------------------------------------------------
-    -- 2b) Giờ ca đêm (22:00–24:00 và 00:00–06:00)
-    ----------------------------------------------------------------
-    SELECT NVL(SUM(n1 + n2), 0)
+    -- 2b) Tính giờ đêm (22:00–24:00 và 00:00–06:00)
+    SELECT NVL(SUM(n1 + n2),0)
     INTO v_night_hours
-    FROM (SELECT
-              -- phần 22→24
-              CASE
-                  WHEN o_start < TRUNC(o_start) + INTERVAL '1' DAY
-                      AND o_end > TRUNC(o_start) + INTERVAL '22' HOUR
-                      THEN LEAST(o_end, TRUNC(o_start) + INTERVAL '1' DAY)
-                      - GREATEST(o_start, TRUNC(o_start) + INTERVAL '22' HOUR)
-                  ELSE INTERVAL '0' HOUR
-                  END / INTERVAL '1' HOUR AS n1,
-              -- phần 00→06
-              CASE
-                  WHEN o_start < TRUNC(o_end) + INTERVAL '06' HOUR
-                      AND o_end > TRUNC(o_end) + INTERVAL '0' HOUR
-                      THEN LEAST(o_end, TRUNC(o_end) + INTERVAL '06' HOUR)
-                      - GREATEST(o_start, TRUNC(o_end) + INTERVAL '0' HOUR)
-                  ELSE INTERVAL '0' HOUR
-                  END / INTERVAL '1' HOUR AS n2
-          FROM (SELECT GREATEST(sr.shift_start_time, a.start_time, P_PERIOD_START) AS o_start,
-                       LEAST(sr.shift_end_time, a.end_time, P_PERIOD_END)          AS o_end
-                FROM SHIFT_REPORT sr
-                         JOIN ASSIGNMENT a
-                              ON sr.employee_id = a.employee_id
-                                  AND sr.shift_start_time < a.end_time
-                                  AND sr.shift_end_time > a.start_time
-                WHERE sr.employee_id = P_EMP_ID
-                  AND sr.shift_start_time < P_PERIOD_END
-                  AND sr.shift_end_time > P_PERIOD_START) ov2
-          WHERE ov2.o_end > ov2.o_start);
+    FROM (
+             SELECT
+                 -- phần 22→24 của mỗi khoảng
+                 (EXTRACT(DAY    FROM CASE WHEN o_start < TRUNC(o_start)+1
+                     AND o_end   > TRUNC(o_start)+INTERVAL '22' HOUR
+                                               THEN LEAST(o_end, TRUNC(o_start)+1)
+                         - GREATEST(o_start, TRUNC(o_start)+INTERVAL '22' HOUR)
+                                           ELSE NUMTODSINTERVAL(0,'SECOND') END)
+                      *86400
+                     + EXTRACT(HOUR   FROM CASE WHEN o_start < TRUNC(o_start)+1
+                         AND o_end   > TRUNC(o_start)+INTERVAL '22' HOUR
+                                                    THEN LEAST(o_end, TRUNC(o_start)+1)
+                             - GREATEST(o_start, TRUNC(o_start)+INTERVAL '22' HOUR)
+                                                ELSE NUMTODSINTERVAL(0,'SECOND') END)
+                      *3600
+                     + EXTRACT(MINUTE FROM CASE WHEN o_start < TRUNC(o_start)+1
+                         AND o_end   > TRUNC(o_start)+INTERVAL '22' HOUR
+                                                    THEN LEAST(o_end, TRUNC(o_start)+1)
+                             - GREATEST(o_start, TRUNC(o_start)+INTERVAL '22' HOUR)
+                                                ELSE NUMTODSINTERVAL(0,'SECOND') END)
+                      *60
+                     + EXTRACT(SECOND FROM CASE WHEN o_start < TRUNC(o_start)+1
+                         AND o_end   > TRUNC(o_start)+INTERVAL '22' HOUR
+                                                    THEN LEAST(o_end, TRUNC(o_start)+1)
+                             - GREATEST(o_start, TRUNC(o_start)+INTERVAL '22' HOUR)
+                                                ELSE NUMTODSINTERVAL(0,'SECOND') END)
+                     )/3600 AS n1,
+                 -- phần 00→06 của mỗi khoảng
+                 (EXTRACT(DAY    FROM CASE WHEN o_start < TRUNC(o_end)+INTERVAL '06' HOUR
+                     AND o_end   > TRUNC(o_end)
+                                               THEN LEAST(o_end, TRUNC(o_end)+INTERVAL '06' HOUR)
+                         - GREATEST(o_start, TRUNC(o_end))
+                                           ELSE NUMTODSINTERVAL(0,'SECOND') END)
+                      *86400
+                     + EXTRACT(HOUR   FROM CASE WHEN o_start < TRUNC(o_end)+INTERVAL '06' HOUR
+                         AND o_end   > TRUNC(o_end)
+                                                    THEN LEAST(o_end, TRUNC(o_end)+INTERVAL '06' HOUR)
+                             - GREATEST(o_start, TRUNC(o_end))
+                                                ELSE NUMTODSINTERVAL(0,'SECOND') END)
+                      *3600
+                     + EXTRACT(MINUTE FROM CASE WHEN o_start < TRUNC(o_end)+INTERVAL '06' HOUR
+                         AND o_end   > TRUNC(o_end)
+                                                    THEN LEAST(o_end, TRUNC(o_end)+INTERVAL '06' HOUR)
+                             - GREATEST(o_start, TRUNC(o_end))
+                                                ELSE NUMTODSINTERVAL(0,'SECOND') END)
+                      *60
+                     + EXTRACT(SECOND FROM CASE WHEN o_start < TRUNC(o_end)+INTERVAL '06' HOUR
+                         AND o_end   > TRUNC(o_end)
+                                                    THEN LEAST(o_end, TRUNC(o_end)+INTERVAL '06' HOUR)
+                             - GREATEST(o_start, TRUNC(o_end))
+                                                ELSE NUMTODSINTERVAL(0,'SECOND') END)
+                     )/3600 AS n2
+             FROM (
+                      SELECT
+                          GREATEST(sr.shift_start_time, a.start_time, P_PERIOD_START) AS o_start,
+                          LEAST(  sr.shift_end_time,   a.end_time,   P_PERIOD_END)   AS o_end
+                      FROM SHIFT_REPORT sr
+                               JOIN ASSIGNMENT    a
+                                    ON sr.employee_id     = a.employee_id
+                                        AND sr.shift_start_time < a.end_time
+                                        AND sr.shift_end_time   > a.start_time
+                      WHERE sr.employee_id      = P_EMP_ID
+                        AND sr.shift_start_time < P_PERIOD_END
+                        AND sr.shift_end_time   > P_PERIOD_START
+                  ) ov2
+             WHERE ov2.o_end > ov2.o_start
+         );
 
-    ----------------------------------------------------------------
-    -- 3) Tính gross (30% phụ cấp đêm)
-    ----------------------------------------------------------------
+    -- 3) Tính gross và net
     v_gross := (v_hours - v_night_hours) * v_wage
         + v_night_hours * v_wage * 1.3;
-    v_net := v_gross - v_deductions;
+    v_net   := v_gross - v_deductions;
 
-    ----------------------------------------------------------------
     -- 4) Lưu paycheck
-    ----------------------------------------------------------------
-    INSERT INTO PAYCHECK (EMPLOYEE_ID, GROSS_AMOUNT, DEDUCTIONS, NET_AMOUNT, PAY_DATE)
-    VALUES (P_EMP_ID, v_gross, v_deductions, v_net, SYSTIMESTAMP)
-    RETURNING PAYCHECK_ID
-        INTO P_PAYCHECK_ID;
+    INSERT INTO PAYCHECK(
+        EMPLOYEE_ID, GROSS_AMOUNT, DEDUCTIONS, NET_AMOUNT, PAY_DATE
+    ) VALUES (
+                 P_EMP_ID,    v_gross,      v_deductions, v_net, SYSTIMESTAMP
+             ) RETURNING PAYCHECK_ID INTO P_PAYCHECK_ID;
 END PRC_CALC_PAYCHECK;
 /
 
 CREATE OR REPLACE PROCEDURE PRC_GENERATE_PAYCHECKS(
-    P_DEDUCTION_ID IN PAYCHECK.DEDUCTIONS%TYPE DEFAULT 0,
+    P_DEDUCTIONS IN PAYCHECK.DEDUCTIONS%TYPE DEFAULT 0,  -- số nhiều
     P_PERIOD_START IN TIMESTAMP,
-    P_PERIOD_END IN TIMESTAMP
+    P_PERIOD_END   IN TIMESTAMP
 )
 AS
     CURSOR c_emp IS
@@ -337,31 +370,32 @@ AS
     v_emp_id EMPLOYEE.EMPLOYEE_ID%TYPE;
     v_pc_id  PAYCHECK.PAYCHECK_ID%TYPE;
 BEGIN
-    FOR r IN c_emp
-        LOOP
-            v_emp_id := r.EMPLOYEE_ID;
-            -- Gọi từng nhân viên
+    FOR r IN c_emp LOOP
             PRC_CALC_PAYCHECK(
-                    P_EMP_ID => v_emp_id,
-                    P_DEDUCTIONS_ID => P_DEDUCTION_ID,
+                    P_EMP_ID     => r.EMPLOYEE_ID,
+                    P_DEDUCTIONS => P_DEDUCTIONS,
                     P_PERIOD_START => P_PERIOD_START,
-                    P_PERIOD_END => P_PERIOD_END,
-                    P_PAYCHECK_ID => v_pc_id
+                    P_PERIOD_END   => P_PERIOD_END,
+                    P_PAYCHECK_ID  => v_pc_id
             );
         END LOOP;
+EXCEPTION
+    WHEN OTHERS THEN
+        RAISE;  -- hoặc log thêm DBMS_OUTPUT.PUT_LINE(SQLERRM);
 END PRC_GENERATE_PAYCHECKS;
 /
 
 
--- TODO: Quy trình thanh toán
+
+-- TODO: Demo qui trình thanh toán
 DECLARE
     V_INVOICE_ID_1 INVOICE.INVOICE_ID%TYPE;
     V_INVOICE_ID_2 INVOICE.INVOICE_ID%TYPE;
     V_SHIFT_ID     SHIFT_REPORT.SHIFT_REPORT_ID%TYPE;
     V_POINT_GAINED MEMBER.LOYALTY_POINTS%TYPE;
-    V_MEMBER_ID    MEMBER.MEMBER_ID%TYPE      := '09412345672505060001';
+    V_MEMBER_ID    MEMBER.MEMBER_ID%TYPE      := '09412345672505090001';
     V_STORE_ID     SHIFT_REPORT.STORE_ID%TYPE := 'VN000001';
-    V_EMPLOYEE_ID  EMPLOYEE.EMPLOYEE_ID%TYPE  := '250506000001';
+    V_EMPLOYEE_ID  EMPLOYEE.EMPLOYEE_ID%TYPE  := '250509000001';
 BEGIN
     PRC_INITIATE_SHIFT(
             P_STORE_ID => V_STORE_ID,
@@ -373,6 +407,7 @@ BEGIN
             P_MEMBER_ID => V_MEMBER_ID,
             P_PAYMENT_ID => 'P001',
             P_EMPLOYEE_ID => V_EMPLOYEE_ID,
+            P_POINT_USED => 0,
             P_INVOICE_ID => V_INVOICE_ID_1
     );
     PRC_ADD_ITEM_TO_INVOICE(
@@ -396,8 +431,7 @@ BEGIN
             P_QUANTITY_SOLD => 2
     );
     PRC_CALC_TOTAL(
-            P_INVOICE_ID => V_INVOICE_ID_1,
-            P_POINT_USE => 0
+            P_INVOICE_ID => V_INVOICE_ID_1
     );
 
     SELECT LOYALTY_POINTS
@@ -411,8 +445,10 @@ BEGIN
             P_MEMBER_ID => V_MEMBER_ID,
             P_PAYMENT_ID => 'P001',
             P_EMPLOYEE_ID => V_EMPLOYEE_ID,
+            P_POINT_USED => V_POINT_GAINED,
             P_INVOICE_ID => V_INVOICE_ID_2
     );
+
     PRC_ADD_ITEM_TO_INVOICE(
             P_INVOICE_ID => V_INVOICE_ID_2,
             P_PRODUCT_ID => '0123456789023',
@@ -423,16 +459,12 @@ BEGIN
             P_PRODUCT_ID => '0123456789023',
             P_QUANTITY_SOLD => 1
     );
-    PRC_CALC_TOTAL(
-            P_INVOICE_ID => V_INVOICE_ID_2,
-            P_POINT_USE => V_POINT_GAINED
-    );
+
+    PRC_CALC_TOTAL( P_INVOICE_ID => V_INVOICE_ID_2);
 
     PRC_CANCEL_INVOICE(V_INVOICE_ID_1);
 
-    PRC_END_SHIFT(
-            P_SHIFT_ID => V_SHIFT_ID
-    );
+    PRC_END_SHIFT(P_SHIFT_ID => V_SHIFT_ID);
 
     -- DEV
     UPDATE SHIFT_REPORT
@@ -441,6 +473,7 @@ BEGIN
     WHERE SHIFT_REPORT_ID = V_SHIFT_ID;
 
     PRC_GENERATE_PAYCHECKS(
+            P_DEDUCTIONS => 0,
             P_PERIOD_START => TIMESTAMP '2025-05-01 00:00:00',
             P_PERIOD_END => TIMESTAMP '2025-05-31 00:00:00'
     );

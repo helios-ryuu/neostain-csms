@@ -24,6 +24,32 @@ BEGIN
 END;
 /
 
+CREATE OR REPLACE TRIGGER TRG_CHECK_MEMBER_CONTACT
+    BEFORE INSERT OR UPDATE
+    ON MEMBER
+    FOR EACH ROW
+DECLARE
+    ERR_EMAIL CONSTANT PLS_INTEGER := -20020;
+    ERR_PHONE CONSTANT PLS_INTEGER := -20021;
+BEGIN
+    -- Kiểm tra định dạng email
+    IF NOT REGEXP_LIKE(:NEW.EMAIL, '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$') THEN
+        RAISE_APPLICATION_ERROR(
+                ERR_EMAIL,
+                'Email không hợp lệ. Ví dụ hợp lệ: user@example.com'
+        );
+    END IF;
+
+    -- Kiểm tra phone number chỉ gồm 10 chữ số
+    IF NOT REGEXP_LIKE(:NEW.PHONE_NUMBER, '^[0-9]{10}$') THEN
+        RAISE_APPLICATION_ERROR(
+                ERR_PHONE,
+                'Số điện thoại phải gồm đúng 10 chữ số, không chứa ký tự khác.'
+        );
+    END IF;
+END;
+/
+
 CREATE SEQUENCE ACC_SEQ
     START WITH 000001
     INCREMENT BY 1
