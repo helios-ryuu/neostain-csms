@@ -7,6 +7,7 @@ import com.neostain.csms.view.component.StandardMenu;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.List;
 import java.util.logging.Logger;
 
 /**
@@ -116,7 +117,8 @@ public class EmployeePanel extends JPanel {
         };
 
         // Add table with scrolling
-        ScrollableTable employeeTable = new ScrollableTable(columnNames, data);
+        List<ScrollableTable.ActionDefinition> noActions = List.of();
+        ScrollableTable employeeTable = new ScrollableTable(columnNames, data, noActions);
         employeeListPanel.add(employeeTable, BorderLayout.CENTER);
 
         return employeeListPanel;

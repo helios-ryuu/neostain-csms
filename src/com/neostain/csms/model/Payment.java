@@ -1,27 +1,37 @@
 package com.neostain.csms.model;
 
 public class Payment {
-    private String paymentId;
-    private String paymentName;
+    private String id;
+    private String name;
+    private boolean isDeleted;
 
-    public Payment(String paymentId, String paymentName) {
-        this.paymentId = paymentId;
-        this.paymentName = paymentName;
+    public Payment(String id, String name, boolean isDeleted) {
+        this.id = id;
+        this.name = name;
+        this.isDeleted = isDeleted;
     }
 
-    public String getPaymentId() {
-        return paymentId;
+    public String getId() {
+        return id;
     }
 
-    public void setPaymentId(String paymentId) {
-        this.paymentId = paymentId;
+    public void setId(String id) {
+        this.id = id;
     }
 
-    public String getPaymentName() {
-        return paymentName;
+    public String getName() {
+        return name;
     }
 
-    public void setPaymentName(String paymentName) {
-        this.paymentName = paymentName;
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public boolean isDeleted() {
+        return isDeleted;
+    }
+
+    public void setDeleted(boolean deleted) {
+        isDeleted = deleted;
     }
 }

@@ -80,10 +80,10 @@ public class TokenDAOImpl implements TokenDAO {
     public boolean create(Token token) {
         try (PreparedStatement ps = conn.prepareStatement(SQLQueries.TOKEN_CREATE)) {
             ps.setString(1, token.getUsername());
-            ps.setString(2, token.getTokenValue());
+            ps.setString(2, token.getValue());
             ps.setTimestamp(3, token.getExpiresAt());
             ps.setTimestamp(4, token.getIssuedAt());
-            ps.setString(5, token.getTokenStatus());
+            ps.setString(5, token.getStatus());
             return ps.executeUpdate() == 1;
         } catch (SQLException e) {
             LOGGER.severe("[CREATE] Lỗi: " + e.getMessage());
@@ -104,10 +104,10 @@ public class TokenDAOImpl implements TokenDAO {
     }
 
     @Override
-    public boolean updateStatus(String id, String tokenStatus) {
+    public boolean updateStatus(String tokenValue, String tokenStatus) {
         try (PreparedStatement ps = conn.prepareStatement(SQLQueries.TOKEN_UPDATE_STATUS)) {
             ps.setString(1, tokenStatus);
-            ps.setString(2, id);
+            ps.setString(2, tokenValue);
             return ps.executeUpdate() == 1;
         } catch (SQLException e) {
             LOGGER.severe("[UPDATE_STATUS] Lỗi: " + e.getMessage());
@@ -117,12 +117,12 @@ public class TokenDAOImpl implements TokenDAO {
 
     private Token mapResultSetToToken(ResultSet rs) throws SQLException {
         return new Token(
-                rs.getString("TOKEN_ID"),
+                rs.getString("ID"),
                 rs.getString("USERNAME"),
-                rs.getString("TOKEN_VALUE"),
+                rs.getString("VALUE"),
                 rs.getTimestamp("EXPIRES_AT"),
                 rs.getTimestamp("ISSUED_AT"),
-                rs.getString("TOKEN_STATUS")
+                rs.getString("STATUS")
         );
     }
 }

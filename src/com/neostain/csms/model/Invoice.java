@@ -4,46 +4,46 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 
 public class Invoice {
-    private String invoiceId;
-    private Timestamp invoiceCreationTime;
+    private String id;
+    private Timestamp creationTime;
     private BigDecimal netAmount;
     private BigDecimal discount;
     private BigDecimal totalDue;
     private String storeId;
     private String memberId;
     private String paymentId;
-    private String invoiceStatus;
+    private String status;
     private String employeeId;
     private int pointUsed;
 
-    public Invoice(String invoiceId, Timestamp invoiceCreationTime, BigDecimal netAmount, BigDecimal discount, BigDecimal totalDue, String storeId, String memberId, String paymentId, String invoiceStatus, String employeeId, int pointUsed) {
-        this.invoiceId = invoiceId;
-        this.invoiceCreationTime = invoiceCreationTime;
+    public Invoice(String id, Timestamp creationTime, BigDecimal netAmount, BigDecimal discount, BigDecimal totalDue, String storeId, String memberId, String paymentId, String status, String employeeId, int pointUsed) {
+        this.id = id;
+        this.creationTime = creationTime;
         this.netAmount = netAmount;
         this.discount = discount;
         this.totalDue = totalDue;
         this.storeId = storeId;
         this.memberId = memberId;
         this.paymentId = paymentId;
-        this.invoiceStatus = invoiceStatus;
+        this.status = status;
         this.employeeId = employeeId;
         this.pointUsed = pointUsed;
     }
 
-    public String getInvoiceId() {
-        return invoiceId;
+    public String getId() {
+        return id;
     }
 
-    public void setInvoiceId(String invoiceId) {
-        this.invoiceId = invoiceId;
+    public void setId(String id) {
+        this.id = id;
     }
 
-    public Timestamp getInvoiceCreationTime() {
-        return invoiceCreationTime;
+    public Timestamp getCreationTime() {
+        return creationTime;
     }
 
-    public void setInvoiceCreationTime(Timestamp invoiceCreationTime) {
-        this.invoiceCreationTime = invoiceCreationTime;
+    public void setCreationTime(Timestamp creationTime) {
+        this.creationTime = creationTime;
     }
 
     public BigDecimal getNetAmount() {
@@ -94,12 +94,12 @@ public class Invoice {
         this.paymentId = paymentId;
     }
 
-    public String getInvoiceStatus() {
-        return invoiceStatus;
+    public String getStatus() {
+        return status;
     }
 
-    public void setInvoiceStatus(String invoiceStatus) {
-        this.invoiceStatus = invoiceStatus;
+    public void setStatus(String status) {
+        this.status = status;
     }
 
     public String getEmployeeId() {

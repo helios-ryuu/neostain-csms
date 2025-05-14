@@ -15,5 +15,5 @@ public interface TokenDAO {
 
     boolean updateValue(String id, String tokenValue);
 
-    boolean updateStatus(String id, String tokenStatus);
+    boolean updateStatus(String tokenValue, String tokenStatus);
 }

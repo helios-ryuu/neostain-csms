@@ -1,6 +1,7 @@
 package com.neostain.csms.dao;
 
 import com.neostain.csms.model.Account;
+import com.neostain.csms.util.exception.DuplicateFieldException;
 
 import java.util.List;
 
@@ -17,7 +18,7 @@ public interface AccountDAO {
 
     List<Account> findAll();
 
-    boolean create(Account acc);
+    boolean create(Account acc) throws DuplicateFieldException;
 
     boolean updatePasswordHash(String username, String newHash);
 

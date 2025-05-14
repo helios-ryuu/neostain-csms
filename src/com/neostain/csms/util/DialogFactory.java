@@ -14,16 +14,25 @@ public class DialogFactory {
      */
     public static void showErrorDialog(Component parent, String title, String message) {
         // Tìm Window (Frame) cha gốc từ component parent
-        Window window = parent instanceof Window ?
-                (Window) parent :
-                SwingUtilities.getWindowAncestor(parent);
+        if (parent != null) {
+            Window window = parent instanceof Window ?
+                    (Window) parent :
+                    SwingUtilities.getWindowAncestor(parent);
 
-        JOptionPane.showMessageDialog(
-                window,
-                message,
-                title,
-                JOptionPane.ERROR_MESSAGE
-        );
+            JOptionPane.showMessageDialog(
+                    window,
+                    message,
+                    title,
+                    JOptionPane.ERROR_MESSAGE
+            );
+        } else {
+            JOptionPane.showMessageDialog(
+                    null,
+                    message,
+                    title,
+                    JOptionPane.ERROR_MESSAGE
+            );
+        }
     }
 
     /**
@@ -36,16 +45,26 @@ public class DialogFactory {
      */
     public static void showInfoDialog(Component parent, String title, String message) {
         // Tìm Window (Frame) cha gốc từ component parent
-        Window window = parent instanceof Window ?
-                (Window) parent :
-                SwingUtilities.getWindowAncestor(parent);
+        if (parent != null) {
+            Window window = parent instanceof Window ?
+                    (Window) parent :
+                    SwingUtilities.getWindowAncestor(parent);
 
-        JOptionPane.showMessageDialog(
-                window,
-                message,
-                title,
-                JOptionPane.INFORMATION_MESSAGE
-        );
+            JOptionPane.showMessageDialog(
+                    window,
+                    message,
+                    title,
+                    JOptionPane.INFORMATION_MESSAGE
+            );
+        } else {
+            JOptionPane.showMessageDialog(
+                    null,
+                    message,
+                    title,
+                    JOptionPane.INFORMATION_MESSAGE
+            );
+        }
+
     }
 
     public static void showInfoDialog(Component parent, String title, Object message) {
@@ -156,6 +175,20 @@ public class DialogFactory {
                 message,
                 title,
                 JOptionPane.OK_CANCEL_OPTION,
+                JOptionPane.PLAIN_MESSAGE
+        );
+    }
+
+    public static String showInputDialog(Component parent, String title, String message) {
+        // Tìm Window (Frame) cha gốc từ component parent
+        Window window = parent instanceof Window ?
+                (Window) parent :
+                SwingUtilities.getWindowAncestor(parent);
+
+        return JOptionPane.showInputDialog(
+                window,
+                message,
+                title,
                 JOptionPane.PLAIN_MESSAGE
         );
     }

@@ -1,6 +1,7 @@
 package com.neostain.csms.dao;
 
 import com.neostain.csms.model.Employee;
+import com.neostain.csms.util.exception.DuplicateFieldException;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -16,7 +17,7 @@ public interface EmployeeDAO {
 
     List<Employee> findAll();
 
-    boolean create(Employee employee);
+    boolean create(Employee employee) throws DuplicateFieldException;
 
     boolean updateName(String id, String name);
 

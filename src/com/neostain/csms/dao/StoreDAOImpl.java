@@ -73,7 +73,7 @@ public class StoreDAOImpl implements StoreDAO {
 
     @Override
     public boolean updateStoreName(String id, String name) {
-        try (PreparedStatement ps = conn.prepareStatement(SQLQueries.STORE_UPDATE_STORE_NAME)) {
+        try (PreparedStatement ps = conn.prepareStatement(SQLQueries.STORE_UPDATE_NAME)) {
             ps.setString(1, name);
             ps.setString(2, id);
             return ps.executeUpdate() == 1;
@@ -98,7 +98,7 @@ public class StoreDAOImpl implements StoreDAO {
     @Override
     public boolean create(Store store) {
         try (PreparedStatement ps = conn.prepareStatement(SQLQueries.STORE_CREATE)) {
-            ps.setString(1, store.getStoreName());
+            ps.setString(1, store.getName());
             ps.setString(2, store.getStoreAddress());
             ps.setString(3, store.getManagerId());
             return ps.executeUpdate() == 1;
@@ -110,8 +110,8 @@ public class StoreDAOImpl implements StoreDAO {
 
     private Store mapResultSetToStore(ResultSet rs) throws SQLException {
         return new Store(
-                rs.getString("STORE_ID"),
-                rs.getString("STORE_NAME"),
+                rs.getString("ID"),
+                rs.getString("NAME"),
                 rs.getString("ADDRESS"),
                 rs.getString("MANAGER_ID")
         );

@@ -19,11 +19,17 @@ public interface InvoiceDAO {
 
     List<Invoice> findAll();
 
-    String create(String storeId, String memberId, String paymentId, String employeeId);
+    List<Invoice> search(
+            String id, String customerId, String employeeId,
+            String status, String paymentMethod,
+            String from, String to
+    );
+
+    String create(String storeId, String memberId, String paymentId, String employeeId, int pointUsed);
 
     boolean addItem(String invoiceId, String productId, int quantity);
 
-    boolean calculateTotal(String invoiceId, int pointUsed);
+    boolean calculateTotal(String invoiceId);
 
     boolean cancel(String invoiceId);
 }

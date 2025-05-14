@@ -4,58 +4,60 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 
 public class Promotion {
-    private String promotionId;
-    private String promotionName;
-    private Timestamp promotionStartTime;
-    private Timestamp promotionEndTime;
+    private String id;
+    private String name;
+    private Timestamp startTime;
+    private Timestamp endTime;
     private String productId;
     private int minimumPurchaseQuantity;
     private String promoProductId;
     private int promoProductQuantity;
     private BigDecimal discountRate;
+    private boolean isDeleted;
 
-    public Promotion(String promotionId, String promotionName, Timestamp promotionStartTime, Timestamp promotionEndTime, String productId, int minimumPurchaseQuantity, String promoProductId, int promoProductQuantity, BigDecimal discountRate) {
-        this.promotionId = promotionId;
-        this.promotionName = promotionName;
-        this.promotionStartTime = promotionStartTime;
-        this.promotionEndTime = promotionEndTime;
+    public Promotion(String id, String name, Timestamp startTime, Timestamp endTime, String productId, int minimumPurchaseQuantity, String promoProductId, int promoProductQuantity, BigDecimal discountRate, boolean isDeleted) {
+        this.id = id;
+        this.name = name;
+        this.startTime = startTime;
+        this.endTime = endTime;
         this.productId = productId;
         this.minimumPurchaseQuantity = minimumPurchaseQuantity;
         this.promoProductId = promoProductId;
         this.promoProductQuantity = promoProductQuantity;
         this.discountRate = discountRate;
+        this.isDeleted = isDeleted;
     }
 
-    public String getPromotionId() {
-        return promotionId;
+    public String getId() {
+        return id;
     }
 
-    public void setPromotionId(String promotionId) {
-        this.promotionId = promotionId;
+    public void setId(String id) {
+        this.id = id;
     }
 
-    public String getPromotionName() {
-        return promotionName;
+    public String getName() {
+        return name;
     }
 
-    public void setPromotionName(String promotionName) {
-        this.promotionName = promotionName;
+    public void setName(String name) {
+        this.name = name;
     }
 
-    public Timestamp getPromotionStartTime() {
-        return promotionStartTime;
+    public Timestamp getStartTime() {
+        return startTime;
     }
 
-    public void setPromotionStartTime(Timestamp promotionStartTime) {
-        this.promotionStartTime = promotionStartTime;
+    public void setStartTime(Timestamp startTime) {
+        this.startTime = startTime;
     }
 
-    public Timestamp getPromotionEndTime() {
-        return promotionEndTime;
+    public Timestamp getEndTime() {
+        return endTime;
     }
 
-    public void setPromotionEndTime(Timestamp promotionEndTime) {
-        this.promotionEndTime = promotionEndTime;
+    public void setEndTime(Timestamp endTime) {
+        this.endTime = endTime;
     }
 
     public String getProductId() {
@@ -96,5 +98,13 @@ public class Promotion {
 
     public void setDiscountRate(BigDecimal discountRate) {
         this.discountRate = discountRate;
+    }
+
+    public boolean isDeleted() {
+        return isDeleted;
+    }
+
+    public void setDeleted(boolean deleted) {
+        isDeleted = deleted;
     }
 }

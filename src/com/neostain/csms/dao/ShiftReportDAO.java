@@ -1,15 +1,17 @@
 package com.neostain.csms.dao;
 
+import com.neostain.csms.model.ShiftReport;
+
 import java.util.List;
 
 public interface ShiftReportDAO {
-    ShiftReportDAO findById(String id);
+    ShiftReport findById(String id);
 
-    List<ShiftReportDAO> findByStoreId(String storeId);
+    List<ShiftReport> findByStoreId(String storeId);
 
-    List<ShiftReportDAO> findByEmployeeId(String employeeId);
+    List<ShiftReport> findByEmployeeId(String employeeId);
 
-    List<ShiftReportDAO> findAll();
+    List<ShiftReport> findAll();
 
     String create(String storeId, String employeeId);
 

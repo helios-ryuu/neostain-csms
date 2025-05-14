@@ -6,6 +6,7 @@ import com.neostain.csms.view.component.ScrollableTable;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.List;
 import java.util.logging.Logger;
 
 /**
@@ -59,7 +60,6 @@ public class WorkShiftPanel extends JPanel {
         schedulePanel.setBackground(Constants.Color.COMPONENT_BACKGROUND_WHITE);
 
         // TODO: Implement schedule management panels
-
         return schedulePanel;
     }
 
@@ -148,8 +148,8 @@ public class WorkShiftPanel extends JPanel {
                 {"Phạm Thị D", "160.0", "41.5", "8.5", "0.0"},
                 {"Hoàng Văn E", "156.5", "39.0", "8.0", "5.0"}
         };
-
-        ScrollableTable summaryTable = new ScrollableTable(summaryColumns, summaryData);
+        java.util.List<ScrollableTable.ActionDefinition> noActions = List.of();
+        ScrollableTable summaryTable = new ScrollableTable(summaryColumns, summaryData, noActions);
         summaryPanel.add(summaryTable, BorderLayout.CENTER);
 
         // Create detailed panels
@@ -171,7 +171,7 @@ public class WorkShiftPanel extends JPanel {
                 {"Phạm Thị D", "15/06/2023", "Ca sáng", "07:02", "12:00", "5.0", ""}
         };
 
-        ScrollableTable detailedTable = new ScrollableTable(detailedColumns, detailedData);
+        ScrollableTable detailedTable = new ScrollableTable(detailedColumns, detailedData, List.of());
         detailedPanel.add(detailedTable, BorderLayout.CENTER);
 
         // Add panels to tabbed pane

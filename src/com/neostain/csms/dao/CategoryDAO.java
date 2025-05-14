@@ -1,6 +1,7 @@
 package com.neostain.csms.dao;
 
 import com.neostain.csms.model.Category;
+import com.neostain.csms.util.exception.DuplicateFieldException;
 
 import java.util.List;
 
@@ -11,7 +12,7 @@ public interface CategoryDAO {
 
     List<Category> findAll();
 
-    boolean create(Category category);
+    boolean create(Category category) throws DuplicateFieldException;
 
     boolean updateName(String id, String name);
 

@@ -2,6 +2,7 @@ package com.neostain.csms.dao;
 
 import com.neostain.csms.model.Member;
 import com.neostain.csms.util.exception.DuplicateFieldException;
+import com.neostain.csms.util.exception.FieldValidationException;
 
 import java.util.List;
 
@@ -14,15 +15,16 @@ public interface MemberDAO {
 
     List<Member> findAll();
 
-    boolean create(Member member);
+    List<Member> search(String memberId, String phone, String email,
+                        String dateFrom, String dateTo);
+
+    boolean create(Member member) throws DuplicateFieldException, FieldValidationException;
 
     boolean updateName(String id, String name);
 
-    boolean updatePhoneNumber(String id, String phoneNumber) throws DuplicateFieldException;
+    boolean updatePhoneNumber(String id, String phoneNumber) throws DuplicateFieldException, FieldValidationException;
 
-    boolean updateEmail(String id, String email) throws DuplicateFieldException;
+    boolean updateEmail(String id, String email) throws DuplicateFieldException, FieldValidationException;
 
-    boolean deleteById(String id);
-
-    boolean deleteByPhoneNumber(String phoneNumber);
+    boolean delete(String id);
 }

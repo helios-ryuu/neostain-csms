@@ -4,15 +4,15 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 
 public class Paycheck {
-    private String paycheckId;
+    private String id;
     private String employeeId;
     private BigDecimal grossAmount;
     private BigDecimal deductions;
     private BigDecimal netAmount;
     private Timestamp payDate;
 
-    public Paycheck(String paycheckId, String employeeId, BigDecimal grossAmount, BigDecimal deductions, BigDecimal netAmount, Timestamp payDate) {
-        this.paycheckId = paycheckId;
+    public Paycheck(String id, String employeeId, BigDecimal grossAmount, BigDecimal deductions, BigDecimal netAmount, Timestamp payDate) {
+        this.id = id;
         this.employeeId = employeeId;
         this.grossAmount = grossAmount;
         this.deductions = deductions;
@@ -20,12 +20,12 @@ public class Paycheck {
         this.payDate = payDate;
     }
 
-    public String getPaycheckId() {
-        return paycheckId;
+    public String getId() {
+        return id;
     }
 
-    public void setPaycheckId(String paycheckId) {
-        this.paycheckId = paycheckId;
+    public void setId(String id) {
+        this.id = id;
     }
 
     public String getEmployeeId() {

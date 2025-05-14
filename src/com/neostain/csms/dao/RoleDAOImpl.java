@@ -3,6 +3,7 @@ package com.neostain.csms.dao;
 import com.neostain.csms.model.Role;
 import com.neostain.csms.util.SQLQueries;
 import com.neostain.csms.util.StringUtils;
+import com.neostain.csms.util.exception.DuplicateFieldException;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -79,23 +80,35 @@ public class RoleDAOImpl implements RoleDAO {
     }
 
     @Override
-    public boolean create(Role role) {
+    public boolean create(Role role) throws DuplicateFieldException {
         try (PreparedStatement ps = conn.prepareStatement(SQLQueries.ROLE_CREATE)) {
-            ps.setString(1, role.getRoleName());
+            ps.setString(1, role.getName());
             return ps.executeUpdate() == 1;
         } catch (SQLException e) {
+            if (e.getErrorCode() == 1) {
+                String msg = e.getMessage().toUpperCase();
+                if (msg.contains("UK_ROLE_NAME")) {
+                    throw new DuplicateFieldException("roleName", "Tên vai trò đã tồn tại.");
+                }
+            }
             LOGGER.severe("[CREATE] Lỗi: " + e.getMessage());
             return false;
         }
     }
 
     @Override
-    public boolean updateName(String id, String name) {
+    public boolean updateName(String id, String name) throws DuplicateFieldException {
         try (PreparedStatement ps = conn.prepareStatement(SQLQueries.ROLE_UPDATE_NAME)) {
             ps.setString(1, name);
             ps.setString(2, id);
             return ps.executeUpdate() == 1;
         } catch (SQLException e) {
+            if (e.getErrorCode() == 1) {
+                String msg = e.getMessage().toUpperCase();
+                if (msg.contains("UK_ROLE_NAME")) {
+                    throw new DuplicateFieldException("roleName", "Tên vai trò đã tồn tại.");
+                }
+            }
             LOGGER.severe("[UPDATE_NAME] Lỗi: " + e.getMessage());
             return false;
         }
@@ -114,8 +127,9 @@ public class RoleDAOImpl implements RoleDAO {
 
     private Role mapResultSetToRole(ResultSet rs) throws SQLException {
         return new Role(
-                rs.getString("ROLE_ID"),
-                rs.getString("ROLE_NAME")
+                rs.getString("ID"),
+                rs.getString("NAME"),
+                rs.getInt("IS_DELETED") == 1
         );
     }
 }

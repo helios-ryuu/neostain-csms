@@ -3,6 +3,7 @@ package com.neostain.csms.dao;
 import com.neostain.csms.model.Employee;
 import com.neostain.csms.util.SQLQueries;
 import com.neostain.csms.util.StringUtils;
+import com.neostain.csms.util.exception.DuplicateFieldException;
 
 import java.math.BigDecimal;
 import java.sql.Connection;
@@ -131,9 +132,9 @@ public class EmployeeDAOImpl implements EmployeeDAO {
     }
 
     @Override
-    public boolean create(Employee emp) {
+    public boolean create(Employee emp) throws DuplicateFieldException {
         try (PreparedStatement ps = conn.prepareStatement(SQLQueries.EMPLOYEE_CREATE)) {
-            ps.setString(1, emp.getEmployeeName());
+            ps.setString(1, emp.getName());
             ps.setString(2, emp.getPosition());
             ps.setString(3, emp.getEmail());
             ps.setString(4, emp.getPhoneNumber());
@@ -141,6 +142,15 @@ public class EmployeeDAOImpl implements EmployeeDAO {
             ps.setBigDecimal(6, emp.getHourlyWage());
             return ps.executeUpdate() == 1;
         } catch (SQLException e) {
+            if (e.getErrorCode() == 1) {
+                String msg = e.getMessage().toUpperCase();
+                if (msg.contains("UK_EMPLOYEE_EMAIL")) {
+                    throw new DuplicateFieldException("email", "Email đã tồn tại.");
+                }
+                if (msg.contains("UK_EMPLOYEE_PHONE")) {
+                    throw new DuplicateFieldException("phoneNumber", "Số điện thoại đã tồn tại.");
+                }
+            }
             LOGGER.severe("[CREATE] Lỗi: " + e.getMessage());
             return false;
         }
@@ -243,15 +253,16 @@ public class EmployeeDAOImpl implements EmployeeDAO {
 
     private Employee mapResultSetToEmployee(ResultSet rs) throws SQLException {
         return new Employee(
-                rs.getString("EMPLOYEE_ID"),
-                rs.getString("EMPLOYEE_NAME"),
+                rs.getString("ID"),
+                rs.getString("NAME"),
                 rs.getString("POSITION"),
                 rs.getTimestamp("HIRE_DATE"),
                 rs.getString("EMAIL"),
                 rs.getString("PHONE_NUMBER"),
                 rs.getString("ADDRESS"),
                 rs.getBigDecimal("HOURLY_WAGE"),
-                rs.getString("EMPLOYEE_STATUS")
+                rs.getString("STATUS"),
+                rs.getInt("IS_DELETED") == 1
         );
     }
 }

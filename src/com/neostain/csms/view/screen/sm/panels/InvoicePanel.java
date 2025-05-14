@@ -1,249 +1,249 @@
 package com.neostain.csms.view.screen.sm.panels;
 
+import com.neostain.csms.ServiceManager;
+import com.neostain.csms.model.Invoice;
+import com.neostain.csms.model.Payment;
+import com.neostain.csms.model.ShiftReport;
+import com.neostain.csms.model.Store;
 import com.neostain.csms.util.Constants;
+import com.neostain.csms.util.DialogFactory;
 import com.neostain.csms.view.component.BorderedPanel;
 import com.neostain.csms.view.component.ScrollableTable;
-import com.neostain.csms.view.component.StandardMenu;
+import com.neostain.csms.view.component.StandardButton;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.logging.Logger;
+import java.io.File;
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.List;
 
-/**
- * Invoice management panels for Store Manager screen
- */
 public class InvoicePanel extends JPanel {
-    private static final Logger LOGGER = Logger.getLogger(InvoicePanel.class.getName());
+    private static final ServiceManager serviceManager = ServiceManager.getInstance();
+    private final JButton searchBtn = new StandardButton(this, "Tìm kiếm");
+    private final JButton resetBtn = new StandardButton(this, "Đặt lại");
+    private final String[] invoiceColumns = {
+            "Mã hóa đơn",
+            "Ngày tạo hóa đơn",
+            "Thành tiền",
+            "Giảm giá",
+            "Tổng cộng",
+            "Phương thức thanh toán",
+            "Trạng thái",
+            "Thành viên",
+            "Nhân viên",
+            "Điểm sử dụng"
+    };
+    private final SimpleDateFormat df1 = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
+    private final SimpleDateFormat df2 = new SimpleDateFormat("yyyy-MM-dd");
+    private final DecimalFormat decf = new DecimalFormat("#,###.00");
+    private ScrollableTable invoiceTable;
 
-    /**
-     * Creates a new invoice panels
-     */
     public InvoicePanel() {
+        this.decf.setRoundingMode(RoundingMode.DOWN);
         initializeComponents();
     }
 
     private void initializeComponents() {
-        // Create panels with GridBagLayout
-        this.setLayout(new GridBagLayout());
-        this.setBackground(Color.WHITE);
+        this.setLayout(new BorderLayout(10, 10));
+        this.setBackground(Constants.Color.COMPONENT_BACKGROUND_WHITE);
+        this.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        // Create GridBagConstraints
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.fill = GridBagConstraints.BOTH;
-        gbc.insets = new Insets(5, 5, 5, 5);
+        // Search tools in a titled border panel
+        BorderedPanel toolWrapper = new BorderedPanel("Tìm kiếm hóa đơn");
+        toolWrapper.setLayout(new BorderLayout(10, 10));
+        toolWrapper.setLayout(new BoxLayout(toolWrapper, BoxLayout.X_AXIS));
+        toolWrapper.setBackground(Constants.Color.COMPONENT_BACKGROUND_WHITE);
 
-        // Create menu panels with standardized component
-        StandardMenu menuPanel = createMenuPanel();
+        // Input fields
+        JTextField invoiceIdField = new JTextField(10);
+        JTextField customerIdField = new JTextField(10);
+        JTextField employeeIdField = new JTextField(10);
 
-        // Set preferred size for menu panels - sử dụng View.MENU_PANEL_WIDTH
-        menuPanel.setPreferredSize(new Dimension(Constants.View.MENU_PANEL_WIDTH, 600));
-        menuPanel.setMinimumSize(new Dimension(Constants.View.MENU_PANEL_WIDTH, 200));
+        // 1. Xác định mặc định
+        Date defaultFrom = new GregorianCalendar(1970, Calendar.JANUARY, 1).getTime();
+        Date defaultTo = new GregorianCalendar(2100, Calendar.JANUARY, 1).getTime();
 
-        // Add menu panels to left side
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        gbc.weightx = 0;
-        gbc.weighty = 1.0;
-        this.add(menuPanel, gbc);
+        // 2. Tạo model/spinner
+        SpinnerDateModel fromModel = new SpinnerDateModel(defaultFrom, null, null, Calendar.DAY_OF_MONTH);
+        JSpinner dateFromSpinner = new JSpinner(fromModel);
+        dateFromSpinner.setEditor(new JSpinner.DateEditor(dateFromSpinner, "yyyy-MM-dd"));
 
-        // Create invoice management content
-        JPanel invoiceContent = new JPanel(new BorderLayout(10, 10));
-        invoiceContent.setBackground(Constants.Color.COMPONENT_BACKGROUND_WHITE);
+        SpinnerDateModel toModel = new SpinnerDateModel(defaultTo, null, null, Calendar.DAY_OF_MONTH);
+        JSpinner dateToSpinner = new JSpinner(toModel);
+        dateToSpinner.setEditor(new JSpinner.DateEditor(dateToSpinner, "yyyy-MM-dd"));
 
-        // Create search and filter panels
-        JPanel searchPanel = createSearchPanel();
+        // Status dropdown
+        String[] statuses = {"Tất cả trạng thái", "Chưa hoàn thành", "Đã hoàn thành", "Đang yêu cầu hủy", "Đã hủy"};
+        JComboBox<String> statusBox = new JComboBox<>(statuses);
 
-        // Create invoice table panels
-        BorderedPanel invoiceTablePanel = createInvoiceTablePanel();
-
-        // Create cancel request panels
-        BorderedPanel cancelRequestPanel = createCancelRequestPanel();
-
-        // Create JSplitPane to divide the layout
-        JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
-        splitPane.setDividerLocation(450);
-        splitPane.setDividerSize(5);
-        splitPane.setBorder(null);
-
-        // Create upper panels containing search and invoice list
-        JPanel upperPanel = new JPanel(new BorderLayout());
-        upperPanel.add(searchPanel, BorderLayout.NORTH);
-        upperPanel.add(invoiceTablePanel, BorderLayout.CENTER);
-
-        splitPane.setTopComponent(upperPanel);
-        splitPane.setBottomComponent(cancelRequestPanel);
-
-        // Add splitPane to invoiceContent
-        invoiceContent.add(splitPane, BorderLayout.CENTER);
-
-        // Create overall invoice management panels
-        BorderedPanel invoicePanel = createTitledPanel("Quản lý hóa đơn");
-        invoicePanel.setLayout(new BorderLayout());
-        invoicePanel.add(invoiceContent, BorderLayout.CENTER);
-
-        // Set preferred size for invoice panels
-        invoicePanel.setPreferredSize(new Dimension(800, 600));
-
-        // Add invoice panels to right side
-        gbc.gridx = 1;
-        gbc.gridy = 0;
-        gbc.weightx = 0.7;
-        gbc.weighty = 1.0;
-        this.add(invoicePanel, gbc);
-    }
-
-    private StandardMenu createMenuPanel() {
-        StandardMenu menuPanel = new StandardMenu("Quản lý hoá đơn");
-        menuPanel.addMenuItem("Tra cứu hóa đơn", item -> {
-            LOGGER.info("All invoices selected");
-            // Future functionality for all invoices
-        });
-
-        menuPanel.addMenuItem("Yêu cầu hủy hóa đơn", item -> {
-            LOGGER.info("Cancel invoice requests selected");
-            // Future functionality for cancel requests
-        });
-
-        return menuPanel;
-    }
-
-    private JPanel createSearchPanel() {
-        JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 5));
-        searchPanel.setBackground(Constants.Color.COMPONENT_BACKGROUND_WHITE);
-        searchPanel.setBorder(BorderFactory.createTitledBorder("Tìm kiếm hóa đơn"));
-
-        // Create search fields
-        JTextField invoiceIdField = new JTextField(12);
-        invoiceIdField.putClientProperty("JTextField.placeholderText", "Mã hóa đơn");
-
-        JTextField customerField = new JTextField(15);
-        customerField.putClientProperty("JTextField.placeholderText", "Tên khách hàng");
-
-        JTextField employeeField = new JTextField(15);
-        employeeField.putClientProperty("JTextField.placeholderText", "Nhân viên bán hàng");
-
-        JComboBox<String> statusComboBox = new JComboBox<>(new String[]{
-                "Tất cả trạng thái", "Đã thanh toán", "Chờ thanh toán", "Đã hủy"
-        });
-
-        JLabel fromDateLabel = new JLabel("Từ ngày:");
-        JTextField fromDateField = new JTextField(10);
-        fromDateField.putClientProperty("JTextField.placeholderText", "dd/mm/yyyy");
-
-        JLabel toDateLabel = new JLabel("Đến ngày:");
-        JTextField toDateField = new JTextField(10);
-        toDateField.putClientProperty("JTextField.placeholderText", "dd/mm/yyyy");
-
-        JButton searchButton = createStandardButton("Tìm kiếm", null);
-        JButton resetButton = createStandardButton("Đặt lại", null);
-
-        // Add components to search panels
-        searchPanel.add(new JLabel("Mã hóa đơn:"));
-        searchPanel.add(invoiceIdField);
-        searchPanel.add(new JLabel("Khách hàng:"));
-        searchPanel.add(customerField);
-        searchPanel.add(new JLabel("Nhân viên:"));
-        searchPanel.add(employeeField);
-        searchPanel.add(new JLabel("Trạng thái:"));
-        searchPanel.add(statusComboBox);
-        searchPanel.add(fromDateLabel);
-        searchPanel.add(fromDateField);
-        searchPanel.add(toDateLabel);
-        searchPanel.add(toDateField);
-        searchPanel.add(searchButton);
-        searchPanel.add(resetButton);
-
-        return searchPanel;
-    }
-
-    private BorderedPanel createInvoiceTablePanel() {
-        BorderedPanel invoiceTablePanel = createTitledPanel("Danh sách hóa đơn");
-        invoiceTablePanel.setLayout(new BorderLayout());
-
-        // Create toolbar for invoice actions
-        JPanel toolPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        toolPanel.setBackground(Constants.Color.COMPONENT_BACKGROUND_WHITE);
-
-        JButton viewDetailsButton = createStandardButton("Xem chi tiết", null);
-        JButton printButton = createStandardButton("In hóa đơn", null);
-        JButton exportButton = createStandardButton("Xuất Excel", null);
-        JButton deleteButton = createStandardButton("Xóa hóa đơn", null);
-        JButton processCancelRequestButton = createStandardButton("Xử lý yêu cầu hủy", null);
-
-        toolPanel.add(viewDetailsButton);
-        toolPanel.add(printButton);
-        toolPanel.add(exportButton);
-        toolPanel.add(deleteButton);
-        toolPanel.add(processCancelRequestButton);
-
-        invoiceTablePanel.add(toolPanel, BorderLayout.NORTH);
-
-        // Create sample invoice data
-        String[] columnNames = {"Mã hóa đơn", "Ngày tạo", "Khách hàng", "Nhân viên", "Tổng tiền", "Trạng thái", "Ghi chú"};
-        Object[][] data = {
-                {"HD00128", "15/06/2023 14:25", "Khách lẻ", "Nguyễn Văn A", "280,000 VNĐ", "Đã thanh toán", ""},
-                {"HD00127", "15/06/2023 13:40", "Công ty TNHH ABC", "Nguyễn Văn A", "1,450,000 VNĐ", "Đã thanh toán", ""},
-                {"HD00126", "15/06/2023 11:15", "Khách lẻ", "Trần Thị B", "85,000 VNĐ", "Đã thanh toán", ""},
-                {"HD00125", "15/06/2023 10:30", "Khách lẻ", "Trần Thị B", "175,000 VNĐ", "Đã thanh toán", ""},
-                {"HD00124", "14/06/2023 16:45", "Công ty CP XYZ", "Lê Văn C", "2,300,000 VNĐ", "Đã thanh toán", ""},
-                {"HD00123", "14/06/2023 15:20", "Khách lẻ", "Lê Văn C", "150,000 VNĐ", "Đã thanh toán", ""},
-                {"HD00122", "14/06/2023 14:10", "Khách lẻ", "Nguyễn Văn A", "95,000 VNĐ", "Đã thanh toán", ""},
-                {"HD00121", "14/06/2023 11:05", "Khách lẻ", "Trần Thị B", "120,000 VNĐ", "Đã thanh toán", ""},
-                {"HD00120", "14/06/2023 09:30", "Khách lẻ", "Nguyễn Văn A", "65,000 VNĐ", "Đã thanh toán", ""},
-                {"HD00119", "13/06/2023 17:45", "Công ty TNHH DEF", "Trần Thị B", "780,000 VNĐ", "Đã thanh toán", ""}
-        };
-
-        // Create table with data
-        ScrollableTable invoiceTable = new ScrollableTable(columnNames, data);
-        invoiceTablePanel.add(invoiceTable, BorderLayout.CENTER);
-
-        return invoiceTablePanel;
-    }
-
-    private BorderedPanel createCancelRequestPanel() {
-        BorderedPanel cancelRequestPanel = createTitledPanel("Yêu cầu hủy hóa đơn");
-        cancelRequestPanel.setLayout(new BorderLayout());
-
-        // Create sample cancel request data
-        String[] requestColumnNames = {"Mã hóa đơn", "Ngày tạo", "Khách hàng", "Lý do hủy", "Nhân viên yêu cầu", "Trạng thái"};
-        Object[][] requestData = {
-                {"HD00130", "16/06/2023 10:15", "Nguyễn Thị X", "Khách hàng đổi ý", "Trần Thị B", "Chờ duyệt"},
-                {"HD00129", "16/06/2023 09:30", "Công ty TNHH MNO", "Sai thông tin", "Lê Văn C", "Chờ duyệt"}
-        };
-
-        // Create table for cancel requests
-        ScrollableTable requestTable = new ScrollableTable(requestColumnNames, requestData);
-        cancelRequestPanel.add(requestTable, BorderLayout.CENTER);
-
-        // Create toolbar for request actions
-        JPanel requestToolPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        requestToolPanel.setBackground(Constants.Color.COMPONENT_BACKGROUND_WHITE);
-
-        JButton approveButton = createStandardButton("Duyệt yêu cầu", null);
-        JButton rejectButton = createStandardButton("Từ chối", null);
-        JButton viewRequestDetailsButton = createStandardButton("Xem chi tiết", null);
-
-        requestToolPanel.add(approveButton);
-        requestToolPanel.add(rejectButton);
-        requestToolPanel.add(viewRequestDetailsButton);
-
-        cancelRequestPanel.add(requestToolPanel, BorderLayout.NORTH);
-
-        return cancelRequestPanel;
-    }
-
-    private BorderedPanel createTitledPanel(String title) {
-        BorderedPanel panel = new BorderedPanel(title);
-        panel.setBackground(Color.WHITE);
-        return panel;
-    }
-
-    private JButton createStandardButton(String text, java.awt.event.ActionListener actionListener) {
-        JButton button = new JButton(text);
-        button.setFocusPainted(false);
-        if (actionListener != null) {
-            button.addActionListener(actionListener);
+        // Payment methods dropdown (load from DB)
+        List<Payment> methods = serviceManager.getSaleService().getAllPayments();
+        String[] methodItems = new String[methods.size() + 1];
+        methodItems[0] = "Tất cả phương thức";
+        for (int i = 0; i < methods.size(); i++) {
+            methodItems[i + 1] = methods.get(i).getId();
         }
-        return button;
+        JComboBox<String> paymentMethodBox = new JComboBox<>(methodItems);
+
+        toolWrapper.add(new JLabel("Mã hóa đơn:"));
+        toolWrapper.add(Box.createHorizontalStrut(8));
+        toolWrapper.add(invoiceIdField);
+        toolWrapper.add(Box.createHorizontalStrut(15));
+
+        toolWrapper.add(new JLabel("Mã thành viên:"));
+        toolWrapper.add(Box.createHorizontalStrut(8));
+        toolWrapper.add(customerIdField);
+        toolWrapper.add(Box.createHorizontalStrut(15));
+
+        toolWrapper.add(new JLabel("Mã nhân viên:"));
+        toolWrapper.add(Box.createHorizontalStrut(8));
+        toolWrapper.add(employeeIdField);
+        toolWrapper.add(Box.createHorizontalStrut(15));
+
+        toolWrapper.add(new JLabel("Ngày tạo hóa đơn: Từ"));
+        toolWrapper.add(Box.createHorizontalStrut(8));
+        toolWrapper.add(dateFromSpinner);
+
+        toolWrapper.add(Box.createHorizontalStrut(8));
+        toolWrapper.add(new JLabel("đến"));
+        toolWrapper.add(Box.createHorizontalStrut(8));
+
+        toolWrapper.add(dateToSpinner);
+        toolWrapper.add(Box.createHorizontalStrut(15));
+
+        toolWrapper.add(new JLabel("Trạng thái:"));
+        toolWrapper.add(Box.createHorizontalStrut(8));
+        toolWrapper.add(statusBox);
+        toolWrapper.add(Box.createHorizontalStrut(15));
+
+        toolWrapper.add(new JLabel("Phương thức thanh toán:"));
+        toolWrapper.add(Box.createHorizontalStrut(8));
+        toolWrapper.add(paymentMethodBox);
+        toolWrapper.add(Box.createHorizontalStrut(15));
+        toolWrapper.add(Box.createHorizontalStrut(8));
+
+        toolWrapper.add(searchBtn);
+        toolWrapper.add(Box.createHorizontalStrut(5));
+        toolWrapper.add(resetBtn);
+
+        // Button listeners
+        searchBtn.addActionListener(e -> {
+            String id = invoiceIdField.getText().trim();
+            String customerId = customerIdField.getText().trim();
+            String employeeId = employeeIdField.getText().trim();
+            String status = statuses[statusBox.getSelectedIndex()];
+            String paymentMethod = methodItems[paymentMethodBox.getSelectedIndex()];
+            Date fromDate = (Date) dateFromSpinner.getValue();
+            Date toDate = (Date) dateToSpinner.getValue();
+            String from = (fromDate != null) ? df2.format(fromDate) : "";
+            String to = (toDate != null) ? df2.format(toDate) : "";
+
+            List<Invoice> results = serviceManager.getSaleService()
+                    .searchInvoices(id, customerId, employeeId, status, paymentMethod, from, to);
+
+            if (results.isEmpty()) {
+                DialogFactory.showErrorDialog(this, "Thông báo", "Không có kết quả tìm kiếm!");
+            } else {
+                String[][] data = this.toTableData(results);
+                invoiceTable.refreshData(data);
+            }
+        });
+
+        resetBtn.addActionListener(e -> {
+            // 1. Xoá bộ lọc text
+            invoiceIdField.setText("");
+            customerIdField.setText("");
+            employeeIdField.setText("");
+            statusBox.setSelectedIndex(0);
+            paymentMethodBox.setSelectedIndex(0);
+
+            // 2. Đưa spinner về mặc định
+            dateFromSpinner.setValue(defaultFrom);
+            dateToSpinner.setValue(defaultTo);
+
+            // 3. Tìm kiếm lại (lần này từ–đến rộng nhất => load all)
+            searchBtn.doClick();
+        });
+
+        this.add(toolWrapper, BorderLayout.NORTH);
+
+        // Initialize table with all invoice of current store
+        String currentShiftReportId = serviceManager.getCurrentShiftId();
+        ShiftReport shiftReport = serviceManager.getOperationService().getShiftReportById(currentShiftReportId);
+        Store store = serviceManager.getManagementService().getStoreById(shiftReport.getStoreId());
+        String currentStoreId = store.getId();
+
+        List<Invoice> init = serviceManager.getSaleService().getInvoicesByStoreId(currentStoreId);
+        String[][] initData = this.toTableData(init);
+
+        // Setup table with actions (delete/update)
+        java.util.List<ScrollableTable.ActionDefinition> actions = createActions();
+        this.invoiceTable = new ScrollableTable(invoiceColumns, initData, actions);
+
+        // ----- Invoice List Section -----
+        BorderedPanel invoiceTableBordered = new BorderedPanel("Danh sách hóa đơn");
+        invoiceTableBordered.setLayout(new BorderLayout(10, 10));
+        invoiceTableBordered.setBackground(Constants.Color.COMPONENT_BACKGROUND_WHITE);
+        invoiceTableBordered.add(invoiceTable);
+        this.add(invoiceTableBordered, BorderLayout.CENTER);
+    }
+
+    private String[][] toTableData(List<Invoice> list) {
+        String[][] data = new String[list.size()][invoiceColumns.length];
+        for (int i = 0; i < list.size(); i++) {
+            Invoice m = list.get(i);
+            data[i] = new String[]{
+                    m.getId(),
+                    df1.format(m.getCreationTime()),
+                    decf.format(m.getNetAmount()),
+                    decf.format(m.getDiscount()),
+                    decf.format(m.getTotalDue()),
+                    m.getPaymentId() + " - " + serviceManager.getSaleService().getPaymentById(m.getPaymentId()).getName(),
+                    m.getStatus(),
+                    m.getMemberId(),
+                    m.getEmployeeId(),
+                    String.valueOf(m.getPointUsed())
+            };
+        }
+        return data;
+    }
+
+    private List<ScrollableTable.ActionDefinition> createActions() {
+        return List.of(
+                new ScrollableTable.ActionDefinition("In", "In hóa đơn", (row, table) -> {
+                    try {
+                        String id = table.getValueAt(row, 0).toString();
+                        Invoice invoice = serviceManager.getSaleService().getInvoiceById(id);
+                        File invoiceFile = serviceManager.getPrintingService().printInvoice(invoice);
+
+                        if (invoiceFile != null) {
+                            Desktop desktop = Desktop.getDesktop();
+                            desktop.open(invoiceFile);
+                        }
+                    } catch (Exception e) {
+                        System.out.println("Error printing invoice: " + e.getMessage());
+                    }
+                }),
+                new ScrollableTable.ActionDefinition("Hủy", "Hủy hóa đơn", (row, table) -> {
+                    String id = table.getValueAt(row, 0).toString();
+                    boolean confirm = DialogFactory.showConfirmYesNoDialog(
+                            this,
+                            "Xác nhận hủy",
+                            "Bạn có chắc muốn hủy hóa đơn " + id + "?"
+                    );
+                    if (!confirm) return;
+                    if (serviceManager.getSaleService().cancelInvoice(id)) {
+                        DialogFactory.showInfoDialog(this, "Thông báo", "Hóa đơn " + id + " đã bị hủy.");
+                        searchBtn.doClick();
+                    } else {
+                        DialogFactory.showInfoDialog(this, "Thông báo", "Hóa đơn " + id + " đã bị hủy từ trước.");
+                    }
+                })
+        );
     }
 }

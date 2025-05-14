@@ -3,31 +3,31 @@ package com.neostain.csms.model;
 import java.sql.Timestamp;
 
 public class Token {
-    private String tokenId;
+    private String id;
     private String username;
-    private String tokenValue;
+    private String value;
     private Timestamp expiresAt;
     private Timestamp issuedAt;
-    private String tokenStatus;
+    private String status;
 
     public Token() {
     }
 
-    public Token(String tokenId, String username, String tokenValue, Timestamp expiresAt, Timestamp issuedAt, String tokenStatus) {
-        this.tokenId = tokenId;
+    public Token(String id, String username, String value, Timestamp expiresAt, Timestamp issuedAt, String status) {
+        this.id = id;
         this.username = username;
-        this.tokenValue = tokenValue;
+        this.value = value;
         this.issuedAt = issuedAt;
         this.expiresAt = expiresAt;
-        this.tokenStatus = tokenStatus;
+        this.status = status;
     }
 
-    public String getTokenId() {
-        return tokenId;
+    public String getId() {
+        return id;
     }
 
-    public void setTokenId(String tokenId) {
-        this.tokenId = tokenId;
+    public void setId(String id) {
+        this.id = id;
     }
 
     public String getUsername() {
@@ -38,12 +38,12 @@ public class Token {
         this.username = username;
     }
 
-    public String getTokenValue() {
-        return tokenValue;
+    public String getValue() {
+        return value;
     }
 
-    public void setTokenValue(String tokenValue) {
-        this.tokenValue = tokenValue;
+    public void setValue(String value) {
+        this.value = value;
     }
 
     public Timestamp getIssuedAt() {
@@ -62,11 +62,11 @@ public class Token {
         this.expiresAt = expiresAt;
     }
 
-    public String getTokenStatus() {
-        return tokenStatus;
+    public String getStatus() {
+        return status;
     }
 
-    public void setTokenStatus(String tokenStatus) {
-        this.tokenStatus = tokenStatus;
+    public void setStatus(String status) {
+        this.status = status;
     }
 }

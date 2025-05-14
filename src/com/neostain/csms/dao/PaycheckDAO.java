@@ -4,13 +4,14 @@ import com.neostain.csms.model.Paycheck;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.List;
 
 public interface PaycheckDAO {
     Paycheck findById(String id);
 
-    Paycheck findByEmployeeId(String employeeId);
+    List<Paycheck> findByEmployeeId(String employeeId);
 
-    Paycheck findAll();
+    List<Paycheck> findAll();
 
     String create(String employeeId, BigDecimal deduction, Timestamp periodStard, Timestamp periodEnd);
 

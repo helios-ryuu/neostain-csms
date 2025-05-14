@@ -1,27 +1,37 @@
 package com.neostain.csms.model;
 
 public class Role {
-    private String roleId;
-    private String roleName;
+    private String id;
+    private String name;
+    private boolean isDeleted;
 
-    public Role(String roleId, String roleName) {
-        this.roleId = roleId;
-        this.roleName = roleName;
+    public Role(String id, String name, boolean isDeleted) {
+        this.id = id;
+        this.name = name;
+        this.isDeleted = isDeleted;
     }
 
-    public String getRoleId() {
-        return roleId;
+    public String getId() {
+        return id;
     }
 
-    public void setRoleId(String roleId) {
-        this.roleId = roleId;
+    public void setId(String id) {
+        this.id = id;
     }
 
-    public String getRoleName() {
-        return roleName;
+    public String getName() {
+        return name;
     }
 
-    public void setRoleName(String roleName) {
-        this.roleName = roleName;
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public boolean isDeleted() {
+        return isDeleted;
+    }
+
+    public void setDeleted(boolean deleted) {
+        isDeleted = deleted;
     }
 }

@@ -3,6 +3,7 @@ package com.neostain.csms.dao;
 import com.neostain.csms.model.Account;
 import com.neostain.csms.util.SQLQueries;
 import com.neostain.csms.util.StringUtils;
+import com.neostain.csms.util.exception.DuplicateFieldException;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -148,7 +149,7 @@ public class AccountDAOImpl implements AccountDAO {
     }
 
     @Override
-    public boolean create(Account acc) {
+    public boolean create(Account acc) throws DuplicateFieldException {
         try (PreparedStatement ps = conn.prepareStatement(SQLQueries.ACCOUNT_CREATE)) {
             ps.setString(1, acc.getEmployeeId());
             ps.setString(2, acc.getUsername());
@@ -156,6 +157,12 @@ public class AccountDAOImpl implements AccountDAO {
             ps.setString(4, acc.getRoleId());
             return ps.executeUpdate() == 1;
         } catch (SQLException e) {
+            if (e.getErrorCode() == 1) {
+                String msg = e.getMessage().toUpperCase();
+                if (msg.contains("UK_ACCOUNT_USERNAME")) {
+                    throw new DuplicateFieldException("username", "Tên đăng nhập đã tồn tại.");
+                }
+            }
             LOGGER.severe("[CREATE] Lỗi: " + e.getMessage());
             return false;
         }
@@ -199,13 +206,14 @@ public class AccountDAOImpl implements AccountDAO {
     private Account mapResultSetToAccount(ResultSet rs) {
         try {
             return new Account(
-                    rs.getString("ACCOUNT_ID"),
+                    rs.getString("ID"),
                     rs.getString("EMPLOYEE_ID"),
                     rs.getString("USERNAME"),
                     rs.getString("PASSWORD_HASH"),
                     rs.getString("ROLE_ID"),
-                    rs.getTimestamp("ACCOUNT_CREATION_TIME"),
-                    rs.getString("ACCOUNT_STATUS")
+                    rs.getTimestamp("CREATION_TIME"),
+                    rs.getString("STATUS"),
+                    rs.getInt("IS_DELETED") == 1
             );
         } catch (SQLException e) {
             LOGGER.severe("[MAP_RESULT_SET_TO_ACCOUNT] Lỗi: " + e.getMessage());

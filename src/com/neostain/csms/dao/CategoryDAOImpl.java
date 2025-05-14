@@ -3,6 +3,7 @@ package com.neostain.csms.dao;
 import com.neostain.csms.model.Category;
 import com.neostain.csms.util.SQLQueries;
 import com.neostain.csms.util.StringUtils;
+import com.neostain.csms.util.exception.DuplicateFieldException;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -83,12 +84,18 @@ public class CategoryDAOImpl implements CategoryDAO {
     }
 
     @Override
-    public boolean create(Category category) {
+    public boolean create(Category category) throws DuplicateFieldException {
         try (PreparedStatement ps = conn.prepareStatement(SQLQueries.CATEGORY_CREATE)) {
-            ps.setString(1, category.getCategoryId());
-            ps.setString(2, category.getCategoryName());
+            ps.setString(1, category.getId());
+            ps.setString(2, category.getName());
             return ps.executeUpdate() == 1;
         } catch (SQLException e) {
+            if (e.getErrorCode() == 1) {
+                String msg = e.getMessage().toUpperCase();
+                if (msg.contains("UK_CATEGORY_NAME")) {
+                    throw new DuplicateFieldException("categoryName", "Tên danh mục đã tồn tại.");
+                }
+            }
             LOGGER.severe("[CREATE] Lỗi: " + e.getMessage());
             return false;
         }
@@ -118,14 +125,10 @@ public class CategoryDAOImpl implements CategoryDAO {
     }
 
     private Category mapResultSetToCategory(ResultSet rs) throws SQLException {
-        try {
-            return new Category(
-                    rs.getString("CATEGORY_ID"),
-                    rs.getString("CATEGORY_NAME")
-            );
-        } catch (SQLException e) {
-            LOGGER.severe("[MAP_RESULT_SET_TO_CATEGORY] Lỗi: " + e.getMessage());
-            return null;
-        }
+        return new Category(
+                rs.getString("ID"),
+                rs.getString("NAME"),
+                rs.getInt("IS_DELETED") == 1
+        );
     }
 }

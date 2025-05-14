@@ -39,7 +39,7 @@ public class Constants {
         // Standard sizes
         public static final Dimension STANDARD_BUTTON_SIZE = new Dimension(120, 30);
         public static final Dimension STANDARD_FIELD_SIZE = new Dimension(200, 20);
-        public static final Dimension MINIMUM_WINDOW_SIZE = new Dimension(800, 600);
+        public static final Dimension MINIMUM_WINDOW_SIZE = new Dimension(1200, 600);
         public static final Dimension LOGIN_WINDOW_SIZE = new Dimension(550, 260);
         // Standard insets
         public static final Insets STANDARD_INSETS = new Insets(5, 5, 5, 5);

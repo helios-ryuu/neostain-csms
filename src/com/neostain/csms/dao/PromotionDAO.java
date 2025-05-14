@@ -11,8 +11,6 @@ public interface PromotionDAO {
 
     List<Promotion> findByName(String name);
 
-    List<Promotion> findRange(Timestamp start, Timestamp end);
-
     List<Promotion> findByProductId(String productId);
 
     List<Promotion> findAll();

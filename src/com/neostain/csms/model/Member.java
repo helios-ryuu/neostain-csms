@@ -4,36 +4,38 @@ import java.sql.Date;
 
 public class Member {
 
-    private String memberId;
-    private String memberName;
+    private String id;
+    private String name;
     private String phoneNumber;
     private String email;
     private Date registrationDate;
     private int loyaltyPoints;
+    private boolean isDeleted;
 
-    public Member(String memberId, String memberName, String phoneNumber, String email, Date registrationDate, int loyaltyPoints) {
-        this.memberId = memberId;
-        this.memberName = memberName;
+    public Member(String id, String name, String phoneNumber, String email, Date registrationDate, int loyaltyPoints, boolean isDeleted) {
+        this.id = id;
+        this.name = name;
         this.phoneNumber = phoneNumber;
         this.email = email;
         this.registrationDate = registrationDate;
         this.loyaltyPoints = loyaltyPoints;
+        this.isDeleted = isDeleted;
     }
 
-    public String getMemberId() {
-        return memberId;
+    public String getId() {
+        return id;
     }
 
-    public void setMemberId(String memberId) {
-        this.memberId = memberId;
+    public void setId(String id) {
+        this.id = id;
     }
 
-    public String getMemberName() {
-        return memberName;
+    public String getName() {
+        return name;
     }
 
-    public void setMemberName(String memberName) {
-        this.memberName = memberName;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getPhoneNumber() {
@@ -66,5 +68,13 @@ public class Member {
 
     public void setLoyaltyPoints(int loyaltyPoints) {
         this.loyaltyPoints = loyaltyPoints;
+    }
+
+    public boolean isDeleted() {
+        return isDeleted;
+    }
+
+    public void setDeleted(boolean deleted) {
+        isDeleted = deleted;
     }
 }

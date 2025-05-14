@@ -1,24 +1,24 @@
 package com.neostain.csms.model;
 
 public class PointUpdateLog {
-    private String pointUpdateLogId;
+    private String id;
     private String memberId;
     private String invoiceId;
     private int pointChange;
 
-    public PointUpdateLog(String pointUpdateLogId, String memberId, String invoiceId, int pointChange) {
-        this.pointUpdateLogId = pointUpdateLogId;
+    public PointUpdateLog(String id, String memberId, String invoiceId, int pointChange) {
+        this.id = id;
         this.memberId = memberId;
         this.invoiceId = invoiceId;
         this.pointChange = pointChange;
     }
 
-    public String getPointUpdateLogId() {
-        return pointUpdateLogId;
+    public String getId() {
+        return id;
     }
 
-    public void setPointUpdateLogId(String pointUpdateLogId) {
-        this.pointUpdateLogId = pointUpdateLogId;
+    public void setId(String id) {
+        this.id = id;
     }
 
     public String getMemberId() {

@@ -1,93 +1,77 @@
 package com.neostain.csms.view.screen.cs;
 
-import com.neostain.csms.ViewManager;
-import com.neostain.csms.util.ScreenType;
-import com.neostain.csms.view.MainFrame;
+import com.neostain.csms.ServiceManager;
+import com.neostain.csms.model.Account;
+import com.neostain.csms.model.Employee;
+import com.neostain.csms.model.Role;
+import com.neostain.csms.util.Constants;
+import com.neostain.csms.util.DialogFactory;
+import com.neostain.csms.view.component.ScreenHeader;
+import com.neostain.csms.view.component.StandardTabbedPane;
+import com.neostain.csms.view.screen.cs.panels.InvoicePanel;
+import com.neostain.csms.view.screen.cs.panels.POSTabPanel;
+import com.neostain.csms.view.screen.cs.panels.ProductPanel;
+import com.neostain.csms.view.screen.cs.panels.PromotionPanel;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.util.logging.Logger;
 
 public class CashierStaffScreen extends JPanel {
+    private static final Logger LOGGER = Logger.getLogger(CashierStaffScreen.class.getName());
+    private static final ServiceManager serviceManager = ServiceManager.getInstance();
+
+    private final Account account;
+    private final Employee employee;
+    private final Role role;
 
     public CashierStaffScreen(String username) {
-        setLayout(new BorderLayout());
-        add(createTopPanel(username), BorderLayout.NORTH);
-        add(createContentPanel(), BorderLayout.CENTER);
-        add(createStatusPanel(), BorderLayout.SOUTH);
+        // Load user data
+        this.account = serviceManager.getAuthService().getAccountByUsername(username);
+        this.employee = serviceManager.getManagementService().getEmployeeById(account.getEmployeeId());
+        this.role = serviceManager.getAuthService().getRoleById(this.account.getRoleId());
+
+        // Call to set up the UI components
+        initializeComponents();
+        LOGGER.info("[INIT] Màn hình Cashier Staff được khởi tạo cho người dùng: " + username);
     }
 
-    private JPanel createTopPanel(String username) {
-        JPanel panel = new JPanel();
-        panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
-        panel.setPreferredSize(new Dimension(0, 80));
-        panel.setBackground(Color.YELLOW);
+    private void initializeComponents() {
+        try {
+            this.setLayout(new BorderLayout());
+            this.setBackground(Constants.Color.COMPONENT_BACKGROUND_WHITE);
 
-        panel.add(new JLabel("Người dùng: " + username));
-        panel.add(Box.createHorizontalGlue());
+            // Create a header toolbar with user info and logout
+            JPanel headerPanel = new ScreenHeader(
+                    this.employee.getName(),
+                    this.role.getName()
+            );
+            this.add(headerPanel, BorderLayout.NORTH);
 
-        JButton logoutButton = createLogoutButton();
-        panel.add(logoutButton);
+            // Create tabbed pane for the main content
+            JTabbedPane mainCashierPanel = new StandardTabbedPane();
 
-        return panel;
-    }
+            // Initialize tabs
+            JPanel POSTabPanel = new POSTabPanel();
+            JPanel invoiceTabPanel = new InvoicePanel();
+            JPanel promotionTabPanel = new PromotionPanel();
+            JPanel productTabPanel = new ProductPanel();
 
-    private JButton createLogoutButton() {
-        JButton button = new JButton("Đăng xuất");
-        button.setBackground(Color.WHITE);
+            // Add tabs to the mainCashierPanel
+            mainCashierPanel.addTab("POS", POSTabPanel);
+            mainCashierPanel.addTab("Tra cứu hóa đơn", invoiceTabPanel);
+            mainCashierPanel.addTab("Tra cứu khuyến mãi", promotionTabPanel);
+            mainCashierPanel.addTab("Tra cứu sản phẩm", productTabPanel);
 
-        // Xử lý click chuột
-        button.addActionListener(e -> {
-            MainFrame mainFrame = (MainFrame) SwingUtilities.getWindowAncestor(this);
-            ViewManager.getInstance(mainFrame).switchScreen(ScreenType.LOGIN, null);
-        });
-
-        // Hiệu ứng hover
-        button.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                button.setBackground(Color.GRAY);
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                button.setBackground(Color.WHITE);
-            }
-        });
-
-        return button;
-    }
-
-    private JPanel createContentPanel() {
-        JPanel panel = new JPanel(new BorderLayout());
-        panel.add(createMenuPanel(), BorderLayout.WEST);
-        panel.add(createProductPanel(), BorderLayout.CENTER);
-        return panel;
-    }
-
-    private JPanel createMenuPanel() {
-        JPanel panel = new JPanel();
-        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-        panel.setPreferredSize(new Dimension(200, 0));
-        panel.setBackground(Color.ORANGE);
-        // Thêm các thành phần menu tại đây
-        return panel;
-    }
-
-    private JPanel createProductPanel() {
-        JPanel panel = new JPanel();
-        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-        // Thêm các thành phần sản phẩm tại đây
-        return panel;
-    }
-
-    private JPanel createStatusPanel() {
-        JPanel panel = new JPanel();
-        panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
-        panel.setPreferredSize(new Dimension(0, 30));
-        panel.setBackground(Color.BLUE);
-        // Thêm các thành phần trạng thái tại đây
-        return panel;
+            // Add mainCashierPanel to StoreManagerScreen
+            this.add(mainCashierPanel, BorderLayout.CENTER);
+        } catch (Exception e) {
+            LOGGER.severe("Error initializing cashierStaff: " + e.getMessage());
+            DialogFactory.showErrorDialog(
+                    this,
+                    "Initialization Error",
+                    "Error initializing Cashier Staff Screen: " + e.getMessage()
+            );
+        }
     }
 }

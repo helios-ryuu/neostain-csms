@@ -1,32 +1,32 @@
 package com.neostain.csms.model;
 
 public class Store {
-    private String storeId;
-    private String storeName;
+    private String id;
+    private String name;
     private String address;
     private String managerId;
 
-    public Store(String storeId, String storeName, String address, String managerId) {
-        this.storeId = storeId;
-        this.storeName = storeName;
+    public Store(String id, String name, String address, String managerId) {
+        this.id = id;
+        this.name = name;
         this.address = address;
         this.managerId = managerId;
     }
 
-    public String getStoreId() {
-        return storeId;
+    public String getId() {
+        return id;
     }
 
-    public void setStoreId(String storeId) {
-        this.storeId = storeId;
+    public void setId(String id) {
+        this.id = id;
     }
 
-    public String getStoreName() {
-        return storeName;
+    public String getName() {
+        return name;
     }
 
-    public void setStoreName(String storeName) {
-        this.storeName = storeName;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getStoreAddress() {

@@ -3,26 +3,26 @@ package com.neostain.csms.model;
 import java.sql.Timestamp;
 
 public class Assignment {
-    private String assignmentId;
+    private String id;
     private String employeeId;
     private String storeId;
     private Timestamp startTime;
     private Timestamp endTime;
 
-    public Assignment(String assignmentId, String employeeId, String storeId, Timestamp startTime, Timestamp endTime) {
-        this.assignmentId = assignmentId;
+    public Assignment(String id, String employeeId, String storeId, Timestamp startTime, Timestamp endTime) {
+        this.id = id;
         this.employeeId = employeeId;
         this.storeId = storeId;
         this.startTime = startTime;
         this.endTime = endTime;
     }
 
-    public String getAssignmentId() {
-        return assignmentId;
+    public String getId() {
+        return id;
     }
 
-    public void setAssignmentId(String assignmentId) {
-        this.assignmentId = assignmentId;
+    public void setId(String id) {
+        this.id = id;
     }
 
     public String getEmployeeId() {

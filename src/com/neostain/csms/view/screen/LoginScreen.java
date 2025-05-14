@@ -2,9 +2,7 @@ package com.neostain.csms.view.screen;
 
 import com.neostain.csms.ServiceManager;
 import com.neostain.csms.ViewManager;
-import com.neostain.csms.model.Account;
-import com.neostain.csms.model.Employee;
-import com.neostain.csms.model.Role;
+import com.neostain.csms.model.*;
 import com.neostain.csms.util.Constants;
 import com.neostain.csms.util.DialogFactory;
 import com.neostain.csms.util.ScreenType;
@@ -16,6 +14,8 @@ import com.neostain.csms.view.component.StandardTabbedPane;
 
 import javax.swing.*;
 import java.awt.*;
+import java.text.SimpleDateFormat;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -30,16 +30,24 @@ public class LoginScreen extends JPanel {
     // Các thành phần giao diện
     private final JTextField usernameField;
     private final JPasswordField passwordField;
+    private final JComboBox<String> storeBox;
+    private final String[] storeItems;
     private final JLabel statusLabel;
 
     /**
      * Khởi tạo màn hình xác thực với các thành phần giao diện
      */
     public LoginScreen() {
-        super(); // Calls BaseScreen constructor
         // Initialize fields before parent class constructor is called
         this.usernameField = new JTextField(30);
         this.passwordField = new JPasswordField(30);
+        // Payment methods dropdown (load from DB)
+        List<Store> stores = serviceManager.getManagementService(false).getAllStores();
+        this.storeItems = new String[stores.size()];
+        for (int i = 0; i < stores.size(); i++) {
+            storeItems[i] = stores.get(i).getId();
+        }
+        this.storeBox = new JComboBox<>(storeItems);
         this.statusLabel = new JLabel("Vui lòng đăng nhập");
 
 
@@ -106,7 +114,7 @@ public class LoginScreen extends JPanel {
         ));
 
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(6, 15, 6, 15);
+        gbc.insets = new Insets(4, 15, 4, 15);
 
         // Username
         gbc.gridx = 0;
@@ -119,9 +127,21 @@ public class LoginScreen extends JPanel {
         gbc.fill = GridBagConstraints.HORIZONTAL;
         panel.add(usernameField, gbc);
 
-        // Password
+        // Cửa hàng
         gbc.gridx = 0;
         gbc.gridy = 1;
+        gbc.anchor = GridBagConstraints.WEST;
+        panel.add(new JLabel("Mã cửa hàng"), gbc);
+
+        gbc.gridx = 1;
+        gbc.weightx = 1.0;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        panel.add(storeBox, gbc);
+
+
+        // Password
+        gbc.gridx = 0;
+        gbc.gridy = 2;
         gbc.weightx = 0;
         gbc.fill = GridBagConstraints.NONE;
         panel.add(new JLabel("Mật khẩu"), gbc);
@@ -131,12 +151,14 @@ public class LoginScreen extends JPanel {
         gbc.fill = GridBagConstraints.HORIZONTAL;
         panel.add(passwordField, gbc);
 
+        gbc.insets = new Insets(15, 15, 6, 15);
+
         // Login button
         JButton loginButton = new StandardButton(this, "Đăng nhập");
         loginButton.addActionListener(e -> this.login());
 
         gbc.gridx = 0;
-        gbc.gridy = 2;
+        gbc.gridy = 3;
         gbc.gridwidth = 1;
         gbc.fill = GridBagConstraints.NONE;
         gbc.anchor = GridBagConstraints.CENTER;
@@ -212,25 +234,26 @@ public class LoginScreen extends JPanel {
     private void login() {
         String username = this.usernameField.getText().trim();
         String password = new String(this.passwordField.getPassword());
+        String storeId = this.storeItems[this.storeBox.getSelectedIndex()];
 
         // Validate input
-        if (StringUtils.isNullOrEmpty(username) || StringUtils.isNullOrEmpty(password)) {
-            this.statusLabel.setText("Vui lòng nhập tên đăng nhập và mật khẩu");
+        if (StringUtils.isNullOrEmpty(username) || StringUtils.isNullOrEmpty(password) || StringUtils.isNullOrEmpty(storeId)) {
+            this.statusLabel.setText("Vui lòng nhập tên đăng nhập, mã cửa hàng và mật khẩu");
             this.statusLabel.setForeground(Color.RED);
             DialogFactory.showErrorDialog(
                     this,
                     "Lỗi đăng nhập",
-                    "Vui lòng nhập tên đăng nhập và mật khẩu"
+                    "Vui lòng nhập tên đăng nhập, mã cửa hàng và mật khẩu"
             );
             return;
         }
 
         try {
             // Sử dụng phương thức login của ServiceManager để xử lý đăng nhập và tạo token
-            String token = serviceManager.login(username, password);
+            String token = serviceManager.login(username, password, storeId);
 
             if (token == null) {
-                String errorMessage = "Sai tên đăng nhập hoặc mật khẩu";
+                String errorMessage = "Sai tên đăng nhập hoặc mật khẩu hoặc không tìm thấy cửa hàng";
                 this.statusLabel.setText(errorMessage);
                 this.statusLabel.setForeground(Color.RED);
                 DialogFactory.showErrorDialog(
@@ -246,19 +269,27 @@ public class LoginScreen extends JPanel {
                 // Reset input fields
                 this.passwordField.setText("");
                 this.usernameField.setText("");
-                this.statusLabel.setText("Đăng nhập thành công!");
+                this.storeBox.setSelectedIndex(0);
+                this.statusLabel.setText("Đăng nhập và chấm công vào làm thành công!");
                 this.statusLabel.setForeground(Color.GREEN);
 
                 try {
                     // Khởi tạo đối tượng thông tin đăng nhập hiện tại
                     Account account = serviceManager.getAuthService().getAccountByUsername(currentUsername);
-                    Employee employee = serviceManager.getEmployeeService().getEmployeeById(account.getEmployeeId());
+                    Employee employee = serviceManager.getManagementService().getEmployeeById(account.getEmployeeId());
                     Role role = serviceManager.getAuthService().getRoleById(account.getRoleId());
+                    Store store = serviceManager.getManagementService().getStoreById(storeId);
+                    ShiftReport shiftReport = serviceManager.getOperationService().getShiftReportById(serviceManager.getCurrentShiftId());
+
+                    SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
+                    String shiftStartTime = sdf.format(shiftReport.getStartTime());
 
                     // Hiển thị thông báo chào mừng
                     String message = "Đăng nhập thành công!\nChào mừng, " +
-                            employee.getEmployeeId() + " - " + employee.getEmployeeName() +
-                            "\nPhân quyền: " + role.getRoleId() + " - " + role.getRoleName();
+                            employee.getId() + " - " + employee.getName() +
+                            "\nVai trò: " + role.getId() + " - " + role.getName() +
+                            "\n\nĐã khởi động ca làm: " + shiftReport.getId() + " lúc " + shiftStartTime +
+                            "\ntại cửa hàng: " + store.getId() + " - " + store.getName();
                     DialogFactory.showInfoDialog(
                             this,
                             "Thành công",
@@ -266,7 +297,7 @@ public class LoginScreen extends JPanel {
                     );
 
                     // Chuyển đến màn hình chức năng tương ứng
-                    navigateToFunctionalScreen(username, role.getRoleName());
+                    navigateToFunctionalScreen(username, role.getName());
                 } catch (Exception e) {
                     LOGGER.log(Level.SEVERE, "Lỗi sau khi đăng nhập: " + e.getMessage(), e);
                     DialogFactory.showErrorDialog(

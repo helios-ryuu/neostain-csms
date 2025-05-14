@@ -3,30 +3,32 @@ package com.neostain.csms.model;
 import java.sql.Timestamp;
 
 public class Account {
-    private String accountId;
+    private String id;
     private String employeeId;
     private String username;
     private String passwordHash;
     private String roleId;
-    private Timestamp accountCreationTime;
-    private String accountStatus;
+    private Timestamp creationTime;
+    private String status;
+    private boolean isDeleted;
 
-    public Account(String accountId, String employeeId, String username, String passwordHash, String roleId, Timestamp accountCreationTime, String accountStatus) {
-        this.accountId = accountId;
+    public Account(String id, String employeeId, String username, String passwordHash, String roleId, Timestamp creationTime, String status, boolean isDeleted) {
+        this.id = id;
         this.employeeId = employeeId;
         this.username = username;
         this.passwordHash = passwordHash;
         this.roleId = roleId;
-        this.accountCreationTime = accountCreationTime;
-        this.accountStatus = accountStatus;
+        this.creationTime = creationTime;
+        this.status = status;
+        this.isDeleted = isDeleted;
     }
 
-    public String getAccountId() {
-        return accountId;
+    public String getId() {
+        return id;
     }
 
-    public void setAccountId(String accountId) {
-        this.accountId = accountId;
+    public void setId(String id) {
+        this.id = id;
     }
 
     public String getEmployeeId() {
@@ -61,19 +63,27 @@ public class Account {
         this.roleId = roleId;
     }
 
-    public Timestamp getAccountCreationTime() {
-        return accountCreationTime;
+    public Timestamp getCreationTime() {
+        return creationTime;
     }
 
-    public void setAccountCreationTime(Timestamp accountCreationTime) {
-        this.accountCreationTime = accountCreationTime;
+    public void setCreationTime(Timestamp creationTime) {
+        this.creationTime = creationTime;
     }
 
-    public String getAccountStatus() {
-        return accountStatus;
+    public String getStatus() {
+        return status;
     }
 
-    public void setAccountStatus(String accountStatus) {
-        this.accountStatus = accountStatus;
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public boolean isDeleted() {
+        return isDeleted;
+    }
+
+    public void setDeleted(boolean deleted) {
+        isDeleted = deleted;
     }
 }

@@ -3,32 +3,34 @@ package com.neostain.csms.model;
 import java.math.BigDecimal;
 
 public class Product {
-    private String productId;
-    private String productName;
+    private String id;
+    private String nane;
     private BigDecimal unitPrice;
     private String categoryId;
+    private boolean isDeleted;
 
-    public Product(String productId, String productName, BigDecimal unitPrice, String categoryId) {
-        this.productId = productId;
-        this.productName = productName;
+    public Product(String id, String nane, BigDecimal unitPrice, String categoryId, boolean isDeleted) {
+        this.id = id;
+        this.nane = nane;
         this.unitPrice = unitPrice;
         this.categoryId = categoryId;
+        this.isDeleted = isDeleted;
     }
 
-    public String getProductId() {
-        return productId;
+    public String getId() {
+        return id;
     }
 
-    public void setProductId(String productId) {
-        this.productId = productId;
+    public void setId(String id) {
+        this.id = id;
     }
 
-    public String getProductName() {
-        return productName;
+    public String getNane() {
+        return nane;
     }
 
-    public void setProductName(String productName) {
-        this.productName = productName;
+    public void setNane(String nane) {
+        this.nane = nane;
     }
 
     public BigDecimal getUnitPrice() {
@@ -45,5 +47,13 @@ public class Product {
 
     public void setCategoryId(String categoryId) {
         this.categoryId = categoryId;
+    }
+
+    public boolean isDeleted() {
+        return isDeleted;
+    }
+
+    public void setDeleted(boolean deleted) {
+        isDeleted = deleted;
     }
 }

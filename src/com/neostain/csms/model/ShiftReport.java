@@ -4,9 +4,9 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 
 public class ShiftReport {
-    private String shiftReportId;
-    private Timestamp shiftStartTime;
-    private Timestamp shiftEndTime;
+    private String id;
+    private Timestamp startTime;
+    private Timestamp endTime;
     private BigDecimal ewalletRevenue;
     private BigDecimal cashRevenue;
     private BigDecimal bankRevenue;
@@ -14,10 +14,10 @@ public class ShiftReport {
     private String storeId;
     private String employeeId;
 
-    public ShiftReport(String shiftReportId, Timestamp shiftStartTime, Timestamp shiftEndTime, BigDecimal ewalletRevenue, BigDecimal cashRevenue, BigDecimal bankRevenue, int transactionCount, String storeId, String employeeId) {
-        this.shiftReportId = shiftReportId;
-        this.shiftStartTime = shiftStartTime;
-        this.shiftEndTime = shiftEndTime;
+    public ShiftReport(String id, Timestamp startTime, Timestamp endTime, BigDecimal ewalletRevenue, BigDecimal cashRevenue, BigDecimal bankRevenue, int transactionCount, String storeId, String employeeId) {
+        this.id = id;
+        this.startTime = startTime;
+        this.endTime = endTime;
         this.ewalletRevenue = ewalletRevenue;
         this.cashRevenue = cashRevenue;
         this.bankRevenue = bankRevenue;
@@ -26,28 +26,28 @@ public class ShiftReport {
         this.employeeId = employeeId;
     }
 
-    public String getShiftReportId() {
-        return shiftReportId;
+    public String getId() {
+        return id;
     }
 
-    public void setShiftReportId(String shiftReportId) {
-        this.shiftReportId = shiftReportId;
+    public void setId(String id) {
+        this.id = id;
     }
 
-    public Timestamp getShiftStartTime() {
-        return shiftStartTime;
+    public Timestamp getStartTime() {
+        return startTime;
     }
 
-    public void setShiftStartTime(Timestamp shiftStartTime) {
-        this.shiftStartTime = shiftStartTime;
+    public void setStartTime(Timestamp startTime) {
+        this.startTime = startTime;
     }
 
-    public Timestamp getShiftEndTime() {
-        return shiftEndTime;
+    public Timestamp getEndTime() {
+        return endTime;
     }
 
-    public void setShiftEndTime(Timestamp shiftEndTime) {
-        this.shiftEndTime = shiftEndTime;
+    public void setEndTime(Timestamp endTime) {
+        this.endTime = endTime;
     }
 
     public BigDecimal getEwalletRevenue() {

@@ -4,6 +4,8 @@ import com.neostain.csms.util.Constants;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
@@ -16,7 +18,6 @@ public class StandardMenu extends BorderedPanel {
 
     private final List<ItemPanel> menuItems = new ArrayList<>();
     private final JPanel menuItemsContainer;
-    private final JPanel footerPanel;
     private ItemPanel selectedItem = null;
 
     /**
@@ -39,7 +40,7 @@ public class StandardMenu extends BorderedPanel {
         menuItemsContainer.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
 
         // Create a footer panels for logout button
-        footerPanel = new JPanel(new BorderLayout());
+        JPanel footerPanel = new JPanel(new BorderLayout());
         footerPanel.setBackground(Constants.Color.COMPONENT_BACKGROUND_WHITE);
         footerPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
@@ -156,5 +157,55 @@ public class StandardMenu extends BorderedPanel {
         menuItemsContainer.add(Box.createVerticalGlue());
         menuItemsContainer.revalidate();
         menuItemsContainer.repaint();
+    }
+
+    public static class ItemPanel extends JPanel {
+        private final String text;
+
+        public ItemPanel(String text) {
+            this.text = text;
+            this.setLayout(new BorderLayout());
+            this.setMaximumSize(new Dimension(200, 40));
+            this.setPreferredSize(new Dimension(200, 40));
+            this.setBorder(BorderFactory.createEmptyBorder(5, 8, 5, 8));
+            this.setBackground(Constants.Color.COMPONENT_BACKGROUND_WHITE);
+
+            JLabel label = new JLabel(text);
+            label.setFont(new Font(Constants.Font.DEFAULT_FONT_NAME, Font.PLAIN, Constants.Font.DEFAULT_SIZE));
+            this.add(label, BorderLayout.CENTER);
+
+            // Thêm xử lý sự kiện hover
+            this.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseEntered(MouseEvent e) {
+                    setBackground(Constants.Color.COMPONENT_BACKGROUND_SELECTED);
+                    setCursor(new Cursor(Cursor.HAND_CURSOR));
+                }
+
+                @Override
+                public void mouseExited(MouseEvent e) {
+                    setBackground(Constants.Color.COMPONENT_BACKGROUND_WHITE);
+                    setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+                }
+
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    // Xử lý khi click vào menu item
+                    System.out.println("Clicked: " + text);
+                }
+            });
+        }
+
+        public void setSelected(boolean b) {
+            if (b) {
+                this.setBackground(Constants.Color.COMPONENT_BACKGROUND_SELECTED);
+            } else {
+                this.setBackground(Constants.Color.COMPONENT_BACKGROUND_WHITE);
+            }
+        }
+
+        public String getText() {
+            return text;
+        }
     }
 }

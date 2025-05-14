@@ -5,44 +5,46 @@ import java.sql.Timestamp;
 
 public class Employee {
 
-    private String employeeId;
-    private String employeeName;
+    private String id;
+    private String name;
     private String position;
     private Timestamp hireDate;
     private String email;
     private String phoneNumber;
     private String address;
     private BigDecimal hourlyWage;
-    private String employeeStatus;
+    private String status;
+    private boolean isDeleted;
 
-    public Employee(String employeeId, String employeeName, String position,
+    public Employee(String id, String name, String position,
                     Timestamp hireDate, String email, String phoneNumber, String address,
-                    BigDecimal hourlyWage, String employeeStatus) {
-        this.employeeId = employeeId;
-        this.employeeName = employeeName;
+                    BigDecimal hourlyWage, String status, boolean isDeleted) {
+        this.id = id;
+        this.name = name;
         this.position = position;
         this.hireDate = hireDate;
         this.email = email;
         this.phoneNumber = phoneNumber;
         this.address = address;
         this.hourlyWage = hourlyWage;
-        this.employeeStatus = employeeStatus;
+        this.status = status;
+        this.isDeleted = isDeleted;
     }
 
-    public String getEmployeeId() {
-        return employeeId;
+    public String getId() {
+        return id;
     }
 
-    public void setEmployeeId(String employeeId) {
-        this.employeeId = employeeId;
+    public void setId(String id) {
+        this.id = id;
     }
 
-    public String getEmployeeName() {
-        return employeeName;
+    public String getName() {
+        return name;
     }
 
-    public void setEmployeeName(String employeeName) {
-        this.employeeName = employeeName;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getPosition() {
@@ -93,11 +95,19 @@ public class Employee {
         this.hourlyWage = hourlyWage;
     }
 
-    public String getEmployeeStatus() {
-        return employeeStatus;
+    public String getStatus() {
+        return status;
     }
 
-    public void setEmployeeStatus(String employeeStatus) {
-        this.employeeStatus = employeeStatus;
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public boolean isDeleted() {
+        return isDeleted;
+    }
+
+    public void setDeleted(boolean deleted) {
+        isDeleted = deleted;
     }
 }
