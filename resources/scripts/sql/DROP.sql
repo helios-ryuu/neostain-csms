@@ -1,29 +1,33 @@
--- 1. Drop tất cả các bảng cứng
+-- THIS FILE IS FINALIZED AND SEALED.
+-- DO NOT MODIFY THIS FILE.
+-- [SEALED BY HELIOS 18/5/2025] --
+
+-- 1. DROP ALL TABLES
 BEGIN
-    FOR tbl IN (
-        SELECT table_name
-        FROM user_tables
-        WHERE table_name IN (
+    FOR TBL IN (
+        SELECT TABLE_NAME
+        FROM USER_TABLES
+        WHERE TABLE_NAME IN (
                              'ASSIGNMENT', 'PAYCHECK', 'TOKEN', 'POINT_UPDATE_LOG', 'INVOICE_DETAIL',
                              'SHIFT_REPORT', 'INVOICE', 'ACCOUNT', 'PROMOTION', 'MEMBER',
                              'PRODUCT', 'STORE', 'EMPLOYEE', 'CATEGORY', 'PAYMENT', 'ROLE'
             )
         )
         LOOP
-            EXECUTE IMMEDIATE 'DROP TABLE ' || tbl.table_name || ' CASCADE CONSTRAINTS';
+            EXECUTE IMMEDIATE 'DROP TABLE ' || TBL.TABLE_NAME || ' CASCADE CONSTRAINTS';
         END LOOP;
 END;
 /
 
--- 2. Purge recyclebin để đảm bảo xóa triệt để
-PURGE recyclebin;
+-- 2. PURGE RECYCLEBIN TO DELETE ALL OBJECTS COMPLETELY
+PURGE RECYCLEBIN;
 
--- 3. Drop các đối tượng PL/SQL & schema-level khác
+-- 3. DROP ALL OBJECTS PL/SQL & OTHERS OF SCHEMA-LEVEL
 BEGIN
-    FOR obj IN (
-        SELECT object_name, object_type
-        FROM user_objects
-        WHERE object_type IN (
+    FOR OBJ IN (
+        SELECT OBJECT_NAME, OBJECT_TYPE
+        FROM USER_OBJECTS
+        WHERE OBJECT_TYPE IN (
                               'SEQUENCE', 'TRIGGER', 'PROCEDURE', 'FUNCTION',
                               'PACKAGE', 'PACKAGE BODY', 'TYPE', 'TYPE BODY',
                               'VIEW', 'SYNONYM', 'MATERIALIZED VIEW'
@@ -33,7 +37,7 @@ BEGIN
             BEGIN
                 EXECUTE IMMEDIATE
                     'DROP ' ||
-                    CASE obj.object_type
+                    CASE OBJ.OBJECT_TYPE
                         WHEN 'SEQUENCE' THEN 'SEQUENCE '
                         WHEN 'TRIGGER' THEN 'TRIGGER '
                         WHEN 'PROCEDURE' THEN 'PROCEDURE '
@@ -46,35 +50,41 @@ BEGIN
                         WHEN 'MATERIALIZED VIEW' THEN 'MATERIALIZED VIEW '
                         WHEN 'SYNONYM' THEN 'SYNONYM '
                         END
-                        || obj.object_name;
+                        || OBJ.OBJECT_NAME;
             EXCEPTION
                 WHEN OTHERS THEN
-                    NULL; -- Bỏ qua lỗi nếu object đã bị xóa
+                    NULL; -- SKIP ERRORS IF OBJECT HAS BEEN DROPPED
             END;
         END LOOP;
 END;
 /
 
--- 4. (Tuỳ chọn) Purge lại recyclebin để sạch hoàn toàn
-PURGE recyclebin;
+-- 4. PURGE RECYCLEBIN TO DELETE ALL OBJECTS COMPLETELY
+PURGE RECYCLEBIN;
 
--- 5. Drop tất cả Scheduler Job trong schema
+-- 5. DROP ALL SCHEDULER JOB IN SCHEMA
 BEGIN
-    FOR j IN (
-        SELECT job_name
-        FROM user_scheduler_jobs
-        -- Nếu bạn chỉ muốn xóa job theo pattern, ví dụ JOB_RESET_%, thêm WHERE job_name LIKE 'JOB_RESET_%'
+    FOR J IN (
+        SELECT JOB_NAME
+        FROM USER_SCHEDULER_JOBS
         )
         LOOP
             BEGIN
                 DBMS_SCHEDULER.DROP_JOB(
-                        job_name => j.job_name,
-                        force => TRUE
+                        JOB_NAME => J.JOB_NAME,
+                        FORCE => TRUE
                 );
             EXCEPTION
                 WHEN OTHERS THEN
-                    NULL; -- Nếu job đang chạy hoặc không xóa được, bỏ qua
+                    NULL;
             END;
         END LOOP;
 END;
 /
+
+-- 6. PURGE RECYCLEBIN TO DELETE ALL OBJECTS COMPLETELY
+PURGE RECYCLEBIN;
+
+-- THIS FILE IS FINALIZED AND SEALED.
+-- DO NOT MODIFY THIS FILE.
+-- [SEALED BY HELIOS 18/5/2025] --

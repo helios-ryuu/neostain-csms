@@ -1,0 +1,414 @@
+-- THIS FILE IS FINALIZED AND SEALED.
+-- DO NOT MODIFY THIS FILE.
+-- [SEALED BY HELIOS 18/5/2025] --
+
+CREATE OR REPLACE PROCEDURE PRC_INITIATE_SHIFT(
+    P_STORE_ID IN CSMS_ADMIN.SHIFT_REPORT.STORE_ID%TYPE,
+    P_EMPLOYEE_ID IN CSMS_ADMIN.SHIFT_REPORT.EMPLOYEE_ID%TYPE,
+    P_SHIFT_ID OUT CSMS_ADMIN.SHIFT_REPORT.ID%TYPE
+)
+AS
+BEGIN
+    INSERT INTO SHIFT_REPORT(STORE_ID, EMPLOYEE_ID)
+    VALUES (P_STORE_ID, P_EMPLOYEE_ID)
+    RETURNING ID INTO P_SHIFT_ID;
+END PRC_INITIATE_SHIFT;
+/
+
+CREATE OR REPLACE PROCEDURE PRC_END_SHIFT(
+    P_SHIFT_ID IN SHIFT_REPORT.ID%TYPE
+)
+AS
+    V_START   TIMESTAMP;
+    V_END     TIMESTAMP := SYSTIMESTAMP;
+    V_CASH    NUMBER    := 0;
+    V_EWALLET NUMBER    := 0;
+    V_BANK    NUMBER    := 0;
+    V_COUNT   NUMBER    := 0;
+BEGIN
+    -- 1) LẤY VÀ CẬP NHẬT END_TIME
+    SELECT START_TIME
+    INTO V_START
+    FROM SHIFT_REPORT
+    WHERE ID = P_SHIFT_ID
+      AND END_TIME IS NULL; -- ĐẢM BẢO CHỈ CHẠY 1 LẦN
+
+    UPDATE SHIFT_REPORT
+    SET END_TIME = V_END
+    WHERE ID = P_SHIFT_ID;
+
+    -- 2) TÍNH TỔNG DOANH THU & SỐ GIAO DỊCH
+    SELECT SUM(CASE WHEN PAYMENT_ID = 'P001' THEN TOTAL_DUE ELSE 0 END),
+           SUM(CASE WHEN PAYMENT_ID = 'P002' THEN TOTAL_DUE ELSE 0 END),
+           SUM(CASE WHEN PAYMENT_ID = 'P003' THEN TOTAL_DUE ELSE 0 END)
+    INTO V_CASH, V_EWALLET, V_BANK
+    FROM INVOICE
+    WHERE CREATION_TIME BETWEEN V_START AND V_END
+      AND STATUS = 'ĐÃ HOÀN THÀNH';
+
+    SELECT COUNT(*)
+    INTO V_COUNT
+    FROM INVOICE
+    WHERE CREATION_TIME BETWEEN V_START AND V_END;
+
+    -- 3) CẬP NHẬT VÀO BÁO CÁO ĐÓNG CA
+    UPDATE SHIFT_REPORT
+    SET CASH_REVENUE      = NVL(V_CASH, 0),
+        EWALLET_REVENUE   = NVL(V_EWALLET, 0),
+        BANK_REVENUE      = NVL(V_BANK, 0),
+        TRANSACTION_COUNT = V_COUNT
+    WHERE ID = P_SHIFT_ID;
+END PRC_END_SHIFT;
+/
+
+CREATE OR REPLACE PROCEDURE PRC_INITIATE_INVOICE(
+    P_STORE_ID IN CSMS_ADMIN.INVOICE.STORE_ID%TYPE,
+    P_MEMBER_ID IN CSMS_ADMIN.INVOICE.MEMBER_ID%TYPE,
+    P_PAYMENT_ID IN CSMS_ADMIN.INVOICE.PAYMENT_ID%TYPE,
+    P_EMPLOYEE_ID IN CSMS_ADMIN.INVOICE.EMPLOYEE_ID%TYPE,
+    P_POINT_USED IN CSMS_ADMIN.INVOICE.POINT_USED%TYPE DEFAULT 0,
+    P_INVOICE_ID OUT CSMS_ADMIN.INVOICE.ID%TYPE
+)
+AS
+BEGIN
+    INSERT INTO INVOICE(STORE_ID, MEMBER_ID, PAYMENT_ID, EMPLOYEE_ID, POINT_USED)
+    VALUES (P_STORE_ID, P_MEMBER_ID, P_PAYMENT_ID, P_EMPLOYEE_ID, P_POINT_USED)
+    RETURNING ID INTO P_INVOICE_ID;
+END PRC_INITIATE_INVOICE;
+/
+
+CREATE OR REPLACE PROCEDURE PRC_ADD_ITEM_TO_INVOICE(
+    P_INVOICE_ID IN INVOICE_DETAIL.INVOICE_ID%TYPE,
+    P_PRODUCT_ID IN INVOICE_DETAIL.PRODUCT_ID%TYPE,
+    P_QUANTITY_SOLD IN INVOICE_DETAIL.QUANTITY_SOLD%TYPE
+)
+AS
+    V_UNIT_PRICE    PRODUCT.UNIT_PRICE%TYPE;
+    V_SETS          NUMBER;
+    V_FREE_QUANTITY NUMBER;
+BEGIN
+    -- 1) LẤY ĐƠN GIÁ GỐC CỦA SẢN PHẨM CHÍNH
+    SELECT UNIT_PRICE
+    INTO V_UNIT_PRICE
+    FROM PRODUCT
+    WHERE ID = P_PRODUCT_ID;
+
+    -- 2) CHÈN HOẶC CỘNG DỒN SẢN PHẨM CHÍNH (UNIT PRICE GỐC)
+    UPDATE INVOICE_DETAIL
+    SET QUANTITY_SOLD = QUANTITY_SOLD + P_QUANTITY_SOLD
+    WHERE INVOICE_ID = P_INVOICE_ID
+      AND PRODUCT_ID = P_PRODUCT_ID;
+    IF SQL%ROWCOUNT = 0 THEN
+        INSERT INTO INVOICE_DETAIL(INVOICE_ID, PRODUCT_ID, QUANTITY_SOLD, UNIT_PRICE)
+        VALUES (P_INVOICE_ID, P_PRODUCT_ID, P_QUANTITY_SOLD, V_UNIT_PRICE);
+    END IF;
+
+    -- 3) CẬP NHẬT NET_AMOUNT CHO SẢN PHẨM CHÍNH
+    UPDATE INVOICE
+    SET NET_AMOUNT = NVL(NET_AMOUNT, 0) + V_UNIT_PRICE * P_QUANTITY_SOLD
+    WHERE ID = P_INVOICE_ID;
+
+    -- 4) XỬ LÝ KHUYẾN MÃI MUA X TẶNG Y HOẶC GIẢM %
+    FOR PROMO_REC IN (
+        SELECT MINIMUM_PURCHASE_QUANTITY,
+               PROMO_PRODUCT_ID,
+               PROMO_PRODUCT_QUANTITY,
+               DISCOUNT_RATE
+        FROM PROMOTION
+        WHERE PRODUCT_ID = P_PRODUCT_ID
+          AND SYSTIMESTAMP BETWEEN START_TIME AND END_TIME
+        )
+        LOOP
+            -- TÍNH SỐ BỘ ĐỦ ĐIỀU KIỆN
+            V_SETS := FLOOR(P_QUANTITY_SOLD / PROMO_REC.MINIMUM_PURCHASE_QUANTITY);
+            IF V_SETS > 0 THEN
+
+                -- 4.1) XỬ LÝ GIẢM % (NẾU CÓ RATE > 0 VÀ PROMO_REC.PROMO_PRODUCT_ID IS NULL)
+                IF PROMO_REC.DISCOUNT_RATE > 0 AND PROMO_REC.PROMO_PRODUCT_ID IS NULL THEN
+                    -- CỘNG DISCOUNT CHO SẢN PHẨM CHÍNH
+                    UPDATE INVOICE
+                    SET DISCOUNT = NVL(DISCOUNT, 0)
+                        + V_UNIT_PRICE
+                                       * PROMO_REC.MINIMUM_PURCHASE_QUANTITY
+                                       * V_SETS
+                                       * PROMO_REC.DISCOUNT_RATE
+                    WHERE ID = P_INVOICE_ID;
+                END IF;
+
+                -- 4.2) XỬ LÝ TẶNG Y (NẾU PROMO_PRODUCT_ID KHÔNG NULL)
+                IF PROMO_REC.PROMO_PRODUCT_ID IS NOT NULL THEN
+                    V_FREE_QUANTITY := V_SETS * PROMO_REC.PROMO_PRODUCT_QUANTITY;
+
+                    -- THỬ CẬP NHẬT TRƯỚC
+                    UPDATE INVOICE_DETAIL
+                    SET QUANTITY_SOLD = QUANTITY_SOLD + V_FREE_QUANTITY
+                    WHERE INVOICE_ID = P_INVOICE_ID
+                      AND PRODUCT_ID = PROMO_REC.PROMO_PRODUCT_ID
+                      AND UNIT_PRICE = 0; -- HÀNG TẶNG CÓ GIÁ 0
+
+                    IF SQL%ROWCOUNT = 0 THEN
+                        -- CHƯA CÓ HÀNG TẶNG, CHÈN MỚI
+                        INSERT INTO INVOICE_DETAIL(INVOICE_ID, PRODUCT_ID, QUANTITY_SOLD, UNIT_PRICE)
+                        VALUES (P_INVOICE_ID, PROMO_REC.PROMO_PRODUCT_ID, V_FREE_QUANTITY, 0);
+                    END IF;
+                END IF;
+            END IF;
+        END LOOP;
+END PRC_ADD_ITEM_TO_INVOICE;
+/
+
+CREATE OR REPLACE PROCEDURE PRC_CALC_TOTAL(
+    P_INVOICE_ID IN INVOICE.ID%TYPE
+)
+AS
+    V_NET_AMOUNT INVOICE.NET_AMOUNT%TYPE;
+    V_MEMBER_ID  INVOICE.MEMBER_ID%TYPE;
+    V_POINT_USED INVOICE.POINT_USED%TYPE;
+BEGIN
+
+    -- 1) LẤY NET_AMOUNT, MEMBER_ID, POINT_USED
+    SELECT NET_AMOUNT, MEMBER_ID, POINT_USED
+    INTO V_NET_AMOUNT, V_MEMBER_ID, V_POINT_USED
+    FROM INVOICE
+    WHERE ID = P_INVOICE_ID;
+
+    -- 2) VALIDATE ĐIỂM DÙNG KHÔNG VƯỢT QUÁ GIỚI HẠN
+    IF V_POINT_USED * 40 > V_NET_AMOUNT THEN
+        RAISE_APPLICATION_ERROR(
+                -20002,
+                'SỐ ĐIỂM SỬ DỤNG (' || V_POINT_USED
+                    || ') VƯỢT QUÁ MỨC CHO PHÉP CHO TỔNG TIỀN '
+                    || TO_CHAR(V_NET_AMOUNT)
+        );
+    END IF;
+
+    -- 3) GHI LOG ĐIỂM, CẬP NHẬT DISCOUNT
+    IF V_MEMBER_ID IS NOT NULL AND V_NET_AMOUNT > 0 THEN
+        INSERT INTO POINT_UPDATE_LOG (MEMBER_ID, INVOICE_ID, POINT_CHANGE)
+        VALUES (V_MEMBER_ID, P_INVOICE_ID, TRUNC(V_NET_AMOUNT / 1000));
+
+        IF V_POINT_USED > 0 THEN
+            INSERT INTO POINT_UPDATE_LOG (MEMBER_ID, INVOICE_ID, POINT_CHANGE)
+            VALUES (V_MEMBER_ID, P_INVOICE_ID, V_POINT_USED);
+        END IF;
+    END IF;
+
+    UPDATE INVOICE
+    SET DISCOUNT = DISCOUNT + V_POINT_USED * 40
+    WHERE ID = P_INVOICE_ID;
+
+    UPDATE INVOICE
+    SET TOTAL_DUE = NET_AMOUNT - DISCOUNT,
+        STATUS    = 'ĐÃ HOÀN THÀNH'
+    WHERE ID = P_INVOICE_ID;
+END PRC_CALC_TOTAL;
+/
+
+CREATE OR REPLACE PROCEDURE PRC_CANCEL_INVOICE(
+    P_INVOICE_ID IN INVOICE.ID%TYPE
+)
+AS
+    V_POINT_CHANGE NUMBER := 0;
+    V_INVOICE      INVOICE%ROWTYPE;
+BEGIN
+    SELECT *
+    INTO V_INVOICE
+    FROM INVOICE
+    WHERE ID = P_INVOICE_ID;
+
+    IF V_INVOICE.MEMBER_ID IS NOT NULL AND V_INVOICE.STATUS = 'ĐÃ HOÀN THÀNH' THEN
+        FOR REC IN (
+            SELECT POINT_CHANGE
+            FROM POINT_UPDATE_LOG
+            WHERE INVOICE_ID = P_INVOICE_ID)
+            LOOP
+                V_POINT_CHANGE := V_POINT_CHANGE + REC.POINT_CHANGE;
+            END LOOP;
+
+        INSERT INTO POINT_UPDATE_LOG (MEMBER_ID, INVOICE_ID, POINT_CHANGE)
+        VALUES (V_INVOICE.MEMBER_ID, V_INVOICE.ID, -V_POINT_CHANGE);
+
+        UPDATE INVOICE
+        SET STATUS = 'ĐÃ HỦY'
+        WHERE ID = P_INVOICE_ID;
+    END IF;
+END PRC_CANCEL_INVOICE;
+/
+
+CREATE OR REPLACE PROCEDURE PRC_CALC_PAYCHECK(
+    P_EMP_ID IN EMPLOYEE.ID%TYPE,
+    P_DEDUCTIONS IN PAYCHECK.DEDUCTIONS%TYPE DEFAULT 0,
+    P_PERIOD_START IN TIMESTAMP,
+    P_PERIOD_END IN TIMESTAMP,
+    P_PAYCHECK_ID OUT PAYCHECK.ID%TYPE
+) AS
+    V_HOURS       NUMBER; -- TỔNG SỐ GIỜ LÀM VIỆC
+    V_NIGHT_HOURS NUMBER; -- SỐ GIỜ TRONG KHUNG 22:00–06:00
+    V_WAGE        EMPLOYEE.HOURLY_WAGE%TYPE;
+    V_GROSS       PAYCHECK.GROSS_AMOUNT%TYPE;
+    V_DEDUCTIONS  PAYCHECK.DEDUCTIONS%TYPE := P_DEDUCTIONS;
+    V_NET         PAYCHECK.NET_AMOUNT%TYPE;
+    V_COUNT       NUMBER;
+BEGIN
+    -- KIỂM TRA ĐÃ CÓ PAYCHECK CHO KỲ NÀY CHƯA
+    SELECT COUNT(*)
+    INTO V_COUNT
+    FROM PAYCHECK
+    WHERE EMPLOYEE_ID = P_EMP_ID
+      AND PERIOD_START = P_PERIOD_START
+      AND PERIOD_END = P_PERIOD_END;
+
+    IF V_COUNT > 0 THEN
+        RAISE_APPLICATION_ERROR(
+                -20001,
+                'ĐÃ CÓ PAYCHECK CHO KỲ "'
+                    || TO_CHAR(P_PERIOD_START, 'DD/MM/YYYY HH24:MI')
+                    || ' - '
+                    || TO_CHAR(P_PERIOD_END, 'DD/MM/YYYY HH24:MI')
+                    || '"'
+        );
+    END IF;
+
+    -- 1) LẤY LƯƠNG GIỜ
+    SELECT HOURLY_WAGE
+    INTO V_WAGE
+    FROM EMPLOYEE
+    WHERE ID = P_EMP_ID;
+
+    -- 2A) TÍNH TỔNG GIỜ LÀM TRONG CA VÀ KỲ
+    SELECT NVL(SUM((EXTRACT(DAY
+                            FROM (O_END - O_START)) * 86400
+        + EXTRACT(HOUR FROM (O_END - O_START)) * 3600
+        + EXTRACT(MINUTE FROM (O_END - O_START)) * 60
+        + EXTRACT(SECOND FROM (O_END - O_START)))
+               ) / 3600, 0)
+    INTO V_HOURS
+    FROM (SELECT GREATEST(SR.START_TIME, A.START_TIME, P_PERIOD_START) AS O_START,
+                 LEAST(SR.END_TIME, A.END_TIME, P_PERIOD_END)          AS O_END
+          FROM SHIFT_REPORT SR
+                   JOIN ASSIGNMENT A
+                        ON SR.EMPLOYEE_ID = A.EMPLOYEE_ID
+                            AND SR.START_TIME < A.END_TIME
+                            AND SR.END_TIME > A.START_TIME
+          WHERE SR.EMPLOYEE_ID = P_EMP_ID
+            AND SR.START_TIME < P_PERIOD_END
+            AND SR.END_TIME > P_PERIOD_START) OVL
+    WHERE OVL.O_END > OVL.O_START;
+
+    -- 2B) TÍNH GIỜ ĐÊM (22:00–24:00 VÀ 00:00–06:00)
+    SELECT NVL(SUM(N1 + N2), 0)
+    INTO V_NIGHT_HOURS
+    FROM (SELECT
+              -- PHẦN 22→24 CỦA MỖI KHOẢNG
+              (EXTRACT(DAY FROM CASE
+                                    WHEN O_START < TRUNC(O_START) + 1
+                                        AND O_END > TRUNC(O_START) + INTERVAL '22' HOUR
+                                        THEN LEAST(O_END, TRUNC(O_START) + 1)
+                                        - GREATEST(O_START, TRUNC(O_START) + INTERVAL '22' HOUR)
+                                    ELSE NUMTODSINTERVAL(0, 'SECOND') END)
+                   * 86400
+                  + EXTRACT(HOUR FROM CASE
+                                          WHEN O_START < TRUNC(O_START) + 1
+                                              AND O_END > TRUNC(O_START) + INTERVAL '22' HOUR
+                                              THEN LEAST(O_END, TRUNC(O_START) + 1)
+                                              - GREATEST(O_START, TRUNC(O_START) + INTERVAL '22' HOUR)
+                                          ELSE NUMTODSINTERVAL(0, 'SECOND') END)
+                   * 3600
+                  + EXTRACT(MINUTE FROM CASE
+                                            WHEN O_START < TRUNC(O_START) + 1
+                                                AND O_END > TRUNC(O_START) + INTERVAL '22' HOUR
+                                                THEN LEAST(O_END, TRUNC(O_START) + 1)
+                                                - GREATEST(O_START, TRUNC(O_START) + INTERVAL '22' HOUR)
+                                            ELSE NUMTODSINTERVAL(0, 'SECOND') END)
+                   * 60
+                  + EXTRACT(SECOND FROM CASE
+                                            WHEN O_START < TRUNC(O_START) + 1
+                                                AND O_END > TRUNC(O_START) + INTERVAL '22' HOUR
+                                                THEN LEAST(O_END, TRUNC(O_START) + 1)
+                                                - GREATEST(O_START, TRUNC(O_START) + INTERVAL '22' HOUR)
+                                            ELSE NUMTODSINTERVAL(0, 'SECOND') END)
+                  ) / 3600 AS N1,
+              -- PHẦN 00→06 CỦA MỖI KHOẢNG
+              (EXTRACT(DAY FROM CASE
+                                    WHEN O_START < TRUNC(O_END) + INTERVAL '06' HOUR
+                                        AND O_END > TRUNC(O_END)
+                                        THEN LEAST(O_END, TRUNC(O_END) + INTERVAL '06' HOUR)
+                                        - GREATEST(O_START, TRUNC(O_END))
+                                    ELSE NUMTODSINTERVAL(0, 'SECOND') END)
+                   * 86400
+                  + EXTRACT(HOUR FROM CASE
+                                          WHEN O_START < TRUNC(O_END) + INTERVAL '06' HOUR
+                                              AND O_END > TRUNC(O_END)
+                                              THEN LEAST(O_END, TRUNC(O_END) + INTERVAL '06' HOUR)
+                                              - GREATEST(O_START, TRUNC(O_END))
+                                          ELSE NUMTODSINTERVAL(0, 'SECOND') END)
+                   * 3600
+                  + EXTRACT(MINUTE FROM CASE
+                                            WHEN O_START < TRUNC(O_END) + INTERVAL '06' HOUR
+                                                AND O_END > TRUNC(O_END)
+                                                THEN LEAST(O_END, TRUNC(O_END) + INTERVAL '06' HOUR)
+                                                - GREATEST(O_START, TRUNC(O_END))
+                                            ELSE NUMTODSINTERVAL(0, 'SECOND') END)
+                   * 60
+                  + EXTRACT(SECOND FROM CASE
+                                            WHEN O_START < TRUNC(O_END) + INTERVAL '06' HOUR
+                                                AND O_END > TRUNC(O_END)
+                                                THEN LEAST(O_END, TRUNC(O_END) + INTERVAL '06' HOUR)
+                                                - GREATEST(O_START, TRUNC(O_END))
+                                            ELSE NUMTODSINTERVAL(0, 'SECOND') END)
+                  ) / 3600 AS N2
+          FROM (SELECT GREATEST(SR.START_TIME, A.START_TIME, P_PERIOD_START) AS O_START,
+                       LEAST(SR.END_TIME, A.END_TIME, P_PERIOD_END)          AS O_END
+                FROM SHIFT_REPORT SR
+                         JOIN ASSIGNMENT A
+                              ON SR.EMPLOYEE_ID = A.EMPLOYEE_ID
+                                  AND SR.START_TIME < A.END_TIME
+                                  AND SR.END_TIME > A.START_TIME
+                WHERE SR.EMPLOYEE_ID = P_EMP_ID
+                  AND SR.START_TIME < P_PERIOD_END
+                  AND SR.END_TIME > P_PERIOD_START) OV2
+          WHERE OV2.O_END > OV2.O_START);
+
+    -- 3) TÍNH GROSS VÀ NET
+    V_GROSS := (V_HOURS - V_NIGHT_HOURS) * V_WAGE + V_NIGHT_HOURS * V_WAGE * 1.3;
+    V_NET := V_GROSS - V_DEDUCTIONS;
+
+    -- 4) LƯU PAYCHECK
+    INSERT INTO PAYCHECK (EMPLOYEE_ID, GROSS_AMOUNT, DEDUCTIONS, NET_AMOUNT, PAY_DATE, PERIOD_START, PERIOD_END)
+    VALUES (P_EMP_ID, V_GROSS, V_DEDUCTIONS, V_NET,
+            SYSTIMESTAMP, P_PERIOD_START, P_PERIOD_END)
+    RETURNING ID INTO P_PAYCHECK_ID;
+END PRC_CALC_PAYCHECK;
+/
+
+CREATE OR REPLACE PROCEDURE PRC_GENERATE_PAYCHECKS(
+    P_DEDUCTIONS IN PAYCHECK.DEDUCTIONS%TYPE DEFAULT 0,
+    P_PERIOD_START IN TIMESTAMP,
+    P_PERIOD_END IN TIMESTAMP
+)
+AS
+    CURSOR C_EMP IS
+        SELECT ID
+        FROM EMPLOYEE
+        WHERE STATUS = 'ĐANG HOẠT ĐỘNG';
+    V_PC_ID PAYCHECK.ID%TYPE;
+BEGIN
+    FOR R IN C_EMP
+        LOOP
+            PRC_CALC_PAYCHECK(
+                    P_EMP_ID => R.ID,
+                    P_DEDUCTIONS => P_DEDUCTIONS,
+                    P_PERIOD_START => P_PERIOD_START,
+                    P_PERIOD_END => P_PERIOD_END,
+                    P_PAYCHECK_ID => V_PC_ID
+            );
+        END LOOP;
+EXCEPTION
+    WHEN OTHERS THEN
+        RAISE;
+END PRC_GENERATE_PAYCHECKS;
+/
+
+-- THIS FILE IS FINALIZED AND SEALED.
+-- DO NOT MODIFY THIS FILE.
+-- [SEALED BY HELIOS 18/5/2025] --
