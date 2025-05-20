@@ -9,7 +9,7 @@ import com.neostain.csms.util.DialogFactory;
 import com.neostain.csms.view.component.ScreenHeader;
 import com.neostain.csms.view.component.StandardTabbedPane;
 import com.neostain.csms.view.screen.cs.panels.InvoicePanel;
-import com.neostain.csms.view.screen.cs.panels.POSTabPanel;
+import com.neostain.csms.view.screen.cs.panels.POSPanel;
 import com.neostain.csms.view.screen.cs.panels.ProductPanel;
 import com.neostain.csms.view.screen.cs.panels.PromotionPanel;
 
@@ -52,7 +52,7 @@ public class CashierStaffScreen extends JPanel {
             JTabbedPane mainCashierPanel = new StandardTabbedPane();
 
             // Initialize tabs
-            JPanel POSTabPanel = new POSTabPanel();
+            JPanel POSTabPanel = new POSPanel();
             JPanel invoiceTabPanel = new InvoicePanel();
             JPanel promotionTabPanel = new PromotionPanel();
             JPanel productTabPanel = new ProductPanel();

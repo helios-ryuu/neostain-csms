@@ -262,7 +262,7 @@ public class PromotionDAOImpl implements PromotionDAO {
                 rs.getString("ID"),
                 rs.getString("NAME"),
                 rs.getTimestamp("START_TIME"),
-                rs.getTimestamp("_END_TIME"),
+                rs.getTimestamp("END_TIME"),
                 rs.getString("PRODUCT_ID"),
                 rs.getInt("MINIMUM_PURCHASE_QUANTITY"),
                 rs.getString("PROMO_PRODUCT_ID"),

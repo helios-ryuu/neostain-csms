@@ -78,13 +78,13 @@ public class InvoicePanel extends JPanel {
         dateToSpinner.setEditor(new JSpinner.DateEditor(dateToSpinner, "yyyy-MM-dd"));
 
         // Status dropdown
-        String[] statuses = {"Tất cả trạng thái", "Chưa hoàn thành", "Đã hoàn thành", "Đang yêu cầu hủy", "Đã hủy"};
+        String[] statuses = {"TẤT CẢ TRẠNG THÁI", "CHƯA HOÀN THÀNH", "ĐÃ HOÀN THÀNH", "ĐANG YÊU CẦU HỦY", "ĐÃ HỦY"};
         JComboBox<String> statusBox = new JComboBox<>(statuses);
 
         // Payment methods dropdown (load from DB)
         List<Payment> methods = serviceManager.getSaleService().getAllPayments();
         String[] methodItems = new String[methods.size() + 1];
-        methodItems[0] = "Tất cả phương thức";
+        methodItems[0] = "TẤT CẢ PHƯƠNG THỨC";
         for (int i = 0; i < methods.size(); i++) {
             methodItems[i + 1] = methods.get(i).getId();
         }

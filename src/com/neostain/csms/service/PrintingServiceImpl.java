@@ -132,6 +132,7 @@ public class PrintingServiceImpl implements PrintingService {
             ServiceManager svc = ServiceManager.getInstance();
             Store store = svc.getManagementService().getStoreById(invoice.getStoreId());
             Employee employee = svc.getManagementService().getEmployeeById(invoice.getEmployeeId());
+            Employee manager = svc.getManagementService().getEmployeeById(store.getManagerId());
             Member member = svc.getManagementService().getMemberById(invoice.getMemberId());
             String invoiceId = invoice.getId();
             List<InvoiceDetail> invoiceDetailList = svc.getSaleService().getInvoiceDetailsByInvoiceId(invoiceId);
@@ -226,7 +227,7 @@ public class PrintingServiceImpl implements PrintingService {
                 cellProductId.setVerticalAlignment(Element.ALIGN_MIDDLE);
                 table.addCell(cellProductId);
 
-                PdfPCell cellProductName = new PdfPCell(new Paragraph((Objects.equals(invoiceDetail.getUnitPrice(), new BigDecimal(0)) ? "KM\n" + product.getNane() : product.getNane()), body));
+                PdfPCell cellProductName = new PdfPCell(new Paragraph((Objects.equals(invoiceDetail.getUnitPrice(), new BigDecimal(0)) ? "KM\n" + product.getName() : product.getName()), body));
                 cellProductName.setHorizontalAlignment(Element.ALIGN_JUSTIFIED);
                 cellProductName.setVerticalAlignment(Element.ALIGN_MIDDLE);
                 table.addCell(cellProductName);
@@ -261,10 +262,21 @@ public class PrintingServiceImpl implements PrintingService {
             cellDiscount.setVerticalAlignment(Element.ALIGN_MIDDLE);
             table.addCell(cellDiscount);
 
-            PdfPCell cellDiscountNum = new PdfPCell(new Paragraph(invoice.getDiscount() + "", body));
+            PdfPCell cellDiscountNum = new PdfPCell(new Paragraph((invoice.getDiscount().subtract(BigDecimal.valueOf(invoice.getPointUsed() * 40L))) + "", body));
             cellDiscountNum.setHorizontalAlignment(Element.ALIGN_CENTER);
             cellDiscountNum.setVerticalAlignment(Element.ALIGN_MIDDLE);
             table.addCell(cellDiscountNum);
+
+            PdfPCell cellDiscountByPoint = new PdfPCell(new Paragraph("Giảm giá từ điểm sử dụng", h1));
+            cellDiscountByPoint.setColspan(4);
+            cellDiscountByPoint.setHorizontalAlignment(Element.ALIGN_CENTER);
+            cellDiscountByPoint.setVerticalAlignment(Element.ALIGN_MIDDLE);
+            table.addCell(cellDiscountByPoint);
+
+            PdfPCell cellDiscountByPointNum = new PdfPCell(new Paragraph(BigDecimal.valueOf(invoice.getPointUsed() * 40L) + "", body));
+            cellDiscountByPointNum.setHorizontalAlignment(Element.ALIGN_CENTER);
+            cellDiscountByPointNum.setVerticalAlignment(Element.ALIGN_MIDDLE);
+            table.addCell(cellDiscountByPointNum);
 
             PdfPCell cellTotal = new PdfPCell(new Paragraph("Tổng cộng", h1));
             cellTotal.setColspan(4);
@@ -289,7 +301,7 @@ public class PrintingServiceImpl implements PrintingService {
             document.add(prgDelimiter);
             Paragraph prgContentPostMetaPoint = new Paragraph(
                     "Số điểm tích lũy: " + (member != null ? invoice.getNetAmount().divideToIntegralValue(new BigDecimal(1000)).toPlainString() + " điểm" : 0) +
-                            "\nSố điểm sử dụng: " + invoice.getPointUsed() + " điểm"
+                            "\nSố điểm sử dụng: " + invoice.getPointUsed() + " điểm" + (invoice.getPointUsed() < 25 ? "" : " (Đã được giảm " + invoice.getPointUsed() * 40 + " VND)")
                     , body
             );
             prgContentPostMetaPoint.setAlignment(Element.ALIGN_LEFT);
@@ -299,24 +311,29 @@ public class PrintingServiceImpl implements PrintingService {
             document.add(prgDelimiter);
 
             Paragraph prgContentPostNote = new Paragraph(
-                    "Quý khách sẽ không được hoàn trả hàng khi rời khỏi cửa hàng. Vui lòng kiểm tra kĩ trước khi rời đi."
+                    "Quý khách sẽ không được hoàn trả hàng khi rời khỏi cửa hàng." +
+                            "\nVui lòng kiểm tra kĩ trước khi rời đi."
                     , body
             );
             prgContentPostNote.setAlignment(Element.ALIGN_LEFT);
             prgContentPostNote.setIndentationLeft(5);
 
             document.add(prgContentPostNote);
+            document.add(prgDelimiter);
+
+            Paragraph prgContact = new Paragraph(
+                    "Nếu có bất kỳ thắc măc hay khiếu nại quý khách vui lòng gửi về email của NeoStain: neostain.cskh@gmail.com" +
+                            "\nHoặc liên lạc tới số điện thoại của quản lý cửa hàng: " + manager.getPhoneNumber()
+                    , body
+            );
+            prgContact.setAlignment(Element.ALIGN_LEFT);
+            prgContact.setIndentationLeft(5);
+
+            document.add(prgContact);
+            document.add(prgDelimiter);
 
             document.close();
             writer.close();
-
-            DialogFactory.showInfoDialog(
-                    null,
-                    "In hóa đơn",
-                    "Đã in hóa đơn: " + invoiceId +
-                            "\ntại cửa hàng: " + store.getId() + " - " + store.getName() +
-                            "\n\nHóa đơn đã được lưu vào: reports/" + fileName + ".pdf"
-            );
 
             File file = new File("reports/" + fileName + ".pdf");
             if (file.exists()) {
@@ -330,6 +347,11 @@ public class PrintingServiceImpl implements PrintingService {
             );
             return null;
         }
+        return null;
+    }
+
+    @Override
+    public File printPaycheck(Paycheck paycheck) {
         return null;
     }
 }

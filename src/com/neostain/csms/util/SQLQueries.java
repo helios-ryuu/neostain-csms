@@ -6,12 +6,12 @@ package com.neostain.csms.util;
  */
 public class SQLQueries {
     // Account queries
-    public static final String ACCOUNT_FIND_BY_EMPLOYEE_ID = "SELECT * FROM ACCOUNT WHERE EMPLOYEE_ID = ? AND IS_DELETED = 0";
-    public static final String ACCOUNT_FIND_BY_ID = "SELECT * FROM ACCOUNT WHERE ID = ? AND IS_DELETED = 0";
-    public static final String ACCOUNT_FIND_BY_USERNAME = "SELECT * FROM ACCOUNT WHERE USERNAME = ? AND IS_DELETED = 0";
-    public static final String ACCOUNT_FIND_BY_ROLE_ID = "SELECT * FROM ACCOUNT WHERE ROLE_ID = ? AND IS_DELETED = 0";
-    public static final String ACCOUNT_FIND_BY_STATUS = "SELECT * FROM ACCOUNT WHERE STATUS = ? AND IS_DELETED = 0";
-    public static final String ACCOUNT_FIND_ALL = "SELECT * FROM ACCOUNT WHERE IS_DELETED = 0";
+    public static final String ACCOUNT_FIND_BY_EMPLOYEE_ID = "SELECT * FROM ACCOUNT WHERE EMPLOYEE_ID = ?";
+    public static final String ACCOUNT_FIND_BY_ID = "SELECT * FROM ACCOUNT WHERE ID = ?";
+    public static final String ACCOUNT_FIND_BY_USERNAME = "SELECT * FROM ACCOUNT WHERE USERNAME = ?";
+    public static final String ACCOUNT_FIND_BY_ROLE_ID = "SELECT * FROM ACCOUNT WHERE ROLE_ID = ?";
+    public static final String ACCOUNT_FIND_BY_STATUS = "SELECT * FROM ACCOUNT WHERE STATUS = ?";
+    public static final String ACCOUNT_FIND_ALL = "SELECT * FROM ACCOUNT";
     public static final String ACCOUNT_GET_PASSWORD_HASH = "SELECT PASSWORD_HASH FROM ACCOUNT WHERE USERNAME = ?";
     public static final String ACCOUNT_GET_ROLE_NAME =
             "SELECT r.NAME FROM ACCOUNT a JOIN ROLE r ON a.ROLE_ID = r.ID WHERE a.USERNAME = ?";
@@ -19,7 +19,6 @@ public class SQLQueries {
     public static final String ACCOUNT_CREATE = "INSERT INTO ACCOUNT(EMPLOYEE_ID, USERNAME, PASSWORD_HASH, ROLE_ID) VALUES(?, ?, ?, ?)";
     public static final String ACCOUNT_UPDATE_PASSWORD_HASH = "UPDATE ACCOUNT SET PASSWORD_HASH = ? WHERE USERNAME = ?";
     public static final String ACCOUNT_UPDATE_STATUS = "UPDATE ACCOUNT SET STATUS = ? WHERE USERNAME = ?";
-    public static final String ACCOUNT_DELETE = "UPDATE ACCOUNT SET IS_DELETED = 1 WHERE USERNAME = ?";
 
     // Assignment queries (no IS_DELETED flag on ASSIGNMENT table)
     public static final String ASSIGNMENT_FIND_BY_ID = "SELECT * FROM ASSIGNMENT WHERE ID = ?";
@@ -44,22 +43,23 @@ public class SQLQueries {
     public static final String CATEGORY_DELETE = "UPDATE CATEGORY SET IS_DELETED = 1 WHERE ID = ?";
 
     // Employee queries
-    public static final String EMPLOYEE_FIND_BY_ID = "SELECT * FROM EMPLOYEE WHERE ID = ? AND IS_DELETED = 0";
-    public static final String EMPLOYEE_FIND_BY_NAME = "SELECT * FROM EMPLOYEE WHERE NAME = ? AND IS_DELETED = 0";
-    public static final String EMPLOYEE_FIND_BY_POSITION = "SELECT * FROM EMPLOYEE WHERE POSITION = ? AND IS_DELETED = 0";
-    public static final String EMPLOYEE_FIND_BY_STATUS = "SELECT * FROM EMPLOYEE WHERE STATUS = ? AND IS_DELETED = 0";
-    public static final String EMPLOYEE_FIND_ALL = "SELECT * FROM EMPLOYEE WHERE IS_DELETED = 0";
+    public static final String EMPLOYEE_FIND_BY_ID = "SELECT * FROM EMPLOYEE WHERE ID = ?";
+    public static final String EMPLOYEE_FIND_BY_MANAGER_ID = "SELECT * FROM EMPLOYEE WHERE MANAGER_ID = ?";
+    public static final String EMPLOYEE_FIND_BY_NAME = "SELECT * FROM EMPLOYEE WHERE NAME = ?";
+    public static final String EMPLOYEE_FIND_BY_STATUS = "SELECT * FROM EMPLOYEE WHERE STATUS = ?";
+    public static final String EMPLOYEE_FIND_ALL = "SELECT * FROM EMPLOYEE";
 
     public static final String EMPLOYEE_CREATE =
+            "INSERT INTO EMPLOYEE(MANAGER_ID, NAME, POSITION, EMAIL, PHONE_NUMBER, ADDRESS, HOURLY_WAGE) VALUES(?, ?, ?, ?, ?, ?, ?)";
+    public static final String EMPLOYEE_CREATE_MANAGER =
             "INSERT INTO EMPLOYEE(NAME, POSITION, EMAIL, PHONE_NUMBER, ADDRESS, HOURLY_WAGE) VALUES(?, ?, ?, ?, ?, ?)";
+    public static final String EMPLOYEE_CHANGE_MANAGER_ID = "{CALL PRC_EMPLOYEE_CHANGE_MANAGER_ID(?, ?)}";
     public static final String EMPLOYEE_UPDATE_NAME = "UPDATE EMPLOYEE SET NAME = ? WHERE ID = ?";
-    public static final String EMPLOYEE_UPDATE_POSITION = "UPDATE EMPLOYEE SET POSITION = ? WHERE ID = ?";
     public static final String EMPLOYEE_UPDATE_EMAIL = "UPDATE EMPLOYEE SET EMAIL = ? WHERE ID = ?";
     public static final String EMPLOYEE_UPDATE_PHONE_NUMBER = "UPDATE EMPLOYEE SET PHONE_NUMBER = ? WHERE ID = ?";
     public static final String EMPLOYEE_UPDATE_ADDRESS = "UPDATE EMPLOYEE SET ADDRESS = ? WHERE ID = ?";
     public static final String EMPLOYEE_UPDATE_HOURLY_WAGE = "UPDATE EMPLOYEE SET HOURLY_WAGE = ? WHERE ID = ?";
     public static final String EMPLOYEE_UPDATE_STATUS = "UPDATE EMPLOYEE SET STATUS = ? WHERE ID = ?";
-    public static final String EMPLOYEE_DELETE = "UPDATE EMPLOYEE SET IS_DELETED = 1 WHERE ID = ?";
 
     // Invoice queries
     public static final String INVOICE_FIND_BY_ID = "SELECT * FROM INVOICE WHERE ID = ?";
@@ -72,6 +72,7 @@ public class SQLQueries {
 
     public static final String INVOICE_CREATE = "{CALL PRC_INITIATE_INVOICE(?,?,?,?,?,?)}"; // (STORE_ID, MEMBER_ID, PAYMENT_ID, EMPLOYEE_ID, POINT_USED, OUT INVOICE_ID)
     public static final String INVOICE_ADD_ITEM = "{CALL PRC_ADD_ITEM_TO_INVOICE(?,?,?)}"; // (INVOICE_ID, PRODUCT_ID, QUANTITY_SOLD)
+    public static final String INVOICE_ADD_GIFT = "{CALL PRC_ADD_GIFT_TO_INVOICE(?,?,?)}";
     public static final String INVOICE_CALCULATE = "{CALL PRC_CALC_TOTAL(?)}"; // (INVOICE_ID)
     public static final String INVOICE_CANCEL = "{CALL PRC_CANCEL_INVOICE(?)}"; // (INVOICE_ID)
 

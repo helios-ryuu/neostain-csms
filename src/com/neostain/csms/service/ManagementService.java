@@ -12,13 +12,13 @@ public interface ManagementService {
     // Employee
     Employee getEmployeeById(String id);
 
+    List<Employee> getEmployeeByManagerId(String id);
+
     List<Employee> getAllEmployees();
 
-    boolean createEmployee(Employee employee) throws DuplicateFieldException;
+    boolean createEmployee(Employee employee) throws DuplicateFieldException, FieldValidationException;
 
-    boolean updateEmployee(Employee employee);
-
-    boolean deleteEmployee(String id);
+    boolean updateEmployee(Employee employee) throws FieldValidationException, DuplicateFieldException;
 
     // Member
     Member getMemberById(String id);
@@ -51,4 +51,6 @@ public interface ManagementService {
     boolean createStore(Store store);
 
     boolean updateStore(Store store);
+
+    List<Employee> searchEmployees(String id, String managerId, String from, String to, String email, String phoneNumber, String status);
 }

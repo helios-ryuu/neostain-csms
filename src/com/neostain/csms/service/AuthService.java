@@ -39,26 +39,20 @@ public interface AuthService {
 
     void invalidateToken(String username);
 
-    Account getAccountByUsername(String username);
-
+    // Account management
     boolean register(Account acc);
 
     boolean changePassword(String username, String newHash);
 
-    boolean removeByUsername(String username);
-
-    Role getRoleById(String roleID);
-
-    // Account management
     boolean createAccount(Account account) throws DuplicateFieldException;
 
     boolean updateAccountPassword(String username, String newPasswordHash);
 
     boolean updateAccountStatus(String username, String status);
 
-    boolean deleteAccount(String username);
-
     Account getAccountById(String id);
+
+    Account getAccountByUsername(String username);
 
     List<Account> getAccountsByRoleId(String roleId);
 
@@ -72,6 +66,8 @@ public interface AuthService {
     boolean updateRoleName(String id, String name) throws DuplicateFieldException;
 
     boolean deleteRole(String id);
+
+    Role getRoleById(String roleID);
 
     List<Role> getRolesByName(String name);
 

@@ -175,11 +175,11 @@ public class InvoiceDAOImpl implements InvoiceDAO {
             sql.append(" AND EMPLOYEE_ID=?");
             params.add(employeeId);
         }
-        if (!Objects.equals(status, "Tất cả trạng thái")) {
+        if (!Objects.equals(status, "TẤT CẢ TRẠNG THÁI")) {
             sql.append(" AND STATUS=?");
             params.add(status);
         }
-        if (!Objects.equals(paymentMethod, "Tất cả phương thức")) {
+        if (!Objects.equals(paymentMethod, "TẤT CẢ PHƯƠNG THỨC")) {
             sql.append(" AND PAYMENT_ID=?");
             params.add(paymentMethod);
         }
@@ -210,9 +210,13 @@ public class InvoiceDAOImpl implements InvoiceDAO {
     }
 
     @Override
-    public String create(String storeId, String memberId, String paymentId, String employeeId, int pointUsed) {
-        if (StringUtils.isNullOrEmpty(storeId) || StringUtils.isNullOrEmpty(memberId) || StringUtils.isNullOrEmpty(paymentId) || StringUtils.isNullOrEmpty(employeeId) || pointUsed < 0) {
-            LOGGER.warning("[CREATE] Some fields is empty");
+    public String create(String storeId, String memberId, String paymentId,
+                         String employeeId, int pointUsed) {
+        if (StringUtils.isNullOrEmpty(storeId)
+                || StringUtils.isNullOrEmpty(paymentId)
+                || StringUtils.isNullOrEmpty(employeeId)
+                || pointUsed < 0) {
+            LOGGER.warning("[CREATE] Some fields are empty");
             return "";
         }
         try (CallableStatement cs = conn.prepareCall(SQLQueries.INVOICE_CREATE)) {
@@ -222,14 +226,19 @@ public class InvoiceDAOImpl implements InvoiceDAO {
             cs.setString(4, employeeId);
             cs.setInt(5, pointUsed);
             cs.registerOutParameter(6, Types.VARCHAR);
-            if (cs.execute()) {
-                return cs.getString("INVOICE_ID");
-            }
+
+            // Chỉ cần execute, không dùng if(...)
+            cs.execute();
+
+            // Lấy OUT param ngay lập tức
+            String invoiceId = cs.getString(6);
+            return invoiceId != null ? invoiceId.trim() : "";
         } catch (SQLException e) {
             LOGGER.severe("[CREATE] Error: " + e.getMessage());
+            return "";
         }
-        return "";
     }
+
 
     @Override
     public boolean addItem(String invoiceId, String productId, int quantity) {
@@ -244,6 +253,23 @@ public class InvoiceDAOImpl implements InvoiceDAO {
             return cs.executeUpdate() > 0;
         } catch (SQLException e) {
             LOGGER.severe("[ADD_ITEM] Error: " + e.getMessage());
+        }
+        return false;
+    }
+
+    @Override
+    public boolean addGift(String invoiceId, String productId, int quantity) {
+        if (StringUtils.isNullOrEmpty(invoiceId) || StringUtils.isNullOrEmpty(productId) || quantity < 0) {
+            LOGGER.warning("[ADD_GIFT] invoiceId or productId is empty");
+            return false;
+        }
+        try (CallableStatement cs = conn.prepareCall(SQLQueries.INVOICE_ADD_GIFT)) {
+            cs.setString(1, invoiceId);
+            cs.setString(2, productId);
+            cs.setInt(3, quantity);
+            return cs.executeUpdate() > 0;
+        } catch (SQLException e) {
+            LOGGER.severe("[ADD_GIFT] Error: " + e.getMessage());
         }
         return false;
     }
@@ -269,7 +295,7 @@ public class InvoiceDAOImpl implements InvoiceDAO {
             LOGGER.warning("[CANCEL] invoiceId is empty");
             return false;
         }
-        if (Objects.equals(findById(invoiceId).getStatus(), "Đã hủy")) {
+        if (Objects.equals(findById(invoiceId).getStatus(), "ĐÃ HỦY")) {
             LOGGER.warning("[CANCEL] Invoice is cancelled already: " + invoiceId);
             return false;
         }

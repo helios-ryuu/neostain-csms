@@ -23,6 +23,4 @@ public interface AccountDAO {
     boolean updatePasswordHash(String username, String newHash);
 
     boolean updateStatus(String username, String status);
-
-    boolean delete(String username);
 }

@@ -29,6 +29,8 @@ public interface InvoiceDAO {
 
     boolean addItem(String invoiceId, String productId, int quantity);
 
+    boolean addGift(String invoiceId, String productId, int quantity);
+
     boolean calculateTotal(String invoiceId);
 
     boolean cancel(String invoiceId);

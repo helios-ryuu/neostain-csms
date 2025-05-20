@@ -29,23 +29,30 @@ public class ManagementServiceImpl implements ManagementService {
     }
 
     @Override
+    public List<Employee> getEmployeeByManagerId(String id) {
+        return employeeDAO.findByManagerId(id);
+    }
+
+    @Override
     public List<Employee> getAllEmployees() {
         return employeeDAO.findAll();
     }
 
     @Override
-    public boolean createEmployee(Employee employee) throws DuplicateFieldException {
+    public boolean createEmployee(Employee employee) throws DuplicateFieldException, FieldValidationException {
         return employeeDAO.create(employee);
     }
 
     @Override
-    public boolean updateEmployee(Employee employee) {
-        return employeeDAO.updateName(employee.getId(), employee.getName());
-    }
+    public boolean updateEmployee(Employee employee) throws FieldValidationException, DuplicateFieldException {
+        boolean z = employeeDAO.updateManagerId(employee.getId(), employee.getManagerId());
+        boolean a = employeeDAO.updateName(employee.getId(), employee.getName());
+        boolean b = employeeDAO.updateEmail(employee.getId(), employee.getEmail());
+        boolean c = employeeDAO.updatePhoneNumber(employee.getId(), employee.getPhoneNumber());
+        boolean d = employeeDAO.updateAddress(employee.getId(), employee.getAddress());
+        boolean e = employeeDAO.updateHourlyWage(employee.getId(), employee.getHourlyWage());
 
-    @Override
-    public boolean deleteEmployee(String id) {
-        return employeeDAO.delete(id);
+        return z && a && b && c && d && e;
     }
 
     // Member
@@ -85,11 +92,11 @@ public class ManagementServiceImpl implements ManagementService {
 
     @Override
     public boolean updateMember(Member member) throws DuplicateFieldException, FieldValidationException {
-        memberDAO.updateName(member.getId(), member.getName());
-        memberDAO.updatePhoneNumber(member.getId(), member.getPhoneNumber());
-        memberDAO.updateEmail(member.getId(), member.getEmail());
+        boolean a = memberDAO.updateName(member.getId(), member.getName());
+        boolean b = memberDAO.updatePhoneNumber(member.getId(), member.getPhoneNumber());
+        boolean c = memberDAO.updateEmail(member.getId(), member.getEmail());
 
-        return memberDAO.updateName(member.getId(), member.getName());
+        return a && b && c;
     }
 
     @Override
@@ -121,5 +128,18 @@ public class ManagementServiceImpl implements ManagementService {
     @Override
     public boolean updateStore(Store store) {
         return storeDAO.updateStoreName(store.getId(), store.getName());
+    }
+
+    @Override
+    public List<Employee> searchEmployees(String id, String managerId, String from, String to, String email, String phoneNumber, String status) {
+        if (id != null && id.isBlank()) id = null;
+        if (managerId != null && managerId.isBlank()) managerId = null;
+        if (from != null && from.isBlank()) from = null;
+        if (to != null && to.isBlank()) to = null;
+        if (email != null && email.isBlank()) email = null;
+        if (phoneNumber != null && phoneNumber.isBlank()) phoneNumber = null;
+        if (status != null && status.isBlank()) status = null;
+
+        return employeeDAO.search(id, managerId, from, to, email, phoneNumber, status);
     }
 } 

@@ -185,19 +185,20 @@ public class MemberPanel extends JPanel {
                     }
                 }),
                 new ScrollableTable.ActionDefinition("Sửa", "Cập nhật", ((rowIndex, table) -> {
-                    String memberId = table.getValueAt(rowIndex, 0).toString();
-                    String memberName = table.getValueAt(rowIndex, 1).toString();
+                    String id = table.getValueAt(rowIndex, 0).toString();
+                    String name = table.getValueAt(rowIndex, 1).toString();
                     String phoneNumber = table.getValueAt(rowIndex, 2).toString();
                     String email = table.getValueAt(rowIndex, 3).toString();
                     String registrationDate = table.getValueAt(rowIndex, 4).toString();
                     int loyaltyPoints = Integer.parseInt(table.getValueAt(rowIndex, 5).toString());
 
-                    // === BƯỚC 2: Hiện dialog sửa thông tin ===
+                    // === BƯỚC 1: Hiện dialog sửa thông tin ===
                     JDialog dialog = new JDialog(
                             (Frame) SwingUtilities.getWindowAncestor(this),
-                            "Cập nhật thành viên: " + memberId,
+                            "Cập nhật thông tin thành viên: " + id,
                             true
                     );
+
                     dialog.setLayout(new GridBagLayout());
                     GridBagConstraints gbc = new GridBagConstraints();
                     gbc.insets = new Insets(8, 8, 8, 8);
@@ -207,21 +208,25 @@ public class MemberPanel extends JPanel {
                     JPanel form = new JPanel(new GridLayout(5, 2, 8, 8));
                     // 1. Tên (editable)
                     form.add(new JLabel("Tên thành viên:"));
-                    JTextField nameField = new JTextField(memberName, 20);
+                    JTextField nameField = new JTextField(name, 20);
                     form.add(nameField);
+
                     // 2. SĐT (editable)
                     form.add(new JLabel("Số điện thoại:"));
                     JTextField phoneField = new JTextField(phoneNumber, 20);
                     form.add(phoneField);
+
                     // 3. Email (editable)
                     form.add(new JLabel("Email:"));
                     JTextField emailField = new JTextField(email, 20);
                     form.add(emailField);
+
                     // 4. Ngày đăng ký (readonly)
                     form.add(new JLabel("Ngày đăng ký:"));
                     JTextField dateField = new JTextField(registrationDate, 20);
                     dateField.setEditable(false);
                     form.add(dateField);
+
                     // 5. Điểm tích lũy (readonly)
                     form.add(new JLabel("Số điểm tích lũy:"));
                     JTextField pointsField = new JTextField(
@@ -250,7 +255,7 @@ public class MemberPanel extends JPanel {
                     cancelBtn.addActionListener(ev -> dialog.dispose());
 
                     // Xử lý Cập nhật
-                    Member m = serviceManager.getManagementService().getMemberById(memberId);
+                    Member m = serviceManager.getManagementService().getMemberById(id);
                     okBtn.addActionListener(ev -> {
                         // Lấy giá trị cũ
                         String oldName = m.getName();

@@ -60,7 +60,7 @@ public class ServiceManager {
             register(ManagementService.class, new ManagementServiceImpl(employeeDAO, memberDAO, storeDAO));
             register(SaleService.class, new SaleServiceImpl(invoiceDAO, invoiceDetailDAO, productDAO, categoryDAO, promotionDAO, pointUpdateLogDAO, paymentDAO));
             register(OperationService.class, new OperationServiceImpl(assignmentDAO, shiftReportDAO, paycheckDAO));
-            register(AuthService.class, new AuthServiceImpl(tokenDAO, accountDAO, roleDAO));
+            register(AuthService.class, new AuthServiceImpl(tokenDAO, accountDAO, roleDAO, employeeDAO, storeDAO));
             register(PrintingService.class, new PrintingServiceImpl());
 
             LOGGER.info("[INIT] ServiceManager initialized successfully");

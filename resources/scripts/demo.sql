@@ -1,195 +1,111 @@
--- Demo
 DECLARE
-    V_INVOICE_ID_1 INVOICE.ID%TYPE;
-    V_INVOICE_ID_2 INVOICE.ID%TYPE;
-    V_SHIFT_ID     SHIFT_REPORT.ID%TYPE;
-    V_POINT_GAINED MEMBER.LOYALTY_POINTS%TYPE;
-    V_MEMBER_ID    MEMBER.ID%TYPE             := '09412345672505180001';
-    V_STORE_ID     SHIFT_REPORT.STORE_ID%TYPE := 'VN000001';
-    V_EMPLOYEE_ID  EMPLOYEE.ID%TYPE           := '250518000001';
+    -- 1) Lấy MEMBER_ID của Tạ Việt Phương
+    V_MEMBER_ID MEMBER.ID%TYPE;
+    -- 2) Mã cửa hàng cố định
+    V_STORE_ID  STORE.ID%TYPE := 'VN000001';
 BEGIN
-    PRC_INITIATE_SHIFT(
-            P_STORE_ID => V_STORE_ID,
-            P_EMPLOYEE_ID => V_EMPLOYEE_ID,
-            P_SHIFT_ID => V_SHIFT_ID
-    );
-
-    PRC_INITIATE_INVOICE(
-            P_STORE_ID => V_STORE_ID,
-            P_MEMBER_ID => V_MEMBER_ID,
-            P_PAYMENT_ID => 'P001',
-            P_EMPLOYEE_ID => V_EMPLOYEE_ID,
-            P_POINT_USED => 0,
-            P_INVOICE_ID => V_INVOICE_ID_1
-    );
-    PRC_ADD_ITEM_TO_INVOICE(
-            P_INVOICE_ID => V_INVOICE_ID_1,
-            P_PRODUCT_ID => '0123456789023',
-            P_QUANTITY_SOLD => 1
-    );
-    PRC_ADD_ITEM_TO_INVOICE(
-            P_INVOICE_ID => V_INVOICE_ID_1,
-            P_PRODUCT_ID => '0123456789023',
-            P_QUANTITY_SOLD => 1
-    );
-    PRC_ADD_ITEM_TO_INVOICE(
-            P_INVOICE_ID => V_INVOICE_ID_1,
-            P_PRODUCT_ID => '0123456789023',
-            P_QUANTITY_SOLD => 2
-    );
-    PRC_ADD_ITEM_TO_INVOICE(
-            P_INVOICE_ID => V_INVOICE_ID_1,
-            P_PRODUCT_ID => '0123456789025',
-            P_QUANTITY_SOLD => 2
-    );
-    PRC_CALC_TOTAL(
-            P_INVOICE_ID => V_INVOICE_ID_1
-    );
-
-    SELECT LOYALTY_POINTS
-    INTO V_POINT_GAINED
+    -- 1.1) Truy vấn ID
+    SELECT ID
+    INTO V_MEMBER_ID
     FROM MEMBER
-             JOIN INVOICE ON MEMBER.ID = INVOICE.MEMBER_ID
-    WHERE INVOICE.ID = V_INVOICE_ID_1;
+    WHERE NAME = 'Tạ Việt Phương'
+      AND ROWNUM = 1;
 
-    PRC_INITIATE_INVOICE(
-            P_STORE_ID => V_STORE_ID,
-            P_MEMBER_ID => V_MEMBER_ID,
-            P_PAYMENT_ID => 'P001',
-            P_EMPLOYEE_ID => V_EMPLOYEE_ID,
-            P_POINT_USED => V_POINT_GAINED,
-            P_INVOICE_ID => V_INVOICE_ID_2
-    );
-
-    PRC_ADD_ITEM_TO_INVOICE(
-            P_INVOICE_ID => V_INVOICE_ID_2,
-            P_PRODUCT_ID => '0123456789023',
-            P_QUANTITY_SOLD => 1
-    );
-    PRC_ADD_ITEM_TO_INVOICE(
-            P_INVOICE_ID => V_INVOICE_ID_2,
-            P_PRODUCT_ID => '0123456789023',
-            P_QUANTITY_SOLD => 1
-    );
-
-    PRC_CALC_TOTAL(P_INVOICE_ID => V_INVOICE_ID_2);
-
-    PRC_CANCEL_INVOICE(V_INVOICE_ID_1);
-
-    PRC_END_SHIFT(P_SHIFT_ID => V_SHIFT_ID);
-
-    -- DEV
-    UPDATE SHIFT_REPORT
-    SET END_TIME = SYSTIMESTAMP
-        + NUMTODSINTERVAL(6.5, 'HOUR')
-    WHERE ID = V_SHIFT_ID;
-
-    PRC_GENERATE_PAYCHECKS(
-            P_DEDUCTIONS => 0,
-            P_PERIOD_START => TIMESTAMP '2025-05-01 00:00:00',
-            P_PERIOD_END => TIMESTAMP '2025-05-31 00:00:00'
-    );
-
-    DBMS_OUTPUT.PUT_LINE('== Các hóa đơn của thành viên: ' || V_MEMBER_ID || ' ==');
-    FOR REC IN (
+    DBMS_OUTPUT.PUT_LINE('== Hóa đơn của thành viên ' || V_MEMBER_ID || ' (Tạ Việt Phương) ==');
+    -- 2) In toàn bộ hóa đơn
+    FOR rec_inv IN (
         SELECT *
         FROM INVOICE
         WHERE MEMBER_ID = V_MEMBER_ID
+        ORDER BY CREATION_TIME
         )
         LOOP
-            DBMS_OUTPUT.PUT_LINE('Mã hóa đơn: ' || REC.ID);
-            DBMS_OUTPUT.PUT_LINE('Thời gian tạo hóa đơn: ' || REC.CREATION_TIME);
-            DBMS_OUTPUT.PUT_LINE('Thành tiền: ' || REC.NET_AMOUNT);
-            DBMS_OUTPUT.PUT_LINE('Giảm giá: ' || REC.DISCOUNT);
-            DBMS_OUTPUT.PUT_LINE('Tổng cộng: ' || REC.TOTAL_DUE);
-            DBMS_OUTPUT.PUT_LINE('Trạng thái hóa đơn: ' || REC.STATUS);
-            DBMS_OUTPUT.PUT_LINE('Mã thành viên: ' || REC.MEMBER_ID);
-            DBMS_OUTPUT.PUT_LINE('Mã cửa hàng: ' || REC.STORE_ID);
-            DBMS_OUTPUT.PUT_LINE('Mã phương thức thanh toán: ' || REC.PAYMENT_ID);
-            DBMS_OUTPUT.PUT_LINE('Mã nhân viên: ' || REC.EMPLOYEE_ID);
-            DBMS_OUTPUT.PUT_LINE('Số điểm sử dụng: ' || REC.POINT_USED);
-            DBMS_OUTPUT.PUT_LINE('===============================================================');
+            DBMS_OUTPUT.PUT_LINE(
+                    '→ [' || rec_inv.ID || '] ' ||
+                    'Thời gian: ' || TO_CHAR(rec_inv.CREATION_TIME, 'DD/MM/YYYY HH24:MI:SS') ||
+                    ' | Net: ' || rec_inv.NET_AMOUNT ||
+                    ' | Discount: ' || rec_inv.DISCOUNT ||
+                    ' | Total Due: ' || rec_inv.TOTAL_DUE ||
+                    ' | Status: ' || rec_inv.STATUS
+            );
 
-            DBMS_OUTPUT.PUT_LINE('== Chi tiết hóa đơn ' || REC.ID || ' ==');
-            FOR REC1 IN (
-                SELECT *
+            -- 2.1) Chi tiết hóa đơn
+            DBMS_OUTPUT.PUT_LINE('   -- Chi tiết hóa đơn:');
+            FOR rec_d IN (
+                SELECT PRODUCT_ID, QUANTITY_SOLD, UNIT_PRICE
                 FROM INVOICE_DETAIL
-                WHERE INVOICE_ID = REC.ID
+                WHERE INVOICE_ID = rec_inv.ID
                 )
                 LOOP
-                    DBMS_OUTPUT.PUT_LINE('Mã sản phẩm: ' || REC1.PRODUCT_ID || ' - Số lượng: ' || REC1.QUANTITY_SOLD);
+                    DBMS_OUTPUT.PUT_LINE(
+                            '      * Product: ' || rec_d.PRODUCT_ID ||
+                            ' | Qty: ' || rec_d.QUANTITY_SOLD ||
+                            ' | Price: ' || rec_d.UNIT_PRICE
+                    );
                 END LOOP;
-            DBMS_OUTPUT.PUT_LINE('===============================================================');
 
-            DBMS_OUTPUT.PUT_LINE('== Thành viên ' || REC.MEMBER_ID || ' của hóa đơn trên' || ' ==');
-            FOR REC1 IN (
-                SELECT *
-                FROM MEMBER
-                WHERE ID = REC.MEMBER_ID
-                )
-                LOOP
-                    DBMS_OUTPUT.PUT_LINE('Tên: ' || REC1.NAME);
-                    DBMS_OUTPUT.PUT_LINE('Số điện thoại: ' || REC1.PHONE_NUMBER);
-                    DBMS_OUTPUT.PUT_LINE('Email: ' || REC1.EMAIL);
-                    DBMS_OUTPUT.PUT_LINE('Ngày đăng kí thành viên: ' || REC1.REGISTRATION_TIME);
-                    DBMS_OUTPUT.PUT_LINE('Số điểm tích lũy: ' || REC1.LOYALTY_POINTS);
-                END LOOP;
-            DBMS_OUTPUT.PUT_LINE('===============================================================');
+            DBMS_OUTPUT.PUT_LINE('--------------------------------------------------');
         END LOOP;
 
-    DBMS_OUTPUT.PUT_LINE('== Lịch sử tích điểm thành viên ' || V_MEMBER_ID || ' ==');
-    FOR REC IN (
-        SELECT *
+    -- 3) In lịch sử thay đổi điểm
+    DBMS_OUTPUT.PUT_LINE('== Lịch sử tích/trừ điểm của thành viên ==');
+    FOR rec_pt IN (
+        SELECT ID, INVOICE_ID, POINT_CHANGE
         FROM POINT_UPDATE_LOG
         WHERE MEMBER_ID = V_MEMBER_ID
+        ORDER BY ID
         )
         LOOP
-            DBMS_OUTPUT.PUT_LINE('Mã cập nhật điểm: ' || REC.ID || ' - Mã hóa đơn: ' ||
-                                 REC.INVOICE_ID || 'Số điểm thay đổi: ' ||
-                                 REC.POINT_CHANGE);
+            DBMS_OUTPUT.PUT_LINE(
+                    '→ [' || rec_pt.ID || '] Invoice: ' || rec_pt.INVOICE_ID ||
+                    ' | Point Change: ' || rec_pt.POINT_CHANGE
+            );
         END LOOP;
-    DBMS_OUTPUT.PUT_LINE('===============================================================');
 
-    DBMS_OUTPUT.PUT_LINE('== Báo cáo kết ca hiện tại: ' || V_SHIFT_ID || ' ==');
-    FOR REC IN (
+    -- 4) In báo cáo ca tại cửa hàng VN000001
+    DBMS_OUTPUT.PUT_LINE('== Báo cáo ca tại cửa hàng ' || V_STORE_ID || ' ==');
+    FOR rec_sh IN (
         SELECT *
         FROM SHIFT_REPORT
-        WHERE ID = V_SHIFT_ID
+        WHERE STORE_ID = V_STORE_ID
+        ORDER BY START_TIME
         )
         LOOP
-            DBMS_OUTPUT.PUT_LINE('Thời gian bắt đầu ca: ' || REC.START_TIME);
-            DBMS_OUTPUT.PUT_LINE('Thời gian kết thúc ca: ' || REC.END_TIME);
-            DBMS_OUTPUT.PUT_LINE('Tổng ví điện tử: ' || REC.EWALLET_REVENUE);
-            DBMS_OUTPUT.PUT_LINE('Tổng tiền mặt: ' || REC.CASH_REVENUE);
-            DBMS_OUTPUT.PUT_LINE('Tổng chuyển khoản ngân hàng: ' || REC.BANK_REVENUE);
-            DBMS_OUTPUT.PUT_LINE('Tổng cộng => ' || TO_CHAR(REC.EWALLET_REVENUE + REC.CASH_REVENUE + REC.BANK_REVENUE));
-            DBMS_OUTPUT.PUT_LINE('Tổng số lượng giao dịch: ' || REC.TRANSACTION_COUNT);
-            DBMS_OUTPUT.PUT_LINE('Mã cửa hàng: ' || REC.STORE_ID);
-            DBMS_OUTPUT.PUT_LINE('Mã nhân viên: ' || REC.EMPLOYEE_ID);
+            DBMS_OUTPUT.PUT_LINE(
+                    '→ Shift ' || rec_sh.ID ||
+                    ' | Start: ' || TO_CHAR(rec_sh.START_TIME, 'DD/MM/YYYY HH24:MI') ||
+                    ' | End: ' || NVL(TO_CHAR(rec_sh.END_TIME, 'DD/MM/YYYY HH24:MI'), 'NULL') ||
+                    ' | Cash: ' || rec_sh.CASH_REVENUE ||
+                    ' | E-Wallet: ' || rec_sh.EWALLET_REVENUE ||
+                    ' | Bank: ' || rec_sh.BANK_REVENUE ||
+                    ' | Txns: ' || rec_sh.TRANSACTION_COUNT
+            );
         END LOOP;
-    DBMS_OUTPUT.PUT_LINE('===============================================================');
 
-    DBMS_OUTPUT.PUT_LINE('== Phiếu tính lương: các ca làm từ 0h 1/5/2025 tới hiện tại ==');
-    FOR REC IN (
+    -- 5) In tất cả paycheck
+    DBMS_OUTPUT.PUT_LINE('== Danh sách tất cả Paycheck ==');
+    FOR rec_pc IN (
         SELECT *
         FROM PAYCHECK
+        ORDER BY PAY_DATE
         )
         LOOP
-            DBMS_OUTPUT.PUT_LINE('Mã phiếu lương: ' || REC.ID);
-            DBMS_OUTPUT.PUT_LINE('Mã nhân viên: ' || REC.EMPLOYEE_ID);
-            DBMS_OUTPUT.PUT_LINE('Ngày trả lương: ' || REC.PAY_DATE);
-            DBMS_OUTPUT.PUT_LINE('Tổng trước thuế, phụ cấp, khấu trừ: ' || REC.GROSS_AMOUNT);
-            DBMS_OUTPUT.PUT_LINE('Các khoản thuế, phụ cấp, khấu trừ:  ' || REC.DEDUCTIONS);
-            DBMS_OUTPUT.PUT_LINE('Tổng thực nhận:  ' || REC.NET_AMOUNT);
-            DBMS_OUTPUT.PUT_LINE('===============================================================');
+            DBMS_OUTPUT.PUT_LINE(
+                    '→ Paycheck ' || rec_pc.ID ||
+                    ' | Emp: ' || rec_pc.EMPLOYEE_ID ||
+                    ' | PayDate: ' || TO_CHAR(rec_pc.PAY_DATE, 'DD/MM/YYYY') ||
+                    ' | Gross: ' || rec_pc.GROSS_AMOUNT ||
+                    ' | Deduct: ' || rec_pc.DEDUCTIONS ||
+                    ' | Net: ' || rec_pc.NET_AMOUNT
+            );
         END LOOP;
 
-    -- Nếu không có lỗi, thì commit
+    -- 6) Kết thúc thành công
+    DBMS_OUTPUT.PUT_LINE('== Demo hoàn thành ==');
     COMMIT;
 EXCEPTION
     WHEN OTHERS THEN
-        -- Nếu có lỗi xảy ra, rollback lại toàn bộ
         ROLLBACK;
-        DBMS_OUTPUT.PUT_LINE('Có lỗi xảy ra: ' || SQLERRM);
+        DBMS_OUTPUT.PUT_LINE('Lỗi demo: ' || SQLERRM);
 END;
 /

@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="SqlDialectMappings">
-    <file url="file://$PROJECT_DIR$/resources/scripts/sql/create.sql" dialect="Oracle" />
-    <file url="file://$PROJECT_DIR$/resources/scripts/sql/delete.sql" dialect="Oracle" />
-    <file url="file://$PROJECT_DIR$/resources/scripts/sql/drop.sql" dialect="Oracle" />
-    <file url="file://$PROJECT_DIR$/resources/scripts/sql/insert.sql" dialect="Oracle" />
-    <file url="file://$PROJECT_DIR$/resources/scripts/sql/procedure.sql" dialect="Oracle" />
-    <file url="file://$PROJECT_DIR$/resources/scripts/sql/schedule.sql" dialect="Oracle" />
-    <file url="file://$PROJECT_DIR$/resources/scripts/sql/trigger.sql" dialect="Oracle" />
+    <file url="file://$PROJECT_DIR$/resources/scripts/demo.sql" dialect="Oracle" />
+    <file url="file://$PROJECT_DIR$/resources/scripts/sql/CREATE.sql" dialect="Oracle" />
+    <file url="file://$PROJECT_DIR$/resources/scripts/sql/DROP.sql" dialect="Oracle" />
+    <file url="file://$PROJECT_DIR$/resources/scripts/sql/INSERT.sql" dialect="Oracle" />
+    <file url="file://$PROJECT_DIR$/resources/scripts/sql/PROCEDURE.sql" dialect="Oracle" />
+    <file url="file://$PROJECT_DIR$/resources/scripts/sql/SCHEDULED_JOBS.sql" dialect="Oracle" />
+    <file url="file://$PROJECT_DIR$/resources/scripts/sql/SEQUENCE_TRIGGER.sql" dialect="Oracle" />
     <file url="PROJECT" dialect="Oracle" />
   </component>
 </project>

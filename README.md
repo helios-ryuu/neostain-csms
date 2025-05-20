@@ -73,6 +73,6 @@ SQL> ALTER USER CSMS_ADMIN QUOTA UNLIMITED ON CSMS_DATA;
 User altered.
 ```
 
-### Bước 6: Lần lượt chạy create.sql -> trigger.sql -> insert.sql để tạo các bảng và thêm dữ liệu (Nếu xảy ra lỗi thì chạy file drop.sql để xóa bảng)
+### Bước 6: Lần lượt chạy CREATE.sql -> SEQUENCE_TRIGGER.sql -> INSERT.sql để tạo các bảng và thêm dữ liệu (Nếu xảy ra lỗi thì chạy file DROP.sql để xóa bảng)
 
 ### Bước 7: Chạy file Main.java tại src/com/neostain/csms/Main.java

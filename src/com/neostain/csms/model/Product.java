@@ -25,11 +25,11 @@ public class Product {
         this.id = id;
     }
 
-    public String getNane() {
+    public String getName() {
         return nane;
     }
 
-    public void setNane(String nane) {
+    public void setName(String nane) {
         this.nane = nane;
     }
 

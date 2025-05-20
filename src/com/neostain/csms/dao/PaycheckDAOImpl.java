@@ -75,6 +75,60 @@ public class PaycheckDAOImpl implements PaycheckDAO {
     }
 
     @Override
+    public List<Paycheck> search(String id, String employeeId, String from, String to, String periodStart, String periodEnd) {
+        StringBuilder sql = new StringBuilder(
+                "SELECT * FROM PAYCHECK WHERE 1=1"
+        );
+        List<Object> params = new ArrayList<>();
+
+        if (!StringUtils.isNullOrEmpty(id)) {
+            sql.append(" AND ID=?");
+            params.add(id);
+        }
+
+        if (!StringUtils.isNullOrEmpty(employeeId)) {
+            sql.append(" AND EMPLOYEE_ID=?");
+            params.add(employeeId);
+        }
+
+        if (!StringUtils.isNullOrEmpty(from)) {
+            sql.append(" AND PAY_DATE >= ?");
+            params.add(from);
+        }
+
+        if (!StringUtils.isNullOrEmpty(to)) {
+            sql.append(" AND PAY_DATE <= ?");
+            params.add(to);
+        }
+
+        if (!StringUtils.isNullOrEmpty(periodStart)) {
+            sql.append(" AND PERIOD_START >= ?");
+            params.add(periodStart);
+        }
+
+        if (!StringUtils.isNullOrEmpty(periodEnd)) {
+            sql.append(" AND PERIOD_END <= ?");
+            params.add(periodEnd);
+        }
+        sql.append(" ORDER BY PAY_DATE DESC");
+
+        try (PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+            for (int i = 0; i < params.size(); i++) {
+                ps.setObject(i + 1, params.get(i));
+            }
+            ResultSet rs = ps.executeQuery();
+            List<Paycheck> paychecks = new ArrayList<>();
+            while (rs.next()) {
+                paychecks.add(mapResultSetToPaycheck(rs));
+            }
+            return paychecks;
+        } catch (SQLException e) {
+            LOGGER.severe("[SEARCH] Lỗi: " + e.getMessage());
+            return List.of();
+        }
+    }
+
+    @Override
     public String create(String employeeId, BigDecimal deduction, Timestamp periodStard, Timestamp periodEnd) {
         if (StringUtils.isNullOrEmpty(employeeId) || deduction == null || periodStard == null || periodEnd == null) {
             LOGGER.warning("[CREATE] Employee ID, deduction or periodStard or periodEnd is empty");
@@ -115,7 +169,9 @@ public class PaycheckDAOImpl implements PaycheckDAO {
                 rs.getBigDecimal("GROSS_AMOUNT"),
                 rs.getBigDecimal("DEDUCTIONS"),
                 rs.getBigDecimal("NET_AMOUNT"),
-                rs.getTimestamp("PAY_DATE")
+                rs.getTimestamp("PAY_DATE"),
+                rs.getTimestamp("PERIOD_START"),
+                rs.getTimestamp("PERIOD_END")
         );
     }
 }

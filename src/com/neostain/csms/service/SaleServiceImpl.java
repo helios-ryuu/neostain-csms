@@ -78,6 +78,11 @@ public class SaleServiceImpl implements SaleService {
     }
 
     @Override
+    public boolean addGiftToInvoice(String invoiceId, String productId, int quantity) {
+        return invoiceDAO.addGift(invoiceId, productId, quantity);
+    }
+
+    @Override
     public boolean calculateInvoiceTotal(String invoiceId) {
         return invoiceDAO.calculateTotal(invoiceId);
     }
@@ -115,7 +120,7 @@ public class SaleServiceImpl implements SaleService {
 
     @Override
     public boolean updateProduct(Product product) {
-        return productDAO.updateName(product.getId(), product.getNane());
+        return productDAO.updateName(product.getId(), product.getName());
     }
 
     @Override

@@ -10,14 +10,18 @@ public class Paycheck {
     private BigDecimal deductions;
     private BigDecimal netAmount;
     private Timestamp payDate;
+    private Timestamp periodStart;
+    private Timestamp periodEnd;
 
-    public Paycheck(String id, String employeeId, BigDecimal grossAmount, BigDecimal deductions, BigDecimal netAmount, Timestamp payDate) {
+    public Paycheck(String id, String employeeId, BigDecimal grossAmount, BigDecimal deductions, BigDecimal netAmount, Timestamp payDate, Timestamp periodStart, Timestamp periodEnd) {
         this.id = id;
         this.employeeId = employeeId;
         this.grossAmount = grossAmount;
         this.deductions = deductions;
         this.netAmount = netAmount;
         this.payDate = payDate;
+        this.periodStart = periodStart;
+        this.periodEnd = periodEnd;
     }
 
     public String getId() {
@@ -66,5 +70,21 @@ public class Paycheck {
 
     public void setPayDate(Timestamp payDate) {
         this.payDate = payDate;
+    }
+
+    public Timestamp getPeriodStart() {
+        return periodStart;
+    }
+
+    public void setPeriodStart(Timestamp periodStart) {
+        this.periodStart = periodStart;
+    }
+
+    public Timestamp getPeriodEnd() {
+        return periodEnd;
+    }
+
+    public void setPeriodEnd(Timestamp periodEnd) {
+        this.periodEnd = periodEnd;
     }
 }

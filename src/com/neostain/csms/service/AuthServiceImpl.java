@@ -1,11 +1,7 @@
 package com.neostain.csms.service;
 
-import com.neostain.csms.dao.AccountDAO;
-import com.neostain.csms.dao.RoleDAO;
-import com.neostain.csms.dao.TokenDAO;
-import com.neostain.csms.model.Account;
-import com.neostain.csms.model.Role;
-import com.neostain.csms.model.Token;
+import com.neostain.csms.dao.*;
+import com.neostain.csms.model.*;
 import com.neostain.csms.util.DatabaseUtils;
 import com.neostain.csms.util.PasswordUtils;
 import com.neostain.csms.util.SQLQueries;
@@ -31,11 +27,15 @@ public class AuthServiceImpl implements AuthService {
     private final TokenDAO tokenDAO;
     private final AccountDAO accountDAO;
     private final RoleDAO roleDAO;
+    private final EmployeeDAO employeeDAO;
+    private final StoreDAO storeDAO;
 
-    public AuthServiceImpl(TokenDAO tokenDAO, AccountDAO accountDAO, RoleDAO roleDAO) {
+    public AuthServiceImpl(TokenDAO tokenDAO, AccountDAO accountDAO, RoleDAO roleDAO, EmployeeDAO employeeDAO, StoreDAO storeDAO) {
         this.tokenDAO = tokenDAO;
         this.accountDAO = accountDAO;
         this.roleDAO = roleDAO;
+        this.employeeDAO = employeeDAO;
+        this.storeDAO = storeDAO;
     }
 
     @Override
@@ -53,31 +53,54 @@ public class AuthServiceImpl implements AuthService {
             return false;
         }
 
-        try (Connection conn = DatabaseUtils.getConnection();
-             PreparedStatement stmt1 = conn.prepareStatement(SQLQueries.ACCOUNT_GET_PASSWORD_HASH);
-             PreparedStatement stmt2 = conn.prepareStatement(SQLQueries.STORE_FIND_BY_ID)) {
-            stmt1.setString(1, username);
-            stmt2.setString(1, storeId);
+        try {
+            Account account = accountDAO.findByUsername(username);
+            if (account == null) {
+                LOGGER.warning("[AUTHENTICATE] Người dùng không tồn tại: " + username);
+                return false;
+            }
 
-            try (ResultSet rs2 = stmt2.executeQuery()) {
-                if (rs2.next()) {
-                    try (ResultSet rs1 = stmt1.executeQuery()) {
-                        if (rs1.next()) {
-                            String storedHash = rs1.getString("PASSWORD_HASH");
-                            boolean isMatch = hash(password).equals(storedHash);
+            Store store = storeDAO.findById(storeId);
+            if (store == null) {
+                LOGGER.warning("[AUTHENTICATE] Cửa hàng không tồn tại: " + storeId);
+                return false;
+            }
 
-                            LOGGER.info("[AUTHENTICATE] Xác thực " + (isMatch ? "thành công" : "thất bại") +
-                                    " - Người dùng: " + username);
-                            return isMatch;
-                        } else {
-                            LOGGER.warning("[AUTHENTICATE] Người dùng không tồn tại: " + username);
-                            return false;
-                        }
+            String hashedInputPassword = hash(password);
+            if (!hashedInputPassword.equals(account.getPasswordHash())) {
+                LOGGER.warning("[AUTHENTICATE] Mật khẩu không đúng - Người dùng: " + username);
+                return false;
+            }
+
+            String role = account.getRoleId();  // Giả sử có getRole()
+            Employee employee = employeeDAO.findById(account.getEmployeeId());
+            if (employee == null) {
+                LOGGER.warning("[AUTHENTICATE] Nhân viên không tồn tại: " + account.getEmployeeId());
+                return false;
+            }
+
+            switch (role) {
+                case "R001": // Quản lý cửa hàng
+                    if (store.getManagerId().equals(employee.getId())) {
+                        LOGGER.info("[AUTHENTICATE] Xác thực thành công (Quản lý cửa hàng) - Người dùng: " + username);
+                        return true;
+                    } else {
+                        LOGGER.warning("[AUTHENTICATE] Người dùng không phải quản lý cửa hàng này");
+                        return false;
                     }
-                } else {
-                    LOGGER.warning("[AUTHENTICATE] Cửa hàng không tồn tại: " + username);
+
+                case "R002": // Nhân viên bán hàng
+                    if (store.getManagerId().equals(employee.getManagerId())) {
+                        LOGGER.info("[AUTHENTICATE] Xác thực thành công (Nhân viên bán hàng) - Người dùng: " + username);
+                        return true;
+                    } else {
+                        LOGGER.warning("[AUTHENTICATE] Người dùng không thuộc cửa hàng này");
+                        return false;
+                    }
+
+                default:
+                    LOGGER.warning("[AUTHENTICATE] Vai trò không hợp lệ: " + role);
                     return false;
-                }
             }
 
         } catch (Exception e) {
@@ -85,6 +108,7 @@ public class AuthServiceImpl implements AuthService {
             return false;
         }
     }
+
 
     @Override
     public boolean isAuthorized(String username, String role) {
@@ -123,7 +147,7 @@ public class AuthServiceImpl implements AuthService {
         }
 
         // Kiểm tra trạng thái token
-        if (!"Có hiệu lực".equals(token.getStatus())) {
+        if (!"CÓ HIỆU LỰC".equals(token.getStatus())) {
             LOGGER.warning("[VALIDATE_TOKEN] Token không hợp lệ");
             return false;
         }
@@ -165,7 +189,7 @@ public class AuthServiceImpl implements AuthService {
             token.setValue(tokenValue);
             token.setIssuedAt(Timestamp.valueOf(LocalDateTime.now()));
             token.setExpiresAt(Timestamp.valueOf(expiresAt));
-            token.setStatus("Có hiệu lực");
+            token.setStatus("CÓ HIỆU LỰC");
 
             boolean affected = tokenDAO.create(token);
             if (affected) {
@@ -248,30 +272,6 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public boolean removeByUsername(String username) {
-        if (StringUtils.isNullOrEmpty(username)) {
-            LOGGER.warning("[REMOVE_BY_USERNAME] Username tài khoản trống");
-            return false;
-        }
-        try {
-            Account acc = accountDAO.findByUsername(username);
-            if (acc == null) {
-                LOGGER.warning("[REMOVE_BY_USERNAME] Account không tồn tại: " + username);
-                return false;
-            }
-            if ("ADMIN".equalsIgnoreCase(acc.getRoleId())) {
-                LOGGER.warning("[REMOVE_BY_USERNAME] Không được xóa account ADMIN");
-                return false;
-            }
-            accountDAO.delete(username);
-            return true;
-        } catch (Exception e) {
-            LOGGER.severe("[REMOVE_BY_USERNAME] Lỗi: " + e.getMessage());
-            return false;
-        }
-    }
-
-    @Override
     public Role getRoleById(String roleID) {
         return roleDAO.findById(roleID);
     }
@@ -289,11 +289,6 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public boolean updateAccountStatus(String username, String status) {
         return accountDAO.updateStatus(username, status);
-    }
-
-    @Override
-    public boolean deleteAccount(String username) {
-        return accountDAO.delete(username);
     }
 
     @Override

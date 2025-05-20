@@ -1,135 +1,382 @@
 package com.neostain.csms.view.screen.sm.panels;
 
+import com.neostain.csms.ServiceManager;
+import com.neostain.csms.model.Account;
+import com.neostain.csms.model.Employee;
 import com.neostain.csms.util.Constants;
+import com.neostain.csms.util.DialogFactory;
+import com.neostain.csms.util.exception.DuplicateFieldException;
+import com.neostain.csms.util.exception.FieldValidationException;
 import com.neostain.csms.view.component.BorderedPanel;
 import com.neostain.csms.view.component.ScrollableTable;
-import com.neostain.csms.view.component.StandardMenu;
+import com.neostain.csms.view.component.StandardButton;
 
 import javax.swing.*;
 import java.awt.*;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
-import java.util.logging.Logger;
 
-/**
- * Employee management panels for Store Manager screen
- */
 public class EmployeePanel extends JPanel {
-    private static final Logger LOGGER = Logger.getLogger(EmployeePanel.class.getName());
+    private static final ServiceManager serviceManager = ServiceManager.getInstance();
+    private final JButton searchBtn = new StandardButton(this, "Tìm kiếm");
+    private final JButton resetBtn = new StandardButton(this, "Đặt lại");
+    private final String[] employeeColumns = {
+            "Mã nhân viên",
+            "Tên nhân viên",
+            "Ngày đăng ký",
+            "Email",
+            "Số điện thoại",
+            "Địa chỉ",
+            "Lương theo giờ",
+            "Trạng thái"
+    };
+    private final SimpleDateFormat df1 = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
+    private final SimpleDateFormat df2 = new SimpleDateFormat("yyyy-MM-dd");
+    private ScrollableTable employeeTable;
 
-    /**
-     * Creates a new employee panels
-     */
+
+    private Account account = serviceManager.getAuthService().getAccountByUsername(serviceManager.getCurrentUsername());
+
     public EmployeePanel() {
         initializeComponents();
     }
 
     private void initializeComponents() {
-        // Create a panels with GridBagLayout
-        this.setLayout(new GridBagLayout());
-        this.setBackground(Color.WHITE);
+        this.setLayout(new BorderLayout(10, 10));
+        this.setBackground(Constants.Color.COMPONENT_BACKGROUND_WHITE);
+        this.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        // Create GridBagConstraints
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.fill = GridBagConstraints.BOTH;
-        gbc.insets = new Insets(5, 5, 5, 5);
+        // Search tools in a titled border panel
+        BorderedPanel toolWrapper = new BorderedPanel("Tìm kiếm nhân viên");
+        toolWrapper.setLayout(new BorderLayout(10, 10));
+        toolWrapper.setLayout(new BoxLayout(toolWrapper, BoxLayout.X_AXIS));
+        toolWrapper.setBackground(Constants.Color.COMPONENT_BACKGROUND_WHITE);
 
-        // Create menu panels with standardized component
-        StandardMenu menuPanel = createMenuPanel();
+        // Input fields
+        JTextField employeeIdField = new JTextField(10);
 
-        // Set preferred size for menu panels
-        menuPanel.setPreferredSize(new Dimension(Constants.View.MENU_PANEL_WIDTH, 600));
-        menuPanel.setMinimumSize(new Dimension(Constants.View.MENU_PANEL_WIDTH, 200));
+        // 1. Xác định mặc định
+        Date defaultFrom = new GregorianCalendar(1970, Calendar.JANUARY, 1).getTime();
+        Date defaultTo = new GregorianCalendar(2100, Calendar.JANUARY, 1).getTime();
 
-        // Add menu panels to left side
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        gbc.weightx = 0;
-        gbc.weighty = 1.0;
-        this.add(menuPanel, gbc);
+        // 2. Tạo model/spinner
+        SpinnerDateModel fromModel = new SpinnerDateModel(defaultFrom, null, null, Calendar.DAY_OF_MONTH);
+        JSpinner dateFromSpinner = new JSpinner(fromModel);
+        dateFromSpinner.setEditor(new JSpinner.DateEditor(dateFromSpinner, "yyyy-MM-dd"));
 
-        // Create employee panels with controls and data
-        BorderedPanel employeeListPanel = createEmployeeListPanel();
+        SpinnerDateModel toModel = new SpinnerDateModel(defaultTo, null, null, Calendar.DAY_OF_MONTH);
+        JSpinner dateToSpinner = new JSpinner(toModel);
+        dateToSpinner.setEditor(new JSpinner.DateEditor(dateToSpinner, "yyyy-MM-dd"));
 
-        // Set preferred size for employee list panels
-        employeeListPanel.setPreferredSize(new Dimension(800, 600));
+        JTextField emailField = new JTextField(10);
+        JTextField phoneNumberField = new JTextField(10);
+        // Status dropdown
+        String[] statuses = {"TẤT CẢ TRẠNG THÁI", "ĐANG HOẠT ĐỘNG", "TẠM NGỪNG HOẠT ĐỘNG", "ĐÃ NGHỈ VIỆC"};
+        JComboBox<String> statusBox = new JComboBox<>(statuses);
 
-        // Add employeeListPanel to right side
-        gbc.gridx = 1;
-        gbc.gridy = 0;
-        gbc.weightx = 0.7;
-        gbc.weighty = 1.0;
-        this.add(employeeListPanel, gbc);
-    }
+        toolWrapper.add(new JLabel("Mã nhân viên"));
+        toolWrapper.add(Box.createHorizontalStrut(8));
+        toolWrapper.add(employeeIdField);
+        toolWrapper.add(Box.createHorizontalStrut(15));
 
-    private StandardMenu createMenuPanel() {
-        StandardMenu menuPanel = new StandardMenu("Quản lý nhân viên");
-        menuPanel.addMenuItem("Danh sách nhân viên", item -> {
-            LOGGER.info("Employee list selected");
-            // Future functionality for employee list
+        toolWrapper.add(new JLabel("Ngày đăng ký: Từ"));
+        toolWrapper.add(Box.createHorizontalStrut(8));
+        toolWrapper.add(dateFromSpinner);
+
+        toolWrapper.add(Box.createHorizontalStrut(8));
+        toolWrapper.add(new JLabel("đến"));
+        toolWrapper.add(Box.createHorizontalStrut(8));
+
+        toolWrapper.add(dateToSpinner);
+        toolWrapper.add(Box.createHorizontalStrut(15));
+
+        toolWrapper.add(new JLabel("Email:"));
+        toolWrapper.add(Box.createHorizontalStrut(8));
+        toolWrapper.add(emailField);
+        toolWrapper.add(Box.createHorizontalStrut(15));
+
+        toolWrapper.add(new JLabel("Số điện thoại:"));
+        toolWrapper.add(Box.createHorizontalStrut(8));
+        toolWrapper.add(phoneNumberField);
+        toolWrapper.add(Box.createHorizontalStrut(15));
+
+        toolWrapper.add(new JLabel("Trạng thái:"));
+        toolWrapper.add(Box.createHorizontalStrut(8));
+        toolWrapper.add(statusBox);
+        toolWrapper.add(Box.createHorizontalStrut(15));
+        toolWrapper.add(Box.createHorizontalStrut(8));
+
+        toolWrapper.add(searchBtn);
+        toolWrapper.add(Box.createHorizontalStrut(5));
+        toolWrapper.add(resetBtn);
+
+        // Button listeners
+        searchBtn.addActionListener(e -> {
+            String id = employeeIdField.getText().trim();
+            Date fromDate = (Date) dateFromSpinner.getValue();
+            Date toDate = (Date) dateToSpinner.getValue();
+            String from = (fromDate != null) ? df2.format(fromDate) : "";
+            String to = (toDate != null) ? df2.format(toDate) : "";
+            String email = emailField.getText().trim();
+            String phoneNumber = phoneNumberField.getText().trim();
+            String status = statuses[statusBox.getSelectedIndex()];
+
+
+            List<Employee> results = serviceManager.getManagementService()
+                    .searchEmployees(id, account.getEmployeeId(), from, to, email, phoneNumber, status);
+
+            if (results.isEmpty()) {
+                DialogFactory.showErrorDialog(this, "Thông báo", "Không có kết quả tìm kiếm!");
+            } else {
+                String[][] data = this.toTableData(results);
+                employeeTable.refreshData(data);
+            }
         });
 
-        menuPanel.addMenuItem("Thêm nhân viên mới", item -> {
-            LOGGER.info("Add employee selected");
-            // Future functionality for adding employees
+        resetBtn.addActionListener(e -> {
+            // 1. Xoá bộ lọc text
+            employeeIdField.setText("");
+
+            // 2. Đưa spinner về mặc định
+            dateFromSpinner.setValue(defaultFrom);
+            dateToSpinner.setValue(defaultTo);
+
+
+            emailField.setText("");
+            phoneNumberField.setText("");
+            statusBox.setSelectedIndex(0);
+
+            // 3. Tìm kiếm lại (lần này từ–đến rộng nhất => load all)
+            searchBtn.doClick();
         });
 
-        menuPanel.addMenuItem("Phân quyền", item -> {
-            LOGGER.info("Roles management selected");
-            // Future functionality for role management
-        });
+        this.add(toolWrapper, BorderLayout.NORTH);
 
-        return menuPanel;
+        // Initialize table with all employees of the current store manager
+        List<Employee> init = serviceManager.getManagementService().getEmployeeByManagerId(account.getEmployeeId());
+        String[][] initData = this.toTableData(init);
+
+        // Setup table with actions (delete/update)
+        java.util.List<ScrollableTable.ActionDefinition> actions = createActions();
+        this.employeeTable = new ScrollableTable(employeeColumns, initData, actions);
+
+        // ----- Invoice List Section -----
+        BorderedPanel employeeTableBordered = new BorderedPanel("Danh sách nhân viên");
+        employeeTableBordered.setLayout(new BorderLayout(10, 10));
+        employeeTableBordered.setBackground(Constants.Color.COMPONENT_BACKGROUND_WHITE);
+        employeeTableBordered.add(employeeTable);
+        this.add(employeeTableBordered, BorderLayout.CENTER);
     }
 
-    private BorderedPanel createEmployeeListPanel() {
-        BorderedPanel employeeListPanel = new BorderedPanel("Danh sách nhân viên");
-        employeeListPanel.setLayout(new BorderLayout(10, 10));
-
-        // Create search and action toolbar
-        JPanel toolbarPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
-        toolbarPanel.setBackground(Constants.Color.COMPONENT_BACKGROUND_WHITE);
-
-        JTextField searchField = new JTextField(25);
-        searchField.setPreferredSize(new Dimension(200, 30));
-        searchField.putClientProperty("JTextField.placeholderText", "Tìm kiếm nhân viên...");
-
-        JButton searchButton = createStandardButton("Tìm kiếm", null);
-        JButton addButton = createStandardButton("Thêm mới", null);
-        JButton editButton = createStandardButton("Chỉnh sửa", null);
-        JButton deleteButton = createStandardButton("Xóa", null);
-
-        toolbarPanel.add(searchField);
-        toolbarPanel.add(searchButton);
-        toolbarPanel.add(addButton);
-        toolbarPanel.add(editButton);
-        toolbarPanel.add(deleteButton);
-
-        employeeListPanel.add(toolbarPanel, BorderLayout.NORTH);
-
-        // Create sample employee data
-        String[] columnNames = {"Mã nhân viên", "Họ và tên", "Email", "Số điện thoại", "Chức vụ"};
-        Object[][] data = {
-                {"NV001", "Nguyễn Văn A", "nguyenvana@example.com", "0912345678", "Quản lý cửa hàng"},
-                {"NV002", "Trần Thị B", "tranthib@example.com", "0987654321", "Nhân viên bán hàng"},
-                {"NV003", "Lê Văn C", "levanc@example.com", "0912345679", "Nhân viên bán hàng"},
-                {"NV004", "Phạm Thị D", "phamthid@example.com", "0987654322", "Nhân viên bán hàng"},
-                {"NV005", "Hoàng Văn E", "hoangvane@example.com", "0912345670", "Nhân viên bán hàng"}
-        };
-
-        // Add table with scrolling
-        List<ScrollableTable.ActionDefinition> noActions = List.of();
-        ScrollableTable employeeTable = new ScrollableTable(columnNames, data, noActions);
-        employeeListPanel.add(employeeTable, BorderLayout.CENTER);
-
-        return employeeListPanel;
-    }
-
-    private JButton createStandardButton(String text, java.awt.event.ActionListener actionListener) {
-        JButton button = new JButton(text);
-        button.setFocusPainted(false);
-        if (actionListener != null) {
-            button.addActionListener(actionListener);
+    private String[][] toTableData(List<Employee> list) {
+        String[][] data = new String[list.size()][employeeColumns.length];
+        for (int i = 0; i < list.size(); i++) {
+            Employee m = list.get(i);
+            data[i] = new String[]{
+                    m.getId(),
+                    m.getName(),
+                    df1.format(m.getHireDate()),
+                    m.getEmail(),
+                    m.getPhoneNumber(),
+                    m.getAddress(),
+                    String.valueOf(m.getHourlyWage()),
+                    m.getStatus()
+            };
         }
-        return button;
+        return data;
+    }
+
+    private List<ScrollableTable.ActionDefinition> createActions() {
+        return List.of(
+                new ScrollableTable.ActionDefinition("Cập nhật", "Cập nhật thông tin", (row, table) -> {
+                    String id = table.getValueAt(row, 0).toString();
+                    String managerId = serviceManager.getManagementService().getEmployeeById(id).getManagerId();
+                    String name = table.getValueAt(row, 1).toString();
+                    String hireDate = table.getValueAt(row, 2).toString();
+                    String email = table.getValueAt(row, 3).toString();
+                    String phoneNumber = table.getValueAt(row, 4).toString();
+                    String address = table.getValueAt(row, 5).toString();
+                    String hourlyWage = table.getValueAt(row, 6).toString();
+
+                    // === BƯỚC 1: Hiện dialog sửa thông tin ===
+                    JDialog dialog = new JDialog(
+                            (Frame) SwingUtilities.getWindowAncestor(this),
+                            "Cập nhật thông tin nhân viên: " + id,
+                            true
+                    );
+
+                    dialog.setLayout(new GridBagLayout());
+                    GridBagConstraints gbc = new GridBagConstraints();
+                    gbc.insets = new Insets(8, 8, 8, 8);
+                    gbc.fill = GridBagConstraints.HORIZONTAL;
+
+                    // Form gồm 9 dòng x 2 cột
+                    JPanel form = new JPanel(new GridLayout(7, 2, 8, 8));
+
+                    // 1. Mã nhân viên quản lý (editable)
+                    form.add(new JLabel("Mã nhân viên quản lý:"));
+                    JTextField managerIdField = new JTextField(managerId, 10);
+                    form.add(managerIdField);
+
+                    // 2. Tên (editable)
+                    form.add(new JLabel("Tên nhân viên"));
+                    JTextField nameField = new JTextField(name, 10);
+                    form.add(nameField);
+
+                    // 3. Ngày đăng ký (readonly)
+                    form.add(new JLabel("Ngày đăng ký:"));
+                    JTextField dateField = new JTextField(hireDate, 20);
+                    dateField.setEditable(false);
+                    form.add(dateField);
+
+                    // 4. SĐT (editable)
+                    form.add(new JLabel("Số điện thoại:"));
+                    JTextField phoneField = new JTextField(phoneNumber, 20);
+                    form.add(phoneField);
+
+                    // 5. Email (editable)
+                    form.add(new JLabel("Email:"));
+                    JTextField emailField = new JTextField(email, 20);
+                    form.add(emailField);
+
+                    // 6. Địa chỉ (editable)
+                    form.add(new JLabel("Địa chỉ:"));
+                    JTextField addressField = new JTextField(address, 20);
+                    form.add(addressField);
+
+                    // 7. Địa chỉ (editable)
+                    form.add(new JLabel("Lương (đ/giờ):"));
+                    JTextField hourlyWageField = new JTextField(hourlyWage, 20);
+                    form.add(hourlyWageField);
+
+                    gbc.gridx = 0;
+                    gbc.gridy = 0;
+                    gbc.gridwidth = 2;
+                    dialog.add(form, gbc);
+
+                    // Nút Cập nhật / Hủy
+                    JPanel btnP = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0));
+                    JButton okBtn = new JButton("Cập nhật");
+                    JButton cancelBtn = new JButton("Hủy");
+                    btnP.add(okBtn);
+                    btnP.add(cancelBtn);
+
+                    gbc.gridy = 1;
+                    dialog.add(btnP, gbc);
+
+                    // Hủy → đóng dialog
+                    cancelBtn.addActionListener(ev -> dialog.dispose());
+
+                    // Xử lý Cập nhật
+                    Employee e = serviceManager.getManagementService().getEmployeeById(id);
+
+                    okBtn.addActionListener(ev -> {
+                        // Lấy giá trị cũ
+                        String oldManagerId = e.getManagerId();
+                        String oldName = e.getName();
+                        String oldPhone = e.getPhoneNumber();
+                        String oldEmail = e.getEmail();
+                        String oldAddress = e.getAddress();
+                        String oldHourlyWage = e.getHourlyWage().toString();
+
+                        // Lấy giá trị mới
+                        String newManagerId = managerIdField.getText().trim();
+                        String newName = nameField.getText().trim();
+                        String newPhone = phoneField.getText().trim();
+                        String newEmail = emailField.getText().trim();
+                        String newAddress = addressField.getText().trim();
+                        String newHourlyWage = hourlyWageField.getText().trim();
+
+                        // Đặt lại trên model
+                        e.setManagerId(newManagerId);
+                        e.setName(newName);
+                        e.setPhoneNumber(newPhone);
+                        e.setEmail(newEmail);
+                        e.setAddress(newAddress);
+                        e.setHourlyWage(new BigDecimal(newHourlyWage).setScale(2, RoundingMode.DOWN));
+
+                        try {
+                            serviceManager.getManagementService().updateEmployee(e);
+                            JPanel infoPanel = new JPanel(new GridLayout(0, 4, 8, 8));
+                            infoPanel.add(new JLabel("Cập nhật nhân viên: "));
+                            infoPanel.add(new JLabel(e.getId()));
+                            infoPanel.add(new JLabel());
+                            infoPanel.add(new JLabel());
+                            infoPanel.add(new JLabel("Mã nhân viên quản lý: "));
+                            infoPanel.add(new JLabel(oldManagerId));
+                            infoPanel.add(new JLabel("          >>>"));
+                            infoPanel.add(new JLabel(newManagerId));
+                            infoPanel.add(new JLabel("Tên: "));
+                            infoPanel.add(new JLabel(oldName));
+                            infoPanel.add(new JLabel("          >>>"));
+                            infoPanel.add(new JLabel(newName));
+                            infoPanel.add(new JLabel("Số điện thoại: "));
+                            infoPanel.add(new JLabel(oldPhone));
+                            infoPanel.add(new JLabel("          >>>"));
+                            infoPanel.add(new JLabel(newPhone));
+                            infoPanel.add(new JLabel("Email: "));
+                            infoPanel.add(new JLabel(oldEmail));
+                            infoPanel.add(new JLabel("          >>>"));
+                            infoPanel.add(new JLabel(newEmail));
+                            infoPanel.add(new JLabel("Địa chỉ: "));
+                            infoPanel.add(new JLabel(oldAddress));
+                            infoPanel.add(new JLabel("          >>>"));
+                            infoPanel.add(new JLabel(newAddress));
+                            infoPanel.add(new JLabel("Lương (đ/giờ): "));
+                            infoPanel.add(new JLabel(oldHourlyWage));
+                            infoPanel.add(new JLabel("          >>>"));
+                            infoPanel.add(new JLabel(newHourlyWage));
+                            DialogFactory.showInfoDialog(
+                                    dialog,
+                                    "Cập nhật thành công!",
+                                    infoPanel
+                            );
+                            // Làm mới bảng ngoài
+                            List<Employee> results = serviceManager.getManagementService().getEmployeeByManagerId(account.getEmployeeId());
+                            String[][] data = this.toTableData(results);
+                            employeeTable.refreshData(data);
+                            dialog.dispose();
+                        } catch (DuplicateFieldException dfe) {
+                            // Bắt lỗi trùng số/email, giữ dialog mở
+                            DialogFactory.showErrorDialog(
+                                    dialog,
+                                    "Lỗi trùng dữ liệu",
+                                    dfe.getMessage()
+                            );
+                            if ("phoneNumber".equals(dfe.getFieldName())) {
+                                phoneField.requestFocus();
+                            } else {
+                                emailField.requestFocus();
+                            }
+                        } catch (FieldValidationException fve) {
+                            DialogFactory.showErrorDialog(
+                                    dialog,
+                                    "Lỗi dữ liệu không hợp lệ",
+                                    fve.getMessage()
+                            );
+                            if ("phoneNumber".equals(fve.getFieldName())) {
+                                phoneField.requestFocus();
+                            } else {
+                                emailField.requestFocus();
+                            }
+                        } catch (Exception ex) {
+                            DialogFactory.showErrorDialog(
+                                    dialog,
+                                    "Lỗi",
+                                    "Lỗi không xác định: " + ex.getMessage()
+                            );
+                            dialog.dispose();
+                        }
+                    });
+
+                    dialog.pack();
+                    dialog.setLocationRelativeTo(this);
+                    dialog.setVisible(true);
+                }));
     }
 }

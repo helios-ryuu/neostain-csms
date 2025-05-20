@@ -26,7 +26,7 @@ public class ScreenHeader extends JPanel {
         userInfoPanel.add(Box.createHorizontalStrut(10)); // Add some padding
 
         JLabel userLabel = new JLabel(employeeName + " (" + roleName + ")");
-        userLabel.setFont(new Font(userLabel.getFont().getName(), Font.BOLD, 12));
+        userLabel.setFont(Constants.View.DEFAULT_FONT);
         userLabel.setForeground(Color.WHITE);
         userLabel.setAlignmentY(Component.CENTER_ALIGNMENT);
 
@@ -38,7 +38,7 @@ public class ScreenHeader extends JPanel {
         actionsPanel.setOpaque(false);
 
         JButton logoutButton = new StandardButton(this, "Kết ca");
-        logoutButton.setFont(new Font(logoutButton.getFont().getName(), Font.BOLD, 12));
+        logoutButton.setFont(Constants.View.DEFAULT_FONT);
         logoutButton.setForeground(Color.RED);
         logoutButton.setAlignmentY(Component.CENTER_ALIGNMENT);
 

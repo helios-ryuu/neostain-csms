@@ -10,9 +10,8 @@ public class Account {
     private String roleId;
     private Timestamp creationTime;
     private String status;
-    private boolean isDeleted;
 
-    public Account(String id, String employeeId, String username, String passwordHash, String roleId, Timestamp creationTime, String status, boolean isDeleted) {
+    public Account(String id, String employeeId, String username, String passwordHash, String roleId, Timestamp creationTime, String status) {
         this.id = id;
         this.employeeId = employeeId;
         this.username = username;
@@ -20,7 +19,6 @@ public class Account {
         this.roleId = roleId;
         this.creationTime = creationTime;
         this.status = status;
-        this.isDeleted = isDeleted;
     }
 
     public String getId() {
@@ -77,13 +75,5 @@ public class Account {
 
     public void setStatus(String status) {
         this.status = status;
-    }
-
-    public boolean isDeleted() {
-        return isDeleted;
-    }
-
-    public void setDeleted(boolean deleted) {
-        isDeleted = deleted;
     }
 }

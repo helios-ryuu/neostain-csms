@@ -6,29 +6,27 @@ import java.sql.Timestamp;
 public class Employee {
 
     private String id;
+    private String managerId;
     private String name;
-    private String position;
     private Timestamp hireDate;
     private String email;
     private String phoneNumber;
     private String address;
     private BigDecimal hourlyWage;
     private String status;
-    private boolean isDeleted;
 
-    public Employee(String id, String name, String position,
-                    Timestamp hireDate, String email, String phoneNumber, String address,
-                    BigDecimal hourlyWage, String status, boolean isDeleted) {
+    public Employee(String id, String managerId, String name, Timestamp hireDate,
+                    String email, String phoneNumber, String address,
+                    BigDecimal hourlyWage, String status) {
         this.id = id;
+        this.managerId = managerId;
         this.name = name;
-        this.position = position;
         this.hireDate = hireDate;
         this.email = email;
         this.phoneNumber = phoneNumber;
         this.address = address;
         this.hourlyWage = hourlyWage;
         this.status = status;
-        this.isDeleted = isDeleted;
     }
 
     public String getId() {
@@ -39,20 +37,20 @@ public class Employee {
         this.id = id;
     }
 
+    public String getManagerId() {
+        return managerId;
+    }
+
+    public void setManagerId(String managerId) {
+        this.managerId = managerId;
+    }
+
     public String getName() {
         return name;
     }
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public String getPosition() {
-        return position;
-    }
-
-    public void setPosition(String position) {
-        this.position = position;
     }
 
     public Timestamp getHireDate() {
@@ -101,13 +99,5 @@ public class Employee {
 
     public void setStatus(String status) {
         this.status = status;
-    }
-
-    public boolean isDeleted() {
-        return isDeleted;
-    }
-
-    public void setDeleted(boolean deleted) {
-        isDeleted = deleted;
     }
 }

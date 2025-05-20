@@ -23,6 +23,8 @@ public class BorderedPanel extends JPanel {
                 TitledBorder.DEFAULT_POSITION
         );
 
+        titledBorder.setTitleFont(new Font(Constants.Font.DEFAULT_FONT_NAME, Font.BOLD, Constants.Font.DEFAULT_SIZE));
+
         this.setBorder(BorderFactory.createCompoundBorder(titledBorder, marginBorder));
     }
 

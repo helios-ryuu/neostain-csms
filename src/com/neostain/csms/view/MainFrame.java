@@ -2,11 +2,14 @@ package com.neostain.csms.view;
 
 import com.neostain.csms.ServiceManager;
 import com.neostain.csms.ViewManager;
+import com.neostain.csms.util.Constants;
 import com.neostain.csms.util.FontUtils;
 import com.neostain.csms.util.ScreenType;
 import com.neostain.csms.util.StringUtils;
 
 import javax.swing.*;
+import javax.swing.plaf.FontUIResource;
+import java.util.Enumeration;
 import java.util.logging.Logger;
 
 /**
@@ -29,6 +32,8 @@ public class MainFrame extends JFrame {
         // Set application font
         FontUtils.setFont("Segoe UI");
 
+        initDefaultDialogFont();
+
         // Initialize screen manager and show login screen
         ViewManager viewManager = ViewManager.getInstance(this);
         viewManager.switchScreen(ScreenType.LOGIN, null);
@@ -42,6 +47,20 @@ public class MainFrame extends JFrame {
         this.shutdownHook();
 
         LOGGER.info("[INIT] Hoàn tất quá trình khởi tạo cửa sổ ứng dụng");
+    }
+
+    // Đặt font mặc định cho tất cả các dialog của JOptionPane
+    private static void initDefaultDialogFont() {
+        FontUIResource fontResource = new FontUIResource(Constants.View.DEFAULT_FONT);
+        Enumeration<Object> keys = UIManager.getDefaults().keys();
+        while (keys.hasMoreElements()) {
+            Object key = keys.nextElement();
+            if (key.toString().contains("OptionPane.messageFont")
+                    || key.toString().contains("OptionPane.buttonFont")
+                    || key.toString().contains("OptionPane.font")) {
+                UIManager.put(key, fontResource);
+            }
+        }
     }
 
     /**

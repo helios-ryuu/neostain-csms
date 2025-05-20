@@ -192,17 +192,6 @@ public class AccountDAOImpl implements AccountDAO {
         }
     }
 
-    @Override
-    public boolean delete(String username) {
-        try (PreparedStatement ps = conn.prepareStatement(SQLQueries.ACCOUNT_DELETE)) {
-            ps.setString(1, username);
-            return ps.executeUpdate() == 1;
-        } catch (SQLException e) {
-            LOGGER.severe("[DELETE] Lỗi: " + e.getMessage());
-            return false;
-        }
-    }
-
     private Account mapResultSetToAccount(ResultSet rs) {
         try {
             return new Account(
@@ -212,8 +201,7 @@ public class AccountDAOImpl implements AccountDAO {
                     rs.getString("PASSWORD_HASH"),
                     rs.getString("ROLE_ID"),
                     rs.getTimestamp("CREATION_TIME"),
-                    rs.getString("STATUS"),
-                    rs.getInt("IS_DELETED") == 1
+                    rs.getString("STATUS")
             );
         } catch (SQLException e) {
             LOGGER.severe("[MAP_RESULT_SET_TO_ACCOUNT] Lỗi: " + e.getMessage());

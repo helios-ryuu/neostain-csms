@@ -83,13 +83,13 @@ public class ViewManager {
                 mainFrame.setExtendedState(JFrame.NORMAL);
                 mainFrame.setResizable(false);
                 mainFrame.setLocationRelativeTo(null);
-                mainFrame.setTitle(Constants.View.APP_NAME + " - " + screenType.getDisplayName());
+                mainFrame.setTitle(Constants.View.APP_NAME + " - " + Constants.View.APP_VERSION + " - " + screenType.getDisplayName());
             }
             case POS, STORE_MANAGER -> {
                 mainFrame.setMinimumSize(Constants.View.MINIMUM_WINDOW_SIZE);
                 mainFrame.setResizable(true);
                 mainFrame.setExtendedState(JFrame.MAXIMIZED_BOTH);
-                mainFrame.setTitle(Constants.View.APP_NAME + " - " + screenType.getDisplayName() +
+                mainFrame.setTitle(Constants.View.APP_NAME + " - " + Constants.View.APP_VERSION + " - " + screenType.getDisplayName() +
                         (username != null ? " (" + username + ")" : ""));
             }
         }

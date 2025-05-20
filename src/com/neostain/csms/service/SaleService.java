@@ -25,6 +25,8 @@ public interface SaleService {
 
     boolean addItemToInvoice(String invoiceId, String productId, int quantity);
 
+    boolean addGiftToInvoice(String invoiceId, String productId, int quantity);
+
     boolean calculateInvoiceTotal(String invoiceId);
 
     boolean cancelInvoice(String invoiceId);

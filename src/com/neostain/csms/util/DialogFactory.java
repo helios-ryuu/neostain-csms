@@ -145,6 +145,25 @@ public class DialogFactory {
         return choice == JOptionPane.YES_OPTION;
     }
 
+    public static boolean showConfirmYesNoDialog(Component parent, String title, Object message) {
+        // Tìm Window (Frame) cha gốc từ component parent
+        Window window = parent instanceof Window ?
+                (Window) parent :
+                SwingUtilities.getWindowAncestor(parent);
+
+        // Hiển thị hộp thoại xác nhận và đợi kết quả
+        int choice = JOptionPane.showConfirmDialog(
+                window,
+                message,
+                title,
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE
+        );
+
+        // Trả về true nếu người dùng chọn YES
+        return choice == JOptionPane.YES_OPTION;
+    }
+
     public static int showConfirmOkCancelDialog(Component parent, String title, String message) {
         // Tìm Window (Frame) cha gốc từ component parent
         Window window = parent instanceof Window ?
@@ -180,6 +199,20 @@ public class DialogFactory {
     }
 
     public static String showInputDialog(Component parent, String title, String message) {
+        // Tìm Window (Frame) cha gốc từ component parent
+        Window window = parent instanceof Window ?
+                (Window) parent :
+                SwingUtilities.getWindowAncestor(parent);
+
+        return JOptionPane.showInputDialog(
+                window,
+                message,
+                title,
+                JOptionPane.PLAIN_MESSAGE
+        );
+    }
+
+    public static String showInputDialog(Component parent, String title, Object message) {
         // Tìm Window (Frame) cha gốc từ component parent
         Window window = parent instanceof Window ?
                 (Window) parent :

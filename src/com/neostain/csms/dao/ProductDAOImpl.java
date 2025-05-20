@@ -102,7 +102,7 @@ public class ProductDAOImpl implements ProductDAO {
         }
         try (PreparedStatement ps = conn.prepareStatement(SQLQueries.PRODUCT_CREATE)) {
             ps.setString(1, product.getId());
-            ps.setString(2, product.getNane());
+            ps.setString(2, product.getName());
             ps.setBigDecimal(3, product.getUnitPrice());
             ps.setString(4, product.getCategoryId());
             return ps.executeUpdate() == 1;

@@ -3,7 +3,6 @@ package com.neostain.csms.model;
 import java.sql.Date;
 
 public class Member {
-
     private String id;
     private String name;
     private String phoneNumber;
