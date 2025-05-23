@@ -55,10 +55,12 @@ public class ServiceManager {
             ShiftReportDAO shiftReportDAO = new ShiftReportDAOImpl(connection);
             PaycheckDAO paycheckDAO = new PaycheckDAOImpl(connection);
             PointUpdateLogDAO pointUpdateLogDAO = new PointUpdateLogDAOImpl(connection);
+            InventoryTransactionDAO inventoryTransactionDAO = new InventoryTransactionDAOImpl(connection);
+            InventoryDAO inventoryDAO = new InventoryDAOImpl(connection);
 
             // Register Services
             register(ManagementService.class, new ManagementServiceImpl(employeeDAO, memberDAO, storeDAO));
-            register(SaleService.class, new SaleServiceImpl(invoiceDAO, invoiceDetailDAO, productDAO, categoryDAO, promotionDAO, pointUpdateLogDAO, paymentDAO));
+            register(SaleService.class, new SaleServiceImpl(invoiceDAO, invoiceDetailDAO, productDAO, categoryDAO, promotionDAO, pointUpdateLogDAO, paymentDAO, inventoryTransactionDAO, inventoryDAO));
             register(OperationService.class, new OperationServiceImpl(assignmentDAO, shiftReportDAO, paycheckDAO));
             register(AuthService.class, new AuthServiceImpl(tokenDAO, accountDAO, roleDAO, employeeDAO, storeDAO));
             register(PrintingService.class, new PrintingServiceImpl());

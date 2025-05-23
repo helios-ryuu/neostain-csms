@@ -3,6 +3,7 @@ package com.neostain.csms.view.component;
 import com.neostain.csms.util.Constants;
 
 import javax.swing.*;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import java.awt.*;
@@ -113,6 +114,8 @@ public class ScrollableTable extends JScrollPane {
             table.getColumnModel().getColumn(0).setPreferredWidth(200);
             table.getColumnModel().getColumn(0).setMinWidth(200);
             table.getColumnModel().getColumn(0).setMaxWidth(200);
+            // Center align the first column
+            table.getColumnModel().getColumn(0).setCellRenderer(new CenterCellRenderer());
         }
         table.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
         table.setShowGrid(true);
@@ -209,4 +212,12 @@ public class ScrollableTable extends JScrollPane {
         }
     }
 
+    /**
+     * Renderer to center-align cell content.
+     */
+    private static class CenterCellRenderer extends DefaultTableCellRenderer {
+        public CenterCellRenderer() {
+            setHorizontalAlignment(SwingConstants.CENTER);
+        }
+    }
 }

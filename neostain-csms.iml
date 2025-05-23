@@ -7,6 +7,7 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
+
     <orderEntry type="module-library">
       <library>
         <CLASSES>
@@ -27,6 +28,29 @@
             <SOURCES/>
           </library>
         </orderEntry>
+
+        <!-- ZXing core -->
+        <orderEntry type="module-library">
+          <library>
+            <CLASSES>
+              <root url="jar://$MODULE_DIR$/lib/core-3.5.3.jar!/" />
+            </CLASSES>
+            <JAVADOC/>
+            <SOURCES/>
+          </library>
+        </orderEntry>
+
+        <!-- ZXing javase -->
+        <orderEntry type="module-library">
+          <library>
+            <CLASSES>
+              <root url="jar://$MODULE_DIR$/lib/javase-3.5.3.jar!/" />
+            </CLASSES>
+            <JAVADOC/>
+            <SOURCES/>
+          </library>
+        </orderEntry>
+
 
   </component>
 </module>

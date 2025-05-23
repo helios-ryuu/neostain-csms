@@ -19,6 +19,24 @@ import java.util.Map;
 
 public class POSPanel extends JPanel {
     private static final ServiceManager serviceManager = ServiceManager.getInstance();
+    // --- CONSTANTS ---
+    private static final Font BOLD_FONT = new Font(Constants.Font.DEFAULT_FONT_NAME, Font.BOLD, Constants.Font.DEFAULT_SIZE);
+    private static final String TITLE_CART = "Giỏ hàng";
+    private static final String TITLE_INFO = "Thông tin";
+    private static final String TITLE_PAYMENT = "Thanh toán";
+    private static final String TITLE_MEMBER = "Thành viên";
+    private static final String TITLE_MEMBER_INFO = "Thông tin thành viên";
+    private static final String BTN_ADD = "Thêm";
+    private static final String BTN_REFRESH = "Làm mới giỏ hàng";
+    private static final String BTN_CASH = "Thanh toán tiền mặt";
+    private static final String BTN_EWALLET = "Thanh toán ví điện tử";
+    private static final String BTN_BANK = "Thanh toán ngân hàng";
+    private static final String BTN_EARN = "Tích điểm";
+    private static final String BTN_USE = "Sử dụng điểm";
+    private static final String BTN_CANCEL = "Hủy tích điểm";
+    private static final String BTN_CANCEL_PAYMENT = "Hủy thanh toán";
+    private static final String TITLE_SUCCESS = "Thanh toán thành công";
+    private static final Color SUCCESS_COLOR = new Color(0, 128, 0);
     private final String[] cartColumns = {"Mã sản phẩm", "Tên sản phẩm", "Đơn giá", "SL", "Giảm giá", "Thành tiền"};
     private final String username;
     private final java.util.Map<String, CartItem> cartItems = new java.util.LinkedHashMap<>();
@@ -54,7 +72,7 @@ public class POSPanel extends JPanel {
         gbcMain.insets = new Insets(5, 5, 5, 5);
 
         // --- 1. Giỏ hàng (Cart) Panel ---
-        BorderedPanel cartPanel = new BorderedPanel("Giỏ hàng");
+        BorderedPanel cartPanel = new BorderedPanel(TITLE_CART);
         cartPanel.setLayout(new BorderLayout(8, 8));
         cartPanel.setBackground(Constants.Color.COMPONENT_BACKGROUND_WHITE);
 
@@ -67,7 +85,7 @@ public class POSPanel extends JPanel {
         scanField = new JTextField(30);
         toolWrapper.add(scanField);
         toolWrapper.add(Box.createHorizontalStrut(8));
-        scanBtn = new StandardButton(this, "Thêm");
+        scanBtn = new StandardButton(this, BTN_ADD);
         scanBtn.addActionListener(e -> onAddProduct());
         toolWrapper.add(scanBtn);
         scanField.addActionListener(e -> scanBtn.doClick());
@@ -91,7 +109,7 @@ public class POSPanel extends JPanel {
         promoPanel.setOnPromoChanged(this::updateInfoPanel);
 
         // --- 2. Info Panel ---
-        BorderedPanel infoPanel = new BorderedPanel("Thông tin");
+        BorderedPanel infoPanel = new BorderedPanel(TITLE_INFO);
         infoPanel.setLayout(new GridBagLayout());
         infoPanel.setMinimumSize(new Dimension(350, 0));
         infoPanel.setMaximumSize(new Dimension(350, 1000));
@@ -168,12 +186,12 @@ public class POSPanel extends JPanel {
         gbcInfo.gridx = 0;
         gbcInfo.gridy++;
         gbcInfo.gridwidth = 2;
-        refreshCartBtn = new StandardButton(this, "Làm mới giỏ hàng");
+        refreshCartBtn = new StandardButton(this, BTN_REFRESH);
         refreshCartBtn.addActionListener(e -> onRefreshCart());
         infoPanel.add(refreshCartBtn, gbcInfo);
 
         // --- 3. Payment Panel ---
-        BorderedPanel paymentPanel = new BorderedPanel("Thanh toán");
+        BorderedPanel paymentPanel = new BorderedPanel(TITLE_PAYMENT);
         paymentPanel.setLayout(new GridBagLayout());
         GridBagConstraints gbcPay = new GridBagConstraints();
         gbcPay.insets = new Insets(4, 4, 4, 4);
@@ -181,14 +199,16 @@ public class POSPanel extends JPanel {
         gbcPay.gridy = 0;
         gbcPay.fill = GridBagConstraints.HORIZONTAL;
         gbcPay.weightx = 1;
-        cashBtn = new StandardButton(this, "Thanh toán tiền mặt");
+        cashBtn = new StandardButton(this, BTN_CASH);
         cashBtn.addActionListener(e -> onCashPayment());
         paymentPanel.add(cashBtn, gbcPay);
         gbcPay.gridy++;
-        eWalletBtn = new StandardButton(this, "Thanh toán ví điện tử");
+        eWalletBtn = new StandardButton(this, BTN_EWALLET);
+        eWalletBtn.addActionListener(e -> onEWalletPayment());
         paymentPanel.add(eWalletBtn, gbcPay);
         gbcPay.gridy++;
-        bankBtn = new StandardButton(this, "Thanh toán ngân hàng");
+        bankBtn = new StandardButton(this, BTN_BANK);
+        bankBtn.addActionListener(e -> onBankPayment());
         paymentPanel.add(bankBtn, gbcPay);
         // Disable payment buttons at startup
         cashBtn.setEnabled(false);
@@ -196,7 +216,7 @@ public class POSPanel extends JPanel {
         bankBtn.setEnabled(false);
 
         // --- 4. Member Panel ---
-        BorderedPanel memberPanel = new BorderedPanel("Thành viên");
+        BorderedPanel memberPanel = new BorderedPanel(TITLE_MEMBER);
         memberPanel.setLayout(new GridBagLayout());
         GridBagConstraints gbcMem = new GridBagConstraints();
         gbcMem.insets = new Insets(4, 4, 4, 4);
@@ -204,20 +224,20 @@ public class POSPanel extends JPanel {
         gbcMem.gridy = 0;
         gbcMem.fill = GridBagConstraints.HORIZONTAL;
         gbcMem.weightx = 1;
-        earnBtn = new StandardButton(this, "Tích điểm");
+        earnBtn = new StandardButton(this, BTN_EARN);
         earnBtn.addActionListener(e -> onEarnPoints());
         memberPanel.add(earnBtn, gbcMem);
         gbcMem.gridy++;
-        useBtn = new StandardButton(this, "Sử dụng điểm");
+        useBtn = new StandardButton(this, BTN_USE);
         useBtn.addActionListener(e -> onUsePoints());
         memberPanel.add(useBtn, gbcMem);
         gbcMem.gridy++;
-        cancelBtn = new StandardButton(this, "Hủy tích điểm");
+        cancelBtn = new StandardButton(this, BTN_CANCEL);
         cancelBtn.addActionListener(e -> onCancelPoints());
         memberPanel.add(cancelBtn, gbcMem);
 
         // --- 5. Member Info Panel ---
-        BorderedPanel memberInfoPanelWrap = new BorderedPanel("Thông tin thành viên");
+        BorderedPanel memberInfoPanelWrap = new BorderedPanel(TITLE_MEMBER_INFO);
         memberInfoPanel = new JPanel(new GridBagLayout());
         memberInfoPanel.setBackground(Constants.Color.COMPONENT_BACKGROUND_WHITE);
         GridBagConstraints gbcMinf = new GridBagConstraints();
@@ -657,6 +677,49 @@ public class POSPanel extends JPanel {
     }
 
     private void onCashPayment() {
+        if (!pointsLocked) {
+            int confirm = DialogFactory.showConfirmOkCancelDialog(this, "Xác nhận thanh toán", "Bạn chưa sử dụng điểm. Tiếp tục thanh toán?");
+            if (confirm != JOptionPane.OK_OPTION) return;
+        }
+        // --- INVENTORY CHECK LOGIC ---
+        Account account = serviceManager.getAuthService().getAccountByUsername(username);
+        Employee employee = serviceManager.getManagementService().getEmployeeById(account.getEmployeeId());
+        Store store = serviceManager.getManagementService().getStoreByManagerId(employee.getManagerId());
+        String storeId = store.getId();
+        // Build productId -> required quantity (cart + promo)
+        java.util.Map<String, Integer> required = new java.util.HashMap<>();
+        for (CartItem item : cartItems.values()) {
+            required.put(item.product.getId(), required.getOrDefault(item.product.getId(), 0) + item.quantity);
+        }
+        for (PromotionProductPanel.PromoEntry promoEntry : promoPanel.getPromoEntries().values()) {
+            required.put(promoEntry.product().getId(), required.getOrDefault(promoEntry.product().getId(), 0) + promoEntry.quantity());
+        }
+        java.util.List<Object[]> insufficient = new java.util.ArrayList<>();
+        for (var entry : required.entrySet()) {
+            String pid = entry.getKey();
+            int reqQty = entry.getValue();
+            int invQty = 0;
+            var invs = serviceManager.getSaleService().getInventoriesByProductId(pid);
+            for (var inv : invs) {
+                if (storeId.equals(inv.getStoreId())) {
+                    invQty = inv.getQuantity();
+                    break;
+                }
+            }
+            if (reqQty > invQty) {
+                Product p = serviceManager.getSaleService().getProductById(pid);
+                insufficient.add(new Object[]{pid, p != null ? p.getName() : "", "Thiếu " + (reqQty - invQty) + " sản phẩm"});
+            }
+        }
+        if (!insufficient.isEmpty()) {
+            // Show warning dialog with ScrollableTable
+            String[] cols = {"Mã sản phẩm", "Tên sản phẩm", "Tình trạng"};
+            Object[][] data = insufficient.toArray(new Object[0][]);
+            ScrollableTable table = new ScrollableTable(cols, data, java.util.List.of());
+            DialogFactory.showWarningDialog(this, "Thông báo tồn kho", table);
+            return;
+        }
+        // --- END INVENTORY CHECK LOGIC ---
         java.math.BigDecimal totalDue = getPanelGrandTotal();
         JDialog dialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Tiến hành thanh toán bằng tiền mặt", true);
         dialog.setLayout(new GridBagLayout());
@@ -676,8 +739,12 @@ public class POSPanel extends JPanel {
         JLabel lblGiven = new JLabel("Số tiền khách đưa:");
         dialog.add(lblGiven, gbc);
         gbc.gridx = 1;
+        JPanel givenPanel = new JPanel(new BorderLayout(5, 0));
         JTextField givenField = new JTextField(12);
-        dialog.add(givenField, gbc);
+        JButton btnExactCash = new JButton("Đủ tiền mặt");
+        givenPanel.add(givenField, BorderLayout.CENTER);
+        givenPanel.add(btnExactCash, BorderLayout.EAST);
+        dialog.add(givenPanel, gbc);
         // Focus vào field nhập số tiền khi mở dialog
         SwingUtilities.invokeLater(givenField::requestFocusInWindow);
         // Chỉ cho nhập số
@@ -689,6 +756,10 @@ public class POSPanel extends JPanel {
                     e.consume();
                 }
             }
+        });
+        // Đủ tiền mặt button logic
+        btnExactCash.addActionListener(ev -> {
+            givenField.setText(totalDue.setScale(0, java.math.RoundingMode.HALF_UP).toPlainString());
         });
         gbc.gridx = 0;
         gbc.gridy++;
@@ -764,9 +835,6 @@ public class POSPanel extends JPanel {
             btns.add(cancelBtn);
             confirmDialog.add(btns, BorderLayout.SOUTH);
             okBtn.addActionListener(e2 -> {
-                Account account = serviceManager.getAuthService().getAccountByUsername(username);
-                Employee employee = serviceManager.getManagementService().getEmployeeById(account.getEmployeeId());
-                Store store = serviceManager.getManagementService().getStoreByManagerId(employee.getManagerId());
                 String invoiceId = serviceManager.getSaleService().createInvoice(store.getId(), (currentMember != null ? currentMember.getId() : null), "P001", employee.getId(), usedPoints);
                 for (CartItem item : cartItems.values()) {
                     serviceManager.getSaleService().addItemToInvoice(invoiceId, item.product.getId(), item.quantity);
@@ -817,6 +885,254 @@ public class POSPanel extends JPanel {
         String text = lblGrand.getText().replace(" VND", "").replaceAll("[^0-9-]", "");
         if (text.isEmpty()) return java.math.BigDecimal.ZERO;
         return new java.math.BigDecimal(text);
+    }
+
+    private void onEWalletPayment() {
+        if (!pointsLocked) {
+            int confirm = DialogFactory.showConfirmOkCancelDialog(this, "Xác nhận thanh toán", "Bạn chưa sử dụng điểm. Tiếp tục thanh toán?");
+            if (confirm != JOptionPane.OK_OPTION) return;
+        }
+        int confirm = DialogFactory.showConfirmOkCancelDialog(this, "Xác nhận thanh toán", "Xác nhận thanh toán bằng ví điện tử?");
+        if (confirm != JOptionPane.OK_OPTION) return;
+        java.math.BigDecimal totalDue = getPanelGrandTotal();
+        // --- Chọn phương thức ví điện tử ---
+        JDialog methodDialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Chọn phương thức thanh toán", true);
+        methodDialog.setLayout(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(10, 15, 10, 15);
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.gridwidth = 2;
+        JLabel lblTitle = new JLabel("Chọn phương thức thanh toán");
+        lblTitle.setFont(new Font(Constants.Font.DEFAULT_FONT_NAME, Font.BOLD, 14));
+        methodDialog.add(lblTitle, gbc);
+        gbc.gridy++;
+        ButtonGroup group = new ButtonGroup();
+        JRadioButton rbMomo = new JRadioButton("Thanh toán ví điện tử MOMO", true);
+        JRadioButton rbZalo = new JRadioButton("Thanh toán ví điện tử ZALOPAY");
+        rbMomo.setFont(Constants.View.DEFAULT_FONT);
+        rbZalo.setFont(Constants.View.DEFAULT_FONT);
+        group.add(rbMomo);
+        group.add(rbZalo);
+        gbc.gridwidth = 2;
+        methodDialog.add(rbMomo, gbc);
+        gbc.gridy++;
+        methodDialog.add(rbZalo, gbc);
+        gbc.gridy++;
+        gbc.gridwidth = 1;
+        JButton btnConfirm = new JButton("Xác nhận phương thức");
+        JButton btnCancel = new JButton("Hủy thanh toán");
+        gbc.gridx = 0;
+        methodDialog.add(btnConfirm, gbc);
+        gbc.gridx = 1;
+        methodDialog.add(btnCancel, gbc);
+        btnCancel.addActionListener(ev -> methodDialog.dispose());
+        btnConfirm.addActionListener(ev -> {
+            methodDialog.dispose();
+            String method = rbMomo.isSelected() ? "MOMO" : "ZALOPAY";
+            showEWalletQRDialog(totalDue, method);
+        });
+        methodDialog.pack();
+        methodDialog.setLocationRelativeTo(this);
+        methodDialog.setVisible(true);
+    }
+
+    private void showEWalletQRDialog(java.math.BigDecimal totalDue, String method) {
+        String qrData = method.equals("MOMO")
+                ? "00020101021138620010A00000072701320006970454011899MM23329M470844320208QRIBFTTA53037045802VN62420515MOMOW2W470844320819THANH TOAN NEOSTAIN63042A1D"
+                : "00020101021126400010vn.zalopay0115EvuIH1jpvXIFYlQ020300238620010A00000072701320006970454011899ZP24144M251173630208QRIBFTTA5204739953037045802VN62230819THANH TOAN NEOSTAIN63041917";
+        String methodName = method.equals("MOMO") ? "ví điện tử MOMO" : "ví điện tử ZALOPAY";
+        JDialog dialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Thanh toán " + methodName, true);
+        dialog.setLayout(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(10, 15, 10, 15);
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.gridwidth = 2;
+        JLabel lblTotal = new JLabel("Số tiền: " + totalDue.setScale(0, java.math.RoundingMode.HALF_UP).toPlainString() + " VND");
+        dialog.add(lblTotal, gbc);
+        gbc.gridy++;
+        JLabel qrLabel = new JLabel();
+        qrLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        qrLabel.setPreferredSize(new Dimension(200, 200));
+        try {
+            java.awt.Image qrImg = generateQRCode(qrData, 200, 200);
+            qrLabel.setIcon(new ImageIcon(qrImg));
+        } catch (Exception ex) {
+            qrLabel.setText("[Không thể tạo mã QR]");
+        }
+        dialog.add(qrLabel, gbc);
+        gbc.gridy++;
+        gbc.gridwidth = 2;
+        JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
+        JButton btnCancel = new JButton("Hủy thanh toán");
+        btnPanel.add(btnCancel);
+        dialog.add(btnPanel, gbc);
+        btnCancel.addActionListener(ev -> dialog.dispose());
+        // Key listener for Ctrl+Shift+Alt+P
+        dialog.addKeyListener(new java.awt.event.KeyAdapter() {
+            boolean paid = false;
+
+            @Override
+            public void keyPressed(java.awt.event.KeyEvent e) {
+                if (!paid && e.isControlDown() && e.isShiftDown() && e.isAltDown() && e.getKeyCode() == java.awt.event.KeyEvent.VK_P) {
+                    paid = true;
+                    dialog.dispose();
+                    String message = "Đã thanh toán thành công!\nSố tiền: " + totalDue.setScale(0, java.math.RoundingMode.HALF_UP).toPlainString() + " VND bằng phương thức " + methodName;
+                    showSuccessDialog(message, () -> processPayment(method.equals("MOMO") ? "P002" : "P004"));
+                }
+            }
+        });
+        dialog.setFocusable(true);
+        dialog.setFocusTraversalKeysEnabled(false);
+        dialog.pack();
+        dialog.setLocationRelativeTo(this);
+        dialog.setVisible(true);
+    }
+
+    // Helper: generate QR code image
+    private java.awt.Image generateQRCode(String data, int width, int height) {
+        // Use ZXing or similar library if available, else fallback to blank
+        try {
+            com.google.zxing.qrcode.QRCodeWriter qrWriter = new com.google.zxing.qrcode.QRCodeWriter();
+            com.google.zxing.common.BitMatrix bitMatrix = qrWriter.encode(data, com.google.zxing.BarcodeFormat.QR_CODE, width, height);
+            java.awt.image.BufferedImage image = new java.awt.image.BufferedImage(width, height, java.awt.image.BufferedImage.TYPE_INT_RGB);
+            for (int x = 0; x < width; x++) {
+                for (int y = 0; y < height; y++) {
+                    image.setRGB(x, y, bitMatrix.get(x, y) ? 0x000000 : 0xFFFFFF);
+                }
+            }
+            return image;
+        } catch (Throwable t) {
+            return new java.awt.image.BufferedImage(width, height, java.awt.image.BufferedImage.TYPE_INT_RGB);
+        }
+    }
+
+    // Helper: process payment and create invoice (reuse logic from cash)
+    private void processPayment(String paymentId) {
+        Account account = serviceManager.getAuthService().getAccountByUsername(username);
+        Employee employee = serviceManager.getManagementService().getEmployeeById(account.getEmployeeId());
+        Store store = serviceManager.getManagementService().getStoreByManagerId(employee.getManagerId());
+        String invoiceId = serviceManager.getSaleService().createInvoice(store.getId(), (currentMember != null ? currentMember.getId() : null), paymentId, employee.getId(), usedPoints);
+        for (CartItem item : cartItems.values()) {
+            serviceManager.getSaleService().addItemToInvoice(invoiceId, item.product.getId(), item.quantity);
+        }
+        for (PromotionProductPanel.PromoEntry promoEntry : promoPanel.getPromoEntries().values()) {
+            serviceManager.getSaleService().addGiftToInvoice(invoiceId, promoEntry.product().getId(), promoEntry.quantity());
+        }
+        boolean invoiceCalculated = serviceManager.getSaleService().calculateInvoiceTotal(invoiceId);
+        if (invoiceCalculated) {
+            Invoice invoice = serviceManager.getSaleService().getInvoiceById(invoiceId);
+            File invoiceFile = serviceManager.getPrintingService().printInvoice(invoice);
+            String fileName = "Invoice_" + invoiceId;
+            DialogFactory.showInfoDialog(
+                    this,
+                    "Thông báo",
+                    "Thanh toán thành công cho hóa đơn " + invoiceId +
+                            "\nĐã in hóa đơn: " + invoiceId +
+                            "\ntại cửa hàng: " + store.getId() + " - " + store.getName() +
+                            "\n\nHóa đơn đã được lưu vào: reports/" + fileName + ".pdf"
+            );
+            if (invoiceFile != null) {
+                Desktop desktop = Desktop.getDesktop();
+                try {
+                    desktop.open(invoiceFile);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+            onRefreshCart(true);
+        }
+    }
+
+    private void onBankPayment() {
+        if (!pointsLocked) {
+            int confirm = DialogFactory.showConfirmOkCancelDialog(this, "Xác nhận thanh toán", "Bạn chưa sử dụng điểm. Tiếp tục thanh toán?");
+            if (confirm != JOptionPane.OK_OPTION) return;
+        }
+        int confirm = DialogFactory.showConfirmOkCancelDialog(this, "Xác nhận thanh toán", "Xác nhận thanh toán bằng ngân hàng?");
+        if (confirm != JOptionPane.OK_OPTION) return;
+        java.math.BigDecimal totalDue = getPanelGrandTotal();
+        JDialog dialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Thanh toán ngân hàng", true);
+        dialog.setLayout(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(10, 15, 10, 15);
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.gridwidth = 2;
+        JLabel lblTotal = new JLabel("Số tiền: " + totalDue.setScale(0, java.math.RoundingMode.HALF_UP).toPlainString() + " VND");
+        dialog.add(lblTotal, gbc);
+        gbc.gridy++;
+        JLabel lblInstr = new JLabel("Vui lòng đặt thẻ ngân hàng hoặc thiết bị vào đầu đọc.");
+        dialog.add(lblInstr, gbc);
+        gbc.gridy++;
+        gbc.gridwidth = 2;
+        JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
+        JButton cancelBtn = new JButton("Hủy thanh toán");
+        btnPanel.add(cancelBtn);
+        dialog.add(btnPanel, gbc);
+        cancelBtn.addActionListener(ev -> dialog.dispose());
+        // Key listener for Ctrl+Shift+Alt+P
+        dialog.addKeyListener(new java.awt.event.KeyAdapter() {
+            boolean paid = false;
+
+            @Override
+            public void keyPressed(java.awt.event.KeyEvent e) {
+                if (!paid && e.isControlDown() && e.isShiftDown() && e.isAltDown() && e.getKeyCode() == java.awt.event.KeyEvent.VK_P) {
+                    paid = true;
+                    dialog.dispose();
+                    String message = "Đã thanh toán thành công!\nSố tiền: " + totalDue.setScale(0, java.math.RoundingMode.HALF_UP).toPlainString() + " VND bằng phương thức ngân hàng";
+                    showSuccessDialog(message, () -> processPayment("P003"));
+                }
+            }
+        });
+        dialog.setFocusable(true);
+        dialog.setFocusTraversalKeysEnabled(false);
+        dialog.pack();
+        dialog.setLocationRelativeTo(this);
+        dialog.setVisible(true);
+    }
+
+    // --- UI HELPERS ---
+    private JLabel createLabel(String text, Font font) {
+        JLabel label = new JLabel(text);
+        if (font != null) label.setFont(font);
+        return label;
+    }
+
+    private void addLabelValue(GridBagConstraints gbc, JPanel panel, String label, JLabel valueLabel, Font font) {
+        JLabel lbl = createLabel(label, font);
+        panel.add(lbl, gbc);
+        gbc.gridx = 1;
+        panel.add(valueLabel, gbc);
+        gbc.gridx = 0;
+        gbc.gridy++;
+    }
+
+    private JButton createButton(String text, Runnable action) {
+        JButton btn = new JButton(text);
+        btn.addActionListener(e -> action.run());
+        return btn;
+    }
+
+    private void showSuccessDialog(String message, Runnable onClose) {
+        JDialog infoDialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), TITLE_SUCCESS, true);
+        infoDialog.setLayout(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(20, 20, 20, 20);
+        JLabel success = new JLabel("<html>" + message.replace("\n", "<br>") + "</html>");
+        success.setForeground(SUCCESS_COLOR);
+        success.setFont(success.getFont().deriveFont(Font.BOLD));
+        infoDialog.add(success, gbc);
+        infoDialog.pack();
+        infoDialog.setLocationRelativeTo(this);
+        new javax.swing.Timer(3000, ev -> {
+            infoDialog.dispose();
+            if (onClose != null) onClose.run();
+        }) {{
+            setRepeats(false);
+        }}.start();
+        infoDialog.setVisible(true);
     }
 
     private static class CartItem {

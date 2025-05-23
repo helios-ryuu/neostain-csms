@@ -76,4 +76,22 @@ public interface SaleService {
     Payment getPaymentById(String id);
 
     List<Payment> getAllPayments();
+
+    // Inventory Transaction
+    InventoryTransaction getInventoryTransactionById(String id);
+
+    List<InventoryTransaction> getInventoryTransactionsByProductId(String productId);
+
+    List<InventoryTransaction> getInventoryTransactionsByStoreId(String storeId);
+
+    List<InventoryTransaction> getAllInventoryTransactions();
+
+    // Inventory
+    Inventory getInventoryById(String id);
+
+    List<Inventory> getInventoriesByProductId(String productId);
+
+    List<Inventory> getInventoriesByStoreId(String storeId);
+
+    List<Inventory> getAllInventories();
 }

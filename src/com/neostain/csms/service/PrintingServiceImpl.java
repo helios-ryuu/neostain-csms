@@ -322,7 +322,7 @@ public class PrintingServiceImpl implements PrintingService {
             document.add(prgDelimiter);
 
             Paragraph prgContact = new Paragraph(
-                    "Nếu có bất kỳ thắc măc hay khiếu nại quý khách vui lòng gửi về email của NeoStain: neostain.cskh@gmail.com" +
+                    "Nếu có bất kỳ thắc mắc hay khiếu nại quý khách vui lòng gửi về email của NeoStain: neostain.cskh@gmail.com" +
                             "\nHoặc liên lạc tới số điện thoại của quản lý cửa hàng: " + manager.getPhoneNumber()
                     , body
             );

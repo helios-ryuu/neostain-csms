@@ -179,4 +179,16 @@ public class SQLQueries {
     public static final String TOKEN_CREATE = "INSERT INTO TOKEN(USERNAME, VALUE, EXPIRES_AT, ISSUED_AT, STATUS) VALUES(?, ?, ?, ?, ?)";
     public static final String TOKEN_UPDATE_VALUE = "UPDATE TOKEN SET VALUE = ? WHERE ID = ?";
     public static final String TOKEN_UPDATE_STATUS = "UPDATE TOKEN SET STATUS = ? WHERE VALUE = ?";
+
+    // InventoryTransaction queries
+    public static final String INVENTORY_TRANSACTION_FIND_BY_ID = "SELECT * FROM INVENTORY_TRANSACTION WHERE ID = ?";
+    public static final String INVENTORY_TRANSACTION_FIND_BY_PRODUCT_ID = "SELECT * FROM INVENTORY_TRANSACTION WHERE PRODUCT_ID = ?";
+    public static final String INVENTORY_TRANSACTION_FIND_BY_STORE_ID = "SELECT * FROM INVENTORY_TRANSACTION WHERE STORE_ID = ?";
+    public static final String INVENTORY_TRANSACTION_FIND_ALL = "SELECT * FROM INVENTORY_TRANSACTION";
+
+    // Inventory queries
+    public static final String INVENTORY_FIND_BY_ID = "SELECT * FROM INVENTORY WHERE ID = ?";
+    public static final String INVENTORY_FIND_BY_PRODUCT_ID = "SELECT * FROM INVENTORY WHERE PRODUCT_ID = ?";
+    public static final String INVENTORY_FIND_BY_STORE_ID = "SELECT * FROM INVENTORY WHERE STORE_ID = ?";
+    public static final String INVENTORY_FIND_ALL = "SELECT * FROM INVENTORY";
 }

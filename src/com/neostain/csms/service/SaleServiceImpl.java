@@ -17,8 +17,10 @@ public class SaleServiceImpl implements SaleService {
     private final PromotionDAO promotionDAO;
     private final PointUpdateLogDAO pointUpdateLogDAO;
     private final PaymentDAO paymentDAO;
+    private final InventoryTransactionDAO inventoryTransactionDAO;
+    private final InventoryDAO inventoryDAO;
 
-    public SaleServiceImpl(InvoiceDAO invoiceDAO, InvoiceDetailDAO invoiceDetailDAO, ProductDAO productDAO, CategoryDAO categoryDAO, PromotionDAO promotionDAO, PointUpdateLogDAO pointUpdateLogDAO, PaymentDAO paymentDAO) {
+    public SaleServiceImpl(InvoiceDAO invoiceDAO, InvoiceDetailDAO invoiceDetailDAO, ProductDAO productDAO, CategoryDAO categoryDAO, PromotionDAO promotionDAO, PointUpdateLogDAO pointUpdateLogDAO, PaymentDAO paymentDAO, InventoryTransactionDAO inventoryTransactionDAO, InventoryDAO inventoryDAO) {
         this.invoiceDAO = invoiceDAO;
         this.invoiceDetailDAO = invoiceDetailDAO;
         this.productDAO = productDAO;
@@ -26,6 +28,8 @@ public class SaleServiceImpl implements SaleService {
         this.promotionDAO = promotionDAO;
         this.pointUpdateLogDAO = pointUpdateLogDAO;
         this.paymentDAO = paymentDAO;
+        this.inventoryTransactionDAO = inventoryTransactionDAO;
+        this.inventoryDAO = inventoryDAO;
     }
 
     // Invoice
@@ -197,5 +201,45 @@ public class SaleServiceImpl implements SaleService {
     @Override
     public List<Payment> getAllPayments() {
         return paymentDAO.findAll();
+    }
+
+    @Override
+    public InventoryTransaction getInventoryTransactionById(String id) {
+        return inventoryTransactionDAO.findById(id);
+    }
+
+    @Override
+    public List<InventoryTransaction> getInventoryTransactionsByProductId(String productId) {
+        return inventoryTransactionDAO.findByProductId(productId);
+    }
+
+    @Override
+    public List<InventoryTransaction> getInventoryTransactionsByStoreId(String storeId) {
+        return inventoryTransactionDAO.findByStoreId(storeId);
+    }
+
+    @Override
+    public List<InventoryTransaction> getAllInventoryTransactions() {
+        return inventoryTransactionDAO.findAll();
+    }
+
+    @Override
+    public Inventory getInventoryById(String id) {
+        return inventoryDAO.findById(id);
+    }
+
+    @Override
+    public List<Inventory> getInventoriesByProductId(String productId) {
+        return inventoryDAO.findByProductId(productId);
+    }
+
+    @Override
+    public List<Inventory> getInventoriesByStoreId(String storeId) {
+        return inventoryDAO.findByStoreId(storeId);
+    }
+
+    @Override
+    public List<Inventory> getAllInventories() {
+        return inventoryDAO.findAll();
     }
 } 
