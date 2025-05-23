@@ -682,43 +682,7 @@ public class POSPanel extends JPanel {
             if (confirm != JOptionPane.OK_OPTION) return;
         }
         // --- INVENTORY CHECK LOGIC ---
-        Account account = serviceManager.getAuthService().getAccountByUsername(username);
-        Employee employee = serviceManager.getManagementService().getEmployeeById(account.getEmployeeId());
-        Store store = serviceManager.getManagementService().getStoreByManagerId(employee.getManagerId());
-        String storeId = store.getId();
-        // Build productId -> required quantity (cart + promo)
-        java.util.Map<String, Integer> required = new java.util.HashMap<>();
-        for (CartItem item : cartItems.values()) {
-            required.put(item.product.getId(), required.getOrDefault(item.product.getId(), 0) + item.quantity);
-        }
-        for (PromotionProductPanel.PromoEntry promoEntry : promoPanel.getPromoEntries().values()) {
-            required.put(promoEntry.product().getId(), required.getOrDefault(promoEntry.product().getId(), 0) + promoEntry.quantity());
-        }
-        java.util.List<Object[]> insufficient = new java.util.ArrayList<>();
-        for (var entry : required.entrySet()) {
-            String pid = entry.getKey();
-            int reqQty = entry.getValue();
-            int invQty = 0;
-            var invs = serviceManager.getSaleService().getInventoriesByProductId(pid);
-            for (var inv : invs) {
-                if (storeId.equals(inv.getStoreId())) {
-                    invQty = inv.getQuantity();
-                    break;
-                }
-            }
-            if (reqQty > invQty) {
-                Product p = serviceManager.getSaleService().getProductById(pid);
-                insufficient.add(new Object[]{pid, p != null ? p.getName() : "", "Thiếu " + (reqQty - invQty) + " sản phẩm"});
-            }
-        }
-        if (!insufficient.isEmpty()) {
-            // Show warning dialog with ScrollableTable
-            String[] cols = {"Mã sản phẩm", "Tên sản phẩm", "Tình trạng"};
-            Object[][] data = insufficient.toArray(new Object[0][]);
-            ScrollableTable table = new ScrollableTable(cols, data, java.util.List.of());
-            DialogFactory.showWarningDialog(this, "Thông báo tồn kho", table);
-            return;
-        }
+        if (inventoryCheck()) return;
         // --- END INVENTORY CHECK LOGIC ---
         java.math.BigDecimal totalDue = getPanelGrandTotal();
         JDialog dialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Tiến hành thanh toán bằng tiền mặt", true);
@@ -819,6 +783,10 @@ public class POSPanel extends JPanel {
         backBtn.addActionListener(ev -> dialog.dispose());
         // Nút xác nhận thanh toán
         confirmBtn.addActionListener(ev -> {
+            Account account = serviceManager.getAuthService().getAccountByUsername(username);
+            Employee employee = serviceManager.getManagementService().getEmployeeById(account.getEmployeeId());
+            Store store = serviceManager.getManagementService().getStoreByManagerId(employee.getManagerId());
+
             String givenStr = givenField.getText().replaceAll("[^0-9]", "");
             java.math.BigDecimal given = givenStr.isEmpty() ? java.math.BigDecimal.ZERO : new java.math.BigDecimal(givenStr);
             // Dialog xác nhận
@@ -892,8 +860,9 @@ public class POSPanel extends JPanel {
             int confirm = DialogFactory.showConfirmOkCancelDialog(this, "Xác nhận thanh toán", "Bạn chưa sử dụng điểm. Tiếp tục thanh toán?");
             if (confirm != JOptionPane.OK_OPTION) return;
         }
-        int confirm = DialogFactory.showConfirmOkCancelDialog(this, "Xác nhận thanh toán", "Xác nhận thanh toán bằng ví điện tử?");
-        if (confirm != JOptionPane.OK_OPTION) return;
+        // --- INVENTORY CHECK LOGIC ---
+        if (inventoryCheck()) return;
+        // --- END INVENTORY CHECK LOGIC ---
         java.math.BigDecimal totalDue = getPanelGrandTotal();
         // --- Chọn phương thức ví điện tử ---
         JDialog methodDialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Chọn phương thức thanh toán", true);
@@ -1050,6 +1019,9 @@ public class POSPanel extends JPanel {
             int confirm = DialogFactory.showConfirmOkCancelDialog(this, "Xác nhận thanh toán", "Bạn chưa sử dụng điểm. Tiếp tục thanh toán?");
             if (confirm != JOptionPane.OK_OPTION) return;
         }
+        // --- INVENTORY CHECK LOGIC ---
+        if (inventoryCheck()) return;
+        // --- END INVENTORY CHECK LOGIC ---
         int confirm = DialogFactory.showConfirmOkCancelDialog(this, "Xác nhận thanh toán", "Xác nhận thanh toán bằng ngân hàng?");
         if (confirm != JOptionPane.OK_OPTION) return;
         java.math.BigDecimal totalDue = getPanelGrandTotal();
@@ -1133,6 +1105,47 @@ public class POSPanel extends JPanel {
             setRepeats(false);
         }}.start();
         infoDialog.setVisible(true);
+    }
+
+    private boolean inventoryCheck() {
+        Account account = serviceManager.getAuthService().getAccountByUsername(username);
+        Employee employee = serviceManager.getManagementService().getEmployeeById(account.getEmployeeId());
+        Store store = serviceManager.getManagementService().getStoreByManagerId(employee.getManagerId());
+        String storeId = store.getId();
+        // Build productId -> required quantity (cart + promo)
+        java.util.Map<String, Integer> required = new java.util.HashMap<>();
+        for (CartItem item : cartItems.values()) {
+            required.put(item.product.getId(), required.getOrDefault(item.product.getId(), 0) + item.quantity);
+        }
+        for (PromotionProductPanel.PromoEntry promoEntry : promoPanel.getPromoEntries().values()) {
+            required.put(promoEntry.product().getId(), required.getOrDefault(promoEntry.product().getId(), 0) + promoEntry.quantity());
+        }
+        java.util.List<Object[]> insufficient = new java.util.ArrayList<>();
+        for (var entry : required.entrySet()) {
+            String pid = entry.getKey();
+            int reqQty = entry.getValue();
+            int invQty = 0;
+            var invs = serviceManager.getSaleService().getInventoriesByProductId(pid);
+            for (var inv : invs) {
+                if (storeId.equals(inv.getStoreId())) {
+                    invQty = inv.getQuantity();
+                    break;
+                }
+            }
+            if (reqQty > invQty) {
+                Product p = serviceManager.getSaleService().getProductById(pid);
+                insufficient.add(new Object[]{pid, p != null ? p.getName() : "", "Thiếu " + (reqQty - invQty) + " sản phẩm"});
+            }
+        }
+        if (!insufficient.isEmpty()) {
+            // Show warning dialog with ScrollableTable
+            String[] cols = {"Mã sản phẩm", "Tên sản phẩm", "Tình trạng"};
+            Object[][] data = insufficient.toArray(new Object[0][]);
+            ScrollableTable table = new ScrollableTable(cols, data, java.util.List.of());
+            DialogFactory.showWarningDialog(this, "Thông báo tồn kho", table);
+            return true;
+        }
+        return false;
     }
 
     private static class CartItem {
