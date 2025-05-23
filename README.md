@@ -5,7 +5,7 @@
 - Java Development Kit (JDK)
 - IntelliJ IDEA Ultimate
 - Oracle Enterprise Edition 21
-- Radmin VPN (Nếu chia sẻ cơ sở dữ liệu cho các máy khác qua mạng cục bộ
+- Radmin VPN (Nếu chia sẻ cơ sở dữ liệu cho các máy khác qua mạng cục bộ)
 
 ## Thiết lập Pluggable Database
 
@@ -73,6 +73,6 @@ SQL> ALTER USER CSMS_ADMIN QUOTA UNLIMITED ON CSMS_DATA;
 User altered.
 ```
 
-### Bước 6: Lần lượt chạy CREATE.sql -> SEQUENCE_TRIGGER.sql -> INSERT.sql để tạo các bảng và thêm dữ liệu (Nếu xảy ra lỗi thì chạy file DROP.sql để xóa bảng)
+### Bước 6: Lần lượt chạy CREATE.sql -> SEQUENCE_TRIGGER.sql -> PROCEDURE.sql -> INSERT.sql để tạo các bảng và thêm dữ liệu (Nếu xảy ra lỗi thì chạy file DROP.sql để xóa bảng)
 
 ### Bước 7: Chạy file Main.java tại src/com/neostain/csms/Main.java
