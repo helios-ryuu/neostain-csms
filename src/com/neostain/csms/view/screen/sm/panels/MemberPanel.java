@@ -22,6 +22,7 @@ public class MemberPanel extends JPanel {
     private static final ServiceManager serviceManager = ServiceManager.getInstance();
     private final JButton searchBtn = new StandardButton(this, "Tìm kiếm");
     private final JButton resetBtn = new StandardButton(this, "Đặt lại");
+    private final JButton registerBtn = new StandardButton(this, "Đăng ký thành viên");
     private final String[] memberColumns = {"Mã thành viên", "Tên", "Số điện thoại", "Email", "Ngày đăng ký", "Số điểm tích lũy"};
     private final SimpleDateFormat df1 = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
     private final SimpleDateFormat df2 = new SimpleDateFormat("yyyy-MM-dd");
@@ -91,6 +92,8 @@ public class MemberPanel extends JPanel {
         toolWrapper.add(searchBtn);
         toolWrapper.add(Box.createHorizontalStrut(5));
         toolWrapper.add(resetBtn);
+        toolWrapper.add(Box.createHorizontalStrut(5));
+        toolWrapper.add(registerBtn);
 
         // Button listeners
         searchBtn.addActionListener(e -> {
@@ -126,6 +129,113 @@ public class MemberPanel extends JPanel {
 
             // 3. Tìm kiếm lại (lần này từ–đến rộng nhất => load all)
             searchBtn.doClick();
+        });
+
+        registerBtn.addActionListener(e -> {
+            JDialog dialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Đăng ký thành viên", true);
+            dialog.setLayout(new BorderLayout(10, 10));
+            JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
+            JLabel titleLabel = new JLabel("Đăng ký thành viên mới", SwingConstants.CENTER);
+            titleLabel.setFont(titleLabel.getFont().deriveFont(Font.BOLD, 16f));
+            mainPanel.add(titleLabel, BorderLayout.NORTH);
+
+            JPanel formPanel = new JPanel(new GridLayout(3, 2, 10, 10));
+            JLabel nameLabel = new JLabel("Nhập họ và tên:");
+            JTextField nameField = new JTextField(20);
+            JLabel phoneLabel = new JLabel("Nhập số điện thoại:");
+            JTextField phoneFieldx = new JTextField(20);
+            JLabel emailLabel = new JLabel("Nhập email:");
+            JTextField emailFieldx = new JTextField(20);
+            formPanel.add(nameLabel);
+            formPanel.add(nameField);
+            formPanel.add(phoneLabel);
+            formPanel.add(phoneFieldx);
+            formPanel.add(emailLabel);
+            formPanel.add(emailFieldx);
+            mainPanel.add(formPanel, BorderLayout.CENTER);
+
+            JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0));
+            JButton okBtn = new JButton("Đăng ký");
+            JButton cancelBtn = new JButton("Hủy đăng ký");
+            btnPanel.add(okBtn);
+            btnPanel.add(cancelBtn);
+            mainPanel.add(btnPanel, BorderLayout.SOUTH);
+            dialog.add(mainPanel, BorderLayout.CENTER);
+
+            cancelBtn.addActionListener(ev -> dialog.dispose());
+
+            okBtn.addActionListener(ev -> {
+                String name = nameField.getText().trim();
+                String phone = phoneFieldx.getText().trim();
+                String email = emailFieldx.getText().trim();
+                // Step 1: Validate input (simulate add, catch exception)
+                try {
+                    serviceManager.getManagementService().createMember(name, phone, email);
+                } catch (com.neostain.csms.util.exception.DuplicateFieldException dfe) {
+                    DialogFactory.showErrorDialog(dialog, "Lỗi trùng dữ liệu", dfe.getMessage());
+                    if ("phoneNumber".equals(dfe.getFieldName())) {
+                        phoneFieldx.requestFocus();
+                    } else {
+                        emailFieldx.requestFocus();
+                    }
+                    return;
+                } catch (com.neostain.csms.util.exception.FieldValidationException fve) {
+                    DialogFactory.showErrorDialog(dialog, "Lỗi dữ liệu không hợp lệ", fve.getMessage());
+                    if ("phoneNumber".equals(fve.getFieldName())) {
+                        phoneFieldx.requestFocus();
+                    } else {
+                        emailFieldx.requestFocus();
+                    }
+                    return;
+                } catch (Exception ex) {
+                    DialogFactory.showErrorDialog(dialog, "Lỗi", "Lỗi không xác định: " + ex.getMessage());
+                    return;
+                }
+                // Step 2: Show confirmation dialog
+                JPanel infoPanel = new JPanel(new GridLayout(3, 2, 8, 8));
+                infoPanel.add(new JLabel("Họ và tên:"));
+                infoPanel.add(new JLabel(name));
+                infoPanel.add(new JLabel("Số điện thoại:"));
+                infoPanel.add(new JLabel(phone));
+                infoPanel.add(new JLabel("Email:"));
+                infoPanel.add(new JLabel(email));
+                int confirm = JOptionPane.showConfirmDialog(
+                        dialog,
+                        infoPanel,
+                        "Bạn có xác nhận đăng ký thành viên với thông tin sau?",
+                        JOptionPane.OK_CANCEL_OPTION,
+                        JOptionPane.QUESTION_MESSAGE
+                );
+                if (confirm == JOptionPane.OK_OPTION) {
+                    try {
+                        serviceManager.getManagementService().createMember(name, phone, email);
+                        dialog.dispose();
+                        resetBtn.doClick();
+                        DialogFactory.showInfoDialog(this, "Thành công", "Đăng ký thành viên thành công!");
+                    } catch (com.neostain.csms.util.exception.DuplicateFieldException dfe) {
+                        DialogFactory.showErrorDialog(dialog, "Lỗi trùng dữ liệu", dfe.getMessage());
+                        if ("phoneNumber".equals(dfe.getFieldName())) {
+                            phoneFieldx.requestFocus();
+                        } else {
+                            emailFieldx.requestFocus();
+                        }
+                    } catch (com.neostain.csms.util.exception.FieldValidationException fve) {
+                        DialogFactory.showErrorDialog(dialog, "Lỗi dữ liệu không hợp lệ", fve.getMessage());
+                        if ("phoneNumber".equals(fve.getFieldName())) {
+                            phoneFieldx.requestFocus();
+                        } else {
+                            emailFieldx.requestFocus();
+                        }
+                    } catch (Exception ex) {
+                        DialogFactory.showErrorDialog(dialog, "Lỗi", "Lỗi không xác định: " + ex.getMessage());
+                    }
+                }
+                // else: do nothing, stay in dialog
+            });
+
+            dialog.pack();
+            dialog.setLocationRelativeTo(this);
+            dialog.setVisible(true);
         });
 
         this.add(toolWrapper, BorderLayout.NORTH);

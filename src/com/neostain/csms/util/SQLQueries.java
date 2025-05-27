@@ -29,8 +29,8 @@ public class SQLQueries {
     public static final String ASSIGNMENT_FIND_ALL = "SELECT * FROM ASSIGNMENT";
 
     public static final String ASSIGNMENT_CREATE = "INSERT INTO ASSIGNMENT(EMPLOYEE_ID, STORE_ID, START_TIME, END_TIME) VALUES(?, ?, ?, ?)";
-    public static final String ASSIGNMENT_UPDATE_START_TIME = "UPDATE ASSIGNMENT SET START_TIME = ? WHERE ID = ?";
-    public static final String ASSIGNMENT_UPDATE_END_TIME = "UPDATE ASSIGNMENT SET END_TIME = ? WHERE ID = ?";
+    public static final String ASSIGNMENT_UPDATE_START_TIME = "UPDATE ASSIGNMENT SET START_TIME = TO_TIMESTAMP(?, 'DD-MM-YYYY HH24:MI:SS') WHERE ID = ?";
+    public static final String ASSIGNMENT_UPDATE_END_TIME = "UPDATE ASSIGNMENT SET END_TIME = TO_TIMESTAMP(?, 'DD-MM-YYYY HH24:MI:SS') WHERE ID = ?";
     public static final String ASSIGNMENT_DELETE = "DELETE FROM ASSIGNMENT WHERE ID = ?";
 
     // Category queries
@@ -50,9 +50,7 @@ public class SQLQueries {
     public static final String EMPLOYEE_FIND_ALL = "SELECT * FROM EMPLOYEE";
 
     public static final String EMPLOYEE_CREATE =
-            "INSERT INTO EMPLOYEE(MANAGER_ID, NAME, POSITION, EMAIL, PHONE_NUMBER, ADDRESS, HOURLY_WAGE) VALUES(?, ?, ?, ?, ?, ?, ?)";
-    public static final String EMPLOYEE_CREATE_MANAGER =
-            "INSERT INTO EMPLOYEE(NAME, POSITION, EMAIL, PHONE_NUMBER, ADDRESS, HOURLY_WAGE) VALUES(?, ?, ?, ?, ?, ?)";
+            "INSERT INTO EMPLOYEE(MANAGER_ID, NAME, EMAIL, PHONE_NUMBER, ADDRESS, HOURLY_WAGE) VALUES(?, ?, ?, ?, ?, ?)";
     public static final String EMPLOYEE_CHANGE_MANAGER_ID = "{CALL PRC_EMPLOYEE_CHANGE_MANAGER_ID(?, ?)}";
     public static final String EMPLOYEE_UPDATE_NAME = "UPDATE EMPLOYEE SET NAME = ? WHERE ID = ?";
     public static final String EMPLOYEE_UPDATE_EMAIL = "UPDATE EMPLOYEE SET EMAIL = ? WHERE ID = ?";
@@ -191,4 +189,19 @@ public class SQLQueries {
     public static final String INVENTORY_FIND_BY_PRODUCT_ID = "SELECT * FROM INVENTORY WHERE PRODUCT_ID = ?";
     public static final String INVENTORY_FIND_BY_STORE_ID = "SELECT * FROM INVENTORY WHERE STORE_ID = ?";
     public static final String INVENTORY_FIND_ALL = "SELECT * FROM INVENTORY";
+
+    public static final String INVENTORY_COUNT_BY_STORE = "SELECT COUNT(*) FROM INVENTORY WHERE STORE_ID = ?";
+    public static final String EMPLOYEE_COUNT_BY_STORE = """
+            SELECT COUNT(DISTINCT emp_id) AS TOTAL_EMPLOYEES
+            FROM (
+                SELECT MANAGER_ID AS emp_id
+                FROM STORE
+                WHERE ID = ?
+              UNION ALL
+                SELECT ID AS emp_id
+                FROM EMPLOYEE
+                WHERE MANAGER_ID = (SELECT MANAGER_ID AS emp_id
+                FROM STORE
+                WHERE ID = ?)
+            )""";
 }

@@ -423,7 +423,7 @@ public class POSPanel extends JPanel {
         int typeCount = cartItems.size();
         java.math.BigDecimal grand;
         int earned = 0, pointUsed;
-        // 2. Add points discount (but do NOT accumulate)
+        // 2. Add point discount (but do NOT accumulate)
         pointUsed = (pointsLocked && usedPoints > 0) ? usedPoints : 0;
         java.math.BigDecimal pointDiscount = java.math.BigDecimal.valueOf(pointUsed * 40L);
         java.math.BigDecimal totalDiscountFinal = totalDiscount.add(pointDiscount);
@@ -923,9 +923,9 @@ public class POSPanel extends JPanel {
         gbc.gridy++;
         JLabel qrLabel = new JLabel();
         qrLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        qrLabel.setPreferredSize(new Dimension(200, 200));
+        qrLabel.setPreferredSize(new Dimension(300, 300));
         try {
-            java.awt.Image qrImg = generateQRCode(qrData, 200, 200);
+            java.awt.Image qrImg = generateQRCode(qrData, 300, 300);
             qrLabel.setIcon(new ImageIcon(qrImg));
         } catch (Exception ex) {
             qrLabel.setText("[Không thể tạo mã QR]");
@@ -1138,7 +1138,7 @@ public class POSPanel extends JPanel {
             }
         }
         if (!insufficient.isEmpty()) {
-            // Show warning dialog with ScrollableTable
+            // Show a warning dialog with ScrollableTable
             String[] cols = {"Mã sản phẩm", "Tên sản phẩm", "Tình trạng"};
             Object[][] data = insufficient.toArray(new Object[0][]);
             ScrollableTable table = new ScrollableTable(cols, data, java.util.List.of());

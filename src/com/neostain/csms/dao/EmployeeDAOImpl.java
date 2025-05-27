@@ -4,7 +4,6 @@ import com.neostain.csms.model.Employee;
 import com.neostain.csms.util.SQLQueries;
 import com.neostain.csms.util.StringUtils;
 import com.neostain.csms.util.exception.DuplicateFieldException;
-import com.neostain.csms.util.exception.FieldValidationException;
 
 import java.math.BigDecimal;
 import java.sql.*;
@@ -51,7 +50,7 @@ public class EmployeeDAOImpl implements EmployeeDAO {
     @Override
     public List<Employee> findByManagerId(String id) {
         if (StringUtils.isNullOrEmpty(id)) {
-            LOGGER.warning("[FIND_BY_ID] ID nhân viên quản lý trống");
+            LOGGER.warning("[FIND_BY_MANAGER_ID] Mã nhân viên quản lý trống");
             return null;
         }
 
@@ -131,40 +130,42 @@ public class EmployeeDAOImpl implements EmployeeDAO {
     }
 
     @Override
-    public boolean create(Employee emp) throws DuplicateFieldException, FieldValidationException {
+    public boolean create(Employee emp) throws DuplicateFieldException {
         try (PreparedStatement ps = conn.prepareStatement(SQLQueries.EMPLOYEE_CREATE)) {
-            ps.setString(1, emp.getName());
-            ps.setString(2, emp.getEmail());
-            ps.setString(3, emp.getPhoneNumber());
-            ps.setString(4, emp.getAddress());
-            ps.setBigDecimal(5, emp.getHourlyWage());
+            if (emp.getManagerId() == null || emp.getManagerId().isBlank()) {
+                ps.setNull(1, java.sql.Types.VARCHAR);
+            } else {
+                ps.setString(1, emp.getManagerId());
+            }
+            ps.setString(2, emp.getName());
+            ps.setString(3, emp.getEmail());
+            ps.setString(4, emp.getPhoneNumber());
+            ps.setString(5, emp.getAddress());
+            ps.setBigDecimal(6, emp.getHourlyWage());
             return ps.executeUpdate() == 1;
         } catch (SQLException e) {
-            int code = e.getErrorCode();                 // ví dụ: -20020, -20021, 1…
-            String msg = e.getMessage().toUpperCase();   // để so sánh dễ hơn
-
-            // 1) Lỗi từ trigger: format email/phone
-            if (code == -20020) {
-                throw new FieldValidationException(
-                        "email",
-                        "Email không hợp lệ. Ví dụ hợp lệ: user@example.com"
-                );
-            }
-            if (code == -20021) {
-                throw new FieldValidationException(
-                        "phoneNumber",
-                        "Số điện thoại phải gồm đúng 10 chữ số, không chứa ký tự khác."
-                );
-            }
-            if (code == 1) {
-                if (msg.contains("UK_MEMBER_PHONE_NUMBER")) {
-                    throw new DuplicateFieldException("phoneNumber", "Số điện thoại đã tồn tại.");
-                }
-                if (msg.contains("UK_MEMBER_EMAIL")) {
+            if (e.getErrorCode() == 1) {
+                String msg = e.getMessage().toUpperCase();
+                if (msg.contains("UK_EMPLOYEE_EMAIL")) {
                     throw new DuplicateFieldException("email", "Email đã tồn tại.");
+                }
+                if (msg.contains("UK_EMPLOYEE_PHONE_NUMBER")) {
+                    throw new DuplicateFieldException("phoneNumber", "Số điện thoại đã tồn tại.");
                 }
             }
             LOGGER.severe("[CREATE] Lỗi: " + e.getMessage());
+            return false;
+        }
+    }
+
+    @Override
+    public boolean updateManagerId(String id, String managerId) {
+        try (PreparedStatement ps = conn.prepareStatement(SQLQueries.EMPLOYEE_CHANGE_MANAGER_ID)) {
+            ps.setString(1, managerId);
+            ps.setString(2, id);
+            return ps.executeUpdate() == 1;
+        } catch (SQLException e) {
+            LOGGER.severe("[UPDATE_MANAGER_ID] Lỗi: " + e.getMessage());
             return false;
         }
     }
@@ -182,55 +183,25 @@ public class EmployeeDAOImpl implements EmployeeDAO {
     }
 
     @Override
-    public boolean updateEmail(String id, String email) throws FieldValidationException, DuplicateFieldException {
+    public boolean updateEmail(String id, String email) {
         try (PreparedStatement ps = conn.prepareStatement(SQLQueries.EMPLOYEE_UPDATE_EMAIL)) {
             ps.setString(1, email);
             ps.setString(2, id);
             return ps.executeUpdate() == 1;
         } catch (SQLException e) {
-            int code = e.getErrorCode();                 // ví dụ: -20020, -20021, 1…
-            String msg = e.getMessage().toUpperCase();   // để so sánh dễ hơn
-
-            // 1) Lỗi từ trigger: format email/phone
-            if (code == -20020) {
-                throw new FieldValidationException(
-                        "email",
-                        "Email không hợp lệ. Ví dụ hợp lệ: user@example.com"
-                );
-            }
-            if (code == 1) {
-                if (msg.contains("UK_MEMBER_EMAIL")) {
-                    throw new DuplicateFieldException("email", "Email đã tồn tại.");
-                }
-            }
             LOGGER.severe("[UPDATE_EMAIL] Lỗi: " + e.getMessage());
             return false;
         }
     }
 
     @Override
-    public boolean updatePhoneNumber(String id, String phoneNumber) throws FieldValidationException, DuplicateFieldException {
+    public boolean updatePhoneNumber(String id, String phoneNumber) {
         try (PreparedStatement ps = conn.prepareStatement(SQLQueries.EMPLOYEE_UPDATE_PHONE_NUMBER)) {
             ps.setString(1, phoneNumber);
             ps.setString(2, id);
             return ps.executeUpdate() == 1;
         } catch (SQLException e) {
-            int code = e.getErrorCode();                 // ví dụ: -20020, -20021, 1…
-            String msg = e.getMessage().toUpperCase();   // để so sánh dễ hơn
-
-            // 1) Lỗi từ trigger: format email/phone
-            if (code == -20021) {
-                throw new FieldValidationException(
-                        "phoneNumber",
-                        "Số điện thoại phải gồm đúng 10 chữ số, không chứa ký tự khác."
-                );
-            }
-            if (code == 1) {
-                if (msg.contains("UK_MEMBER_PHONE_NUMBER")) {
-                    throw new DuplicateFieldException("phoneNumber", "Số điện thoại đã tồn tại.");
-                }
-            }
-            LOGGER.severe("[CREATE] Lỗi: " + e.getMessage());
+            LOGGER.severe("[UPDATE_PHONE_NUMBER] Lỗi: " + e.getMessage());
             return false;
         }
     }
@@ -243,38 +214,6 @@ public class EmployeeDAOImpl implements EmployeeDAO {
             return ps.executeUpdate() == 1;
         } catch (SQLException e) {
             LOGGER.severe("[UPDATE_ADDRESS] Lỗi: " + e.getMessage());
-            return false;
-        }
-    }
-
-    @Override
-    public boolean updateManagerId(String id, String managerId) throws FieldValidationException {
-        try (CallableStatement cs = conn.prepareCall(SQLQueries.EMPLOYEE_CHANGE_MANAGER_ID)) {
-            cs.setString(1, id);
-            cs.setString(2, managerId);
-            return cs.executeUpdate() > 0;
-        } catch (SQLException e) {
-            int code = e.getErrorCode();                 // ví dụ: -20020, -20021,
-
-            if (code == 20051) {
-                throw new FieldValidationException(
-                        "managerId",
-                        "Mã nhân viên quản lý này không phải là Nhân viên quản lý cửa hàng."
-                );
-            }
-            if (code == 20053) {
-                throw new FieldValidationException(
-                        "managerId",
-                        "Mã nhân viên quản lý không tồn tại"
-                );
-            } else {
-                throw new FieldValidationException(
-                        "managerId",
-                        "Mã nhân viên quản lý không hợp lệ"
-                );
-            }
-        } catch (Exception e) {
-            LOGGER.severe("[UPDATE_MANAGER_ID] Lỗi: " + e.getMessage());
             return false;
         }
     }

@@ -8,7 +8,6 @@ import com.neostain.csms.util.DialogFactory;
 import com.neostain.csms.util.ScreenType;
 import com.neostain.csms.util.StringUtils;
 import com.neostain.csms.view.MainFrame;
-import com.neostain.csms.view.component.BorderedPanel;
 import com.neostain.csms.view.component.StandardButton;
 import com.neostain.csms.view.component.StandardTabbedPane;
 
@@ -55,55 +54,20 @@ public class LoginScreen extends JPanel {
         initializeComponents();
     }
 
-    private static BorderedPanel setupAuthorPanel() {
-        BorderedPanel borderedPanel = new BorderedPanel("Tác giả");
-        JTextArea authorContent = new JTextArea(
-                """
-                        Copyright © 2025 NeoStain
-                        Phần mềm tạo ra bởi thành viên của nhóm phát triển:
-                        Ngô Tiến Sỹ
-                        Nguyễn Văn Nam
-                        Võ Đức Tài
-                        Thiều Đinh Nam Tài
-                        
-                        Mọi nội dung, dữ liệu và mã nguồn chỉ được sử dụng cho mục đích học tập và nghiên cứu."""
-        );
-        authorContent.setEditable(false);
-        authorContent.setOpaque(false);
-        authorContent.setFont(Constants.View.DEFAULT_FONT);
-        authorContent.setFocusable(false);
-        authorContent.setBackground(Constants.Color.COMPONENT_BACKGROUND_WHITE);
-        borderedPanel.add(authorContent, BorderLayout.CENTER);
-        return borderedPanel;
-    }
-
     /**
      * Initialize the screen components
      */
     private void initializeComponents() {
-        // Khởi tạo các thành phần giao diện
-        JTabbedPane mainAuthorizePane = this.createStandardTabbedPane();
-        JPanel loginTabPanel = this.createLoginTabPanel();
-        JPanel aboutTabPanel = this.createAboutTabPanel();
+        StandardTabbedPane tabbedPane = new StandardTabbedPane();
+        tabbedPane.addTab("Đăng nhập", this.createLoginPanel());
 
-        // Thêm các tab vào mainAuthorizePane
-        mainAuthorizePane.addTab("Đăng nhập", loginTabPanel);
-        mainAuthorizePane.addTab("Thông tin dự án", aboutTabPanel);
-
-        // Thêm mainAuthorizePane vào LoginScreen
-        this.add(mainAuthorizePane, BorderLayout.CENTER);
+        this.add(tabbedPane, BorderLayout.CENTER);
     }
-
-    private JTabbedPane createStandardTabbedPane() {
-        return new StandardTabbedPane();
-    }
-
-    // Method removed as it's now in BaseScreen
 
     /**
      * Thiết lập giao diện cho tab đăng nhập
      */
-    private JPanel createLoginTabPanel() {
+    private JPanel createLoginPanel() {
         JPanel panel = new JPanel(new GridBagLayout());
         panel.setBackground(Constants.Color.COMPONENT_BACKGROUND_WHITE);
         panel.setBorder(BorderFactory.createEmptyBorder(
@@ -114,7 +78,7 @@ public class LoginScreen extends JPanel {
         ));
 
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(4, 15, 4, 15);
+        gbc.insets = new Insets(4, 18, 8, 18);
 
         // Username
         gbc.gridx = 0;
@@ -177,55 +141,6 @@ public class LoginScreen extends JPanel {
         });
 
         return panel;
-    }
-
-    /**
-     * Thiết lập giao diện cho tab thông tin dự án
-     */
-    private JPanel createAboutTabPanel() {
-        JPanel aboutTabPanel = new JPanel();
-        aboutTabPanel.setBackground(Constants.Color.COMPONENT_BACKGROUND_WHITE);
-        aboutTabPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        aboutTabPanel.setLayout(new GridBagLayout());
-
-        BorderedPanel authorPanel = setupAuthorPanel();
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        gbc.weightx = 1.0;  // Cho phép giãn ngang
-        gbc.weighty = 1.0;  // Cho phép giãn dọc
-        gbc.fill = GridBagConstraints.BOTH; // Giãn đầy cả hai chiều
-        aboutTabPanel.add(authorPanel, gbc);
-
-        return aboutTabPanel;
-    }
-
-    /**
-     * Phương thức tiện ích để thêm component vào layout với GridBagConstraints.
-     *
-     * @param panel      Panel chứa component.
-     * @param comp       Component cần thêm.
-     * @param gbc        GridBagConstraints được cấu hình.
-     * @param gridx      Vị trí cột.
-     * @param gridy      Vị trí hàng.
-     * @param gridwidth  Số cột mà component chiếm.
-     * @param gridheight Số hàng mà component chiếm.
-     * @param anchor     Vị trí neo component trong ô lưới.
-     * @param fill       Cách thức điền đầy không gian được cấp phát.
-     * @param weightx    Trọng số phân bổ không gian dư theo chiều ngang.
-     * @param weighty    Trọng số phân bổ không gian dư theo chiều dọc.
-     */
-    public void addComponent(JPanel panel, Component comp, GridBagConstraints gbc,
-                             int gridx, int gridy, int gridwidth, int gridheight, int anchor, int fill, double weightx, double weighty) {
-        gbc.gridx = gridx;
-        gbc.gridy = gridy;
-        gbc.gridwidth = gridwidth;
-        gbc.gridheight = gridheight;
-        gbc.anchor = anchor;
-        gbc.fill = fill;
-        gbc.weightx = weightx;
-        gbc.weighty = weighty;
-        panel.add(comp, gbc);
     }
 
     /**

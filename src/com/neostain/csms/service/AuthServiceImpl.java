@@ -89,15 +89,9 @@ public class AuthServiceImpl implements AuthService {
                         return false;
                     }
 
-                case "R002": // Nhân viên bán hàng
-                    if (store.getManagerId().equals(employee.getManagerId())) {
-                        LOGGER.info("[AUTHENTICATE] Xác thực thành công (Nhân viên bán hàng) - Người dùng: " + username);
-                        return true;
-                    } else {
-                        LOGGER.warning("[AUTHENTICATE] Người dùng không thuộc cửa hàng này");
-                        return false;
-                    }
-
+                case "R002":
+                    LOGGER.info("[AUTHENTICATE] Xác thực thành công (Nhân viên bán hàng) - Người dùng: " + username);
+                    return true;
                 default:
                     LOGGER.warning("[AUTHENTICATE] Vai trò không hợp lệ: " + role);
                     return false;
@@ -210,7 +204,7 @@ public class AuthServiceImpl implements AuthService {
     public void invalidateToken(String tokenValue) {
         Token token = this.getTokenByValue(tokenValue);
 
-        boolean affected = tokenDAO.updateStatus(tokenValue, "Vô hiệu");
+        boolean affected = tokenDAO.updateStatus(tokenValue, "VÔ HIỆU");
         if (affected) {
             LOGGER.info("[UPDATE_STATUS] Cập nhật trạng thái Vô hiệu cho token của user " + token.getUsername() + " thành công");
         } else {

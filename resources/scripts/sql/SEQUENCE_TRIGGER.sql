@@ -328,7 +328,7 @@ DECLARE
     ERR_PHONE CONSTANT PLS_INTEGER := -20021;
 BEGIN
     -- KIỂM TRA ĐỊNH DẠNG EMAIL
-    IF NOT REGEXP_LIKE(:NEW.EMAIL, '^[A-ZA-Z0-9._%+-]+@[A-ZA-Z0-9.-]+\.[A-ZA-Z]{2,}$') THEN
+    IF NOT REGEXP_LIKE(:NEW.EMAIL, '^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$', 'i') THEN
         RAISE_APPLICATION_ERROR(
                 ERR_EMAIL,
                 'EMAIL KHÔNG HỢP LỆ. VÍ DỤ HỢP LỆ: USER@GMAIL.COM'
@@ -354,7 +354,7 @@ DECLARE
     ERR_PHONE CONSTANT PLS_INTEGER := -20031;
 BEGIN
     -- KIỂM TRA ĐỊNH DẠNG EMAIL
-    IF NOT REGEXP_LIKE(:NEW.EMAIL, '^[A-ZA-Z0-9._%+-]+@[A-ZA-Z0-9.-]+\.[A-ZA-Z]{2,}$') THEN
+    IF NOT REGEXP_LIKE(:NEW.EMAIL, '^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$', 'i') THEN
         RAISE_APPLICATION_ERROR(
                 ERR_EMAIL,
                 'EMAIL KHÔNG HỢP LỆ. VÍ DỤ HỢP LỆ: USER@GMAIL.COM'

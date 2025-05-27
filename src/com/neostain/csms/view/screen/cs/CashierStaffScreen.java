@@ -42,9 +42,13 @@ public class CashierStaffScreen extends JPanel {
             this.setBackground(Constants.Color.COMPONENT_BACKGROUND_WHITE);
 
             // Create a header toolbar with user info and logout
+            String storeId = serviceManager.getManagementService().getStoreByManagerId(this.employee.getId()).getId();
+            String storeName = serviceManager.getManagementService().getStoreByManagerId(this.employee.getId()).getName();
             JPanel headerPanel = new ScreenHeader(
+                    this.employee.getId(),
                     this.employee.getName(),
-                    this.role.getName()
+                    storeId,
+                    storeName
             );
             this.add(headerPanel, BorderLayout.NORTH);
 

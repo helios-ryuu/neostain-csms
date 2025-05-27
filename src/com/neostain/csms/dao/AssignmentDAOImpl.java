@@ -122,8 +122,8 @@ public class AssignmentDAOImpl implements AssignmentDAO {
             return false;
         }
         try (PreparedStatement ps = conn.prepareStatement(SQLQueries.ASSIGNMENT_CREATE)) {
-            ps.setString(1, assignment.getStoreId());
-            ps.setString(2, assignment.getEmployeeId());
+            ps.setString(1, assignment.getEmployeeId());
+            ps.setString(2, assignment.getStoreId());
             ps.setTimestamp(3, assignment.getStartTime());
             ps.setTimestamp(4, assignment.getEndTime());
             return ps.executeUpdate() == 1;
@@ -178,6 +178,49 @@ public class AssignmentDAOImpl implements AssignmentDAO {
             LOGGER.severe("[DELETE] Error: " + e.getMessage());
             return false;
         }
+    }
+
+    @Override
+    public List<Assignment> search(String assignmentId, String employeeId, String storeId, String from, String to) {
+        StringBuilder sql = new StringBuilder("SELECT * FROM ASSIGNMENT WHERE 1=1");
+        List<Object> params = new ArrayList<>();
+
+        if (!StringUtils.isNullOrEmpty(assignmentId)) {
+            sql.append(" AND ID=?");
+            params.add(assignmentId);
+        }
+        if (!StringUtils.isNullOrEmpty(employeeId)) {
+            sql.append(" AND EMPLOYEE_ID=?");
+            params.add(employeeId);
+        }
+        if (!StringUtils.isNullOrEmpty(storeId)) {
+            sql.append(" AND STORE_ID=?");
+            params.add(storeId);
+        }
+        if (!StringUtils.isNullOrEmpty(from)) {
+            sql.append(" AND START_TIME >= TO_TIMESTAMP(?, 'YYYY-MM-DD')");
+            params.add(from);
+        }
+        if (!StringUtils.isNullOrEmpty(to)) {
+            sql.append(" AND END_TIME <= TO_TIMESTAMP(?, 'YYYY-MM-DD')");
+            params.add(to);
+        }
+        sql.append(" ORDER BY START_TIME DESC");
+
+        List<Assignment> assignments = new ArrayList<>();
+        try (PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+            for (int i = 0; i < params.size(); i++) {
+                ps.setObject(i + 1, params.get(i));
+            }
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    assignments.add(mapResultSetToAssignment(rs));
+                }
+            }
+        } catch (SQLException e) {
+            LOGGER.severe("[SEARCH] Error: " + e.getMessage());
+        }
+        return assignments;
     }
 
     private Assignment mapResultSetToAssignment(ResultSet rs) throws SQLException {

@@ -64,6 +64,7 @@ public class ServiceManager {
             register(OperationService.class, new OperationServiceImpl(assignmentDAO, shiftReportDAO, paycheckDAO));
             register(AuthService.class, new AuthServiceImpl(tokenDAO, accountDAO, roleDAO, employeeDAO, storeDAO));
             register(PrintingService.class, new PrintingServiceImpl());
+            register(StatisticService.class, new StatisticServiceImpl());
 
             LOGGER.info("[INIT] ServiceManager initialized successfully");
         } catch (Exception e) {
@@ -131,6 +132,10 @@ public class ServiceManager {
 
     public PrintingService getPrintingService() {
         return getServiceWithAuthCheck(PrintingService.class, true);
+    }
+
+    public StatisticService getStatisticService() {
+        return getServiceWithAuthCheck(StatisticService.class, true);
     }
 
     public String getCurrentToken() {

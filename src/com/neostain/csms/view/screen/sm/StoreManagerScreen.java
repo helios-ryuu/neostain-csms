@@ -44,8 +44,10 @@ public class StoreManagerScreen extends JPanel {
 
             // Create a header toolbar with user info and logout
             JPanel headerPanel = new ScreenHeader(
+                    this.employee.getId(),
                     this.employee.getName(),
-                    this.role.getName()
+                    serviceManager.getManagementService().getStoreByManagerId(this.employee.getId()).getId(),
+                    serviceManager.getManagementService().getStoreByManagerId(this.employee.getId()).getName()
             );
             this.add(headerPanel, BorderLayout.NORTH);
 
@@ -56,15 +58,23 @@ public class StoreManagerScreen extends JPanel {
             JPanel dashboardTabPanel = new DashboardPanel();
             JPanel invoiceTabPanel = new InvoicePanel();
             JPanel employeeTabPanel = new EmployeePanel();
-            JPanel workShiftTabPanel = new WorkShiftPanel();
+            JPanel assignmentTabPanel = new AssignmentPanel();
             JPanel memberTabPanel = new MemberPanel();
+            JPanel paycheckTabPanel = new JPanel(new BorderLayout());
+            paycheckTabPanel.add(new JLabel("Chức năng đang phát triển...", SwingConstants.CENTER), BorderLayout.CENTER);
+            JPanel accountTabPanel = new JPanel(new BorderLayout());
+            accountTabPanel.add(new JLabel("Chức năng đang phát triển...", SwingConstants.CENTER), BorderLayout.CENTER);
+            JPanel warehouseTabPanel = new WarehousePanel();
 
             // Add tabs to the mainManagerPane
             mainManagerPane.addTab("Dashboard", dashboardTabPanel);
             mainManagerPane.addTab("Quản lý hóa đơn", invoiceTabPanel);
             mainManagerPane.addTab("Quản lý thành viên", memberTabPanel);
             mainManagerPane.addTab("Quản lý nhân viên", employeeTabPanel);
-            mainManagerPane.addTab("Phân công", workShiftTabPanel);
+            mainManagerPane.addTab("Quản lý phân công", assignmentTabPanel);
+            mainManagerPane.addTab("Quản lý kho", warehouseTabPanel);
+            mainManagerPane.addTab("Quản lý phiếu lương", paycheckTabPanel);
+            mainManagerPane.addTab("Quản lý tài khoản", accountTabPanel);
 
             // Add mainManagerPane to StoreManagerScreen
             this.add(mainManagerPane, BorderLayout.CENTER);

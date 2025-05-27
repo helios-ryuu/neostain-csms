@@ -25,6 +25,7 @@ public class EmployeePanel extends JPanel {
     private static final ServiceManager serviceManager = ServiceManager.getInstance();
     private final JButton searchBtn = new StandardButton(this, "Tìm kiếm");
     private final JButton resetBtn = new StandardButton(this, "Đặt lại");
+    private final JButton addEmployeeBtn = new StandardButton(this, "Thêm nhân viên");
     private final String[] employeeColumns = {
             "Mã nhân viên",
             "Tên nhân viên",
@@ -40,7 +41,7 @@ public class EmployeePanel extends JPanel {
     private ScrollableTable employeeTable;
 
 
-    private Account account = serviceManager.getAuthService().getAccountByUsername(serviceManager.getCurrentUsername());
+    private final Account account = serviceManager.getAuthService().getAccountByUsername(serviceManager.getCurrentUsername());
 
     public EmployeePanel() {
         initializeComponents();
@@ -114,6 +115,8 @@ public class EmployeePanel extends JPanel {
         toolWrapper.add(searchBtn);
         toolWrapper.add(Box.createHorizontalStrut(5));
         toolWrapper.add(resetBtn);
+        toolWrapper.add(Box.createHorizontalStrut(5));
+        toolWrapper.add(addEmployeeBtn);
 
         // Button listeners
         searchBtn.addActionListener(e -> {
@@ -153,6 +156,156 @@ public class EmployeePanel extends JPanel {
 
             // 3. Tìm kiếm lại (lần này từ–đến rộng nhất => load all)
             searchBtn.doClick();
+        });
+
+        addEmployeeBtn.addActionListener(e -> {
+            JDialog dialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Thêm nhân viên", true);
+            dialog.setLayout(new BorderLayout(10, 10));
+            JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
+            JLabel titleLabel = new JLabel("Thêm nhân viên mới", SwingConstants.CENTER);
+            titleLabel.setFont(titleLabel.getFont().deriveFont(Font.BOLD, 16f));
+            mainPanel.add(titleLabel, BorderLayout.NORTH);
+
+            JPanel formPanel = new JPanel(new GridLayout(7, 2, 10, 10));
+            JLabel managerIdLabel = new JLabel("Mã quản lý:");
+            JTextField managerIdField = new JTextField(account.getEmployeeId());
+            managerIdField.setEditable(false);
+            JLabel nameLabel = new JLabel("Nhập họ và tên:");
+            JTextField nameField = new JTextField(20);
+            JLabel emailLabel = new JLabel("Nhập email:");
+            JTextField emailFieldx = new JTextField(20);
+            JLabel phoneLabel = new JLabel("Nhập số điện thoại:");
+            JTextField phoneFieldx = new JTextField(20);
+            JLabel addressLabel = new JLabel("Nhập địa chỉ:");
+            JTextField addressField = new JTextField(20);
+            JLabel wageLabel = new JLabel("Nhập lương theo giờ (đ/h):");
+            JTextField wageField = new JTextField(20);
+            JLabel roleLabel = new JLabel("Nhập vai trò:");
+            java.util.List<com.neostain.csms.model.Role> roles = serviceManager.getAuthService().getAllRoles();
+            JComboBox<String> roleCombo = new JComboBox<>(roles.stream().map(r -> r.getId() + " - " + r.getName()).toArray(String[]::new));
+            // Add listener to roleCombo to handle managerId field
+            roleCombo.addActionListener(ev -> {
+                String selectedRole = roles.get(roleCombo.getSelectedIndex()).getName().toLowerCase();
+                if (selectedRole.contains("quản lý")) {
+                    managerIdField.setText("");
+                    managerIdField.setEditable(false);
+                } else {
+                    managerIdField.setText(account.getEmployeeId());
+                    managerIdField.setEditable(false);
+                }
+            });
+            formPanel.add(managerIdLabel);
+            formPanel.add(managerIdField);
+            formPanel.add(nameLabel);
+            formPanel.add(nameField);
+            formPanel.add(emailLabel);
+            formPanel.add(emailFieldx);
+            formPanel.add(phoneLabel);
+            formPanel.add(phoneFieldx);
+            formPanel.add(addressLabel);
+            formPanel.add(addressField);
+            formPanel.add(wageLabel);
+            formPanel.add(wageField);
+            formPanel.add(roleLabel);
+            formPanel.add(roleCombo);
+            mainPanel.add(formPanel, BorderLayout.CENTER);
+
+            JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0));
+            JButton okBtn = new JButton("Thêm nhân viên");
+            JButton cancelBtn = new JButton("Hủy");
+            btnPanel.add(okBtn);
+            btnPanel.add(cancelBtn);
+            mainPanel.add(btnPanel, BorderLayout.SOUTH);
+            dialog.add(mainPanel, BorderLayout.CENTER);
+
+            cancelBtn.addActionListener(ev -> dialog.dispose());
+
+            okBtn.addActionListener(ev -> {
+                String managerId = managerIdField.getText().trim();
+                String name = nameField.getText().trim();
+                String email = emailFieldx.getText().trim();
+                String phone = phoneFieldx.getText().trim();
+                String address = addressField.getText().trim();
+                String wageStr = wageField.getText().trim();
+                String roleId = roles.get(roleCombo.getSelectedIndex()).getId();
+                java.math.BigDecimal wage;
+                try {
+                    wage = new java.math.BigDecimal(wageStr);
+                } catch (Exception ex) {
+                    DialogFactory.showErrorDialog(dialog, "Lỗi", "Lương theo giờ không hợp lệ!");
+                    wageField.requestFocus();
+                    return;
+                }
+                com.neostain.csms.model.Employee emp = new com.neostain.csms.model.Employee(
+                        null, managerId, name, null, email, phone, address, wage, "ĐANG HOẠT ĐỘNG"
+                );
+                try {
+                    boolean created = serviceManager.getManagementService().createEmployee(emp);
+                    if (!created) throw new Exception("Không thể thêm nhân viên.");
+                    // Lấy lại nhân viên vừa tạo bằng phone (unique)
+                    com.neostain.csms.model.Employee newEmp = serviceManager.getManagementService().getEmployeeById(
+                            serviceManager.getManagementService().getEmployeeByManagerId(managerId).stream()
+                                    .filter(e1 -> e1.getPhoneNumber().equals(phone)).findFirst().orElseThrow().getId()
+                    );
+                    // Tạo account
+                    String passwordHash = com.neostain.csms.util.PasswordUtils.hash("12345678");
+                    java.sql.Timestamp now = new java.sql.Timestamp(System.currentTimeMillis());
+                    com.neostain.csms.model.Account acc = new com.neostain.csms.model.Account(
+                            null, newEmp.getId(), phone, passwordHash, roleId, now, "ĐANG HOẠT ĐỘNG"
+                    );
+                    boolean accCreated = serviceManager.getAuthService().createAccount(acc);
+                    if (!accCreated) throw new Exception("Không thể tạo tài khoản cho nhân viên.");
+                    // Hiện dialog thông tin nhân viên và tài khoản
+                    JPanel infoPanel = new JPanel(new GridLayout(0, 2, 8, 8));
+                    infoPanel.add(new JLabel("Mã nhân viên:"));
+                    infoPanel.add(new JLabel(newEmp.getId()));
+                    infoPanel.add(new JLabel("Tên nhân viên:"));
+                    infoPanel.add(new JLabel(newEmp.getName()));
+                    infoPanel.add(new JLabel("Email:"));
+                    infoPanel.add(new JLabel(newEmp.getEmail()));
+                    infoPanel.add(new JLabel("Số điện thoại:"));
+                    infoPanel.add(new JLabel(newEmp.getPhoneNumber()));
+                    infoPanel.add(new JLabel("Địa chỉ:"));
+                    infoPanel.add(new JLabel(newEmp.getAddress()));
+                    infoPanel.add(new JLabel("Lương theo giờ:"));
+                    infoPanel.add(new JLabel(newEmp.getHourlyWage().toString()));
+                    infoPanel.add(new JLabel("Trạng thái:"));
+                    infoPanel.add(new JLabel(newEmp.getStatus()));
+                    infoPanel.add(new JLabel(""));
+                    infoPanel.add(new JLabel(""));
+                    infoPanel.add(new JLabel("Đã tạo cho nhân viên 1 tài khoản mặc định:"));
+                    infoPanel.add(new JLabel(""));
+                    infoPanel.add(new JLabel("Tên tài khoản:"));
+                    infoPanel.add(new JLabel(phone));
+                    infoPanel.add(new JLabel("Mật khẩu:"));
+                    infoPanel.add(new JLabel("12345678"));
+                    infoPanel.add(new JLabel("Vai trò:"));
+                    infoPanel.add(new JLabel(roleId + " - " + roles.get(roleCombo.getSelectedIndex()).getName()));
+                    JOptionPane.showMessageDialog(dialog, infoPanel, "Thông tin nhân viên mới", JOptionPane.INFORMATION_MESSAGE);
+                    dialog.dispose();
+                    resetBtn.doClick();
+                } catch (DuplicateFieldException dfe) {
+                    DialogFactory.showErrorDialog(dialog, "Lỗi trùng dữ liệu", dfe.getMessage());
+                    if ("phoneNumber".equals(dfe.getFieldName())) {
+                        phoneFieldx.requestFocus();
+                    } else {
+                        emailFieldx.requestFocus();
+                    }
+                } catch (FieldValidationException fve) {
+                    DialogFactory.showErrorDialog(dialog, "Lỗi dữ liệu không hợp lệ", fve.getMessage());
+                    if ("phoneNumber".equals(fve.getFieldName())) {
+                        phoneFieldx.requestFocus();
+                    } else {
+                        emailFieldx.requestFocus();
+                    }
+                } catch (Exception ex) {
+                    DialogFactory.showErrorDialog(dialog, "Lỗi", "Lỗi không xác định: " + ex.getMessage());
+                }
+            });
+
+            dialog.pack();
+            dialog.setLocationRelativeTo(this);
+            dialog.setVisible(true);
         });
 
         this.add(toolWrapper, BorderLayout.NORTH);
@@ -216,7 +369,7 @@ public class EmployeePanel extends JPanel {
                     gbc.fill = GridBagConstraints.HORIZONTAL;
 
                     // Form gồm 9 dòng x 2 cột
-                    JPanel form = new JPanel(new GridLayout(7, 2, 8, 8));
+                    JPanel form = new JPanel(new GridLayout(8, 2, 8, 8));
 
                     // 1. Mã nhân viên quản lý (editable)
                     form.add(new JLabel("Mã nhân viên quản lý:"));
@@ -249,10 +402,24 @@ public class EmployeePanel extends JPanel {
                     JTextField addressField = new JTextField(address, 20);
                     form.add(addressField);
 
-                    // 7. Địa chỉ (editable)
+                    // 7. Lương (editable)
                     form.add(new JLabel("Lương (đ/giờ):"));
                     JTextField hourlyWageField = new JTextField(hourlyWage, 20);
                     form.add(hourlyWageField);
+
+                    // 8. Trạng thái (combo box)
+                    form.add(new JLabel("Trạng thái:"));
+                    String[] statusOptions = {"ĐANG HOẠT ĐỘNG", "TẠM NGỪNG HOẠT ĐỘNG", "ĐÃ NGHỈ VIỆC"};
+                    JComboBox<String> statusCombo = new JComboBox<>(statusOptions);
+                    // Set current status
+                    String currentStatus = table.getValueAt(row, 7).toString();
+                    for (int i = 0; i < statusOptions.length; i++) {
+                        if (statusOptions[i].equalsIgnoreCase(currentStatus)) {
+                            statusCombo.setSelectedIndex(i);
+                            break;
+                        }
+                    }
+                    form.add(statusCombo);
 
                     gbc.gridx = 0;
                     gbc.gridy = 0;
@@ -283,6 +450,7 @@ public class EmployeePanel extends JPanel {
                         String oldEmail = e.getEmail();
                         String oldAddress = e.getAddress();
                         String oldHourlyWage = e.getHourlyWage().toString();
+                        String oldStatus = e.getStatus();
 
                         // Lấy giá trị mới
                         String newManagerId = managerIdField.getText().trim();
@@ -291,6 +459,7 @@ public class EmployeePanel extends JPanel {
                         String newEmail = emailField.getText().trim();
                         String newAddress = addressField.getText().trim();
                         String newHourlyWage = hourlyWageField.getText().trim();
+                        String newStatus = (String) statusCombo.getSelectedItem();
 
                         // Đặt lại trên model
                         e.setManagerId(newManagerId);
@@ -299,6 +468,7 @@ public class EmployeePanel extends JPanel {
                         e.setEmail(newEmail);
                         e.setAddress(newAddress);
                         e.setHourlyWage(new BigDecimal(newHourlyWage).setScale(2, RoundingMode.DOWN));
+                        e.setStatus(newStatus);
 
                         try {
                             serviceManager.getManagementService().updateEmployee(e);
@@ -331,6 +501,10 @@ public class EmployeePanel extends JPanel {
                             infoPanel.add(new JLabel(oldHourlyWage));
                             infoPanel.add(new JLabel("          >>>"));
                             infoPanel.add(new JLabel(newHourlyWage));
+                            infoPanel.add(new JLabel("Trạng thái: "));
+                            infoPanel.add(new JLabel(oldStatus));
+                            infoPanel.add(new JLabel("          >>>"));
+                            infoPanel.add(new JLabel(newStatus));
                             DialogFactory.showInfoDialog(
                                     dialog,
                                     "Cập nhật thành công!",

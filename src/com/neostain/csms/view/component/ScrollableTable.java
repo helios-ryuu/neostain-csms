@@ -111,12 +111,16 @@ public class ScrollableTable extends JScrollPane {
 
         // Cột dữ liệu đầu tiên cố định width, có thể tuỳ chỉnh giống trước
         if (table.getColumnCount() > 0) {
-            table.getColumnModel().getColumn(0).setPreferredWidth(200);
-            table.getColumnModel().getColumn(0).setMinWidth(200);
-            table.getColumnModel().getColumn(0).setMaxWidth(200);
-            // Center align the first column
-            table.getColumnModel().getColumn(0).setCellRenderer(new CenterCellRenderer());
+            table.getColumnModel().getColumn(0).setPreferredWidth(260);
+            table.getColumnModel().getColumn(0).setMinWidth(260);
+            table.getColumnModel().getColumn(0).setMaxWidth(260);
         }
+        // Set left alignment for all data columns (not action columns)
+        for (int i = 0; i < baseColumns.length; i++) {
+            table.getColumnModel().getColumn(i).setCellRenderer(new LeftCellRenderer());
+        }
+        // Center align header
+        ((DefaultTableCellRenderer) table.getTableHeader().getDefaultRenderer()).setHorizontalAlignment(SwingConstants.CENTER);
         table.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
         table.setShowGrid(true);
         table.setGridColor(new Color(220, 220, 220));
@@ -213,11 +217,11 @@ public class ScrollableTable extends JScrollPane {
     }
 
     /**
-     * Renderer to center-align cell content.
+     * Renderer to left-align cell content.
      */
-    private static class CenterCellRenderer extends DefaultTableCellRenderer {
-        public CenterCellRenderer() {
-            setHorizontalAlignment(SwingConstants.CENTER);
+    private static class LeftCellRenderer extends DefaultTableCellRenderer {
+        public LeftCellRenderer() {
+            setHorizontalAlignment(SwingConstants.LEFT);
         }
     }
 }

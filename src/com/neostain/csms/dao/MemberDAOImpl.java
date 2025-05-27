@@ -150,24 +150,22 @@ public class MemberDAOImpl implements MemberDAO {
     }
 
     @Override
-    public boolean create(Member member) throws DuplicateFieldException, FieldValidationException {
+    public boolean create(String name, String phone, String email) throws DuplicateFieldException, FieldValidationException {
         try (PreparedStatement ps = conn.prepareStatement(SQLQueries.MEMBER_CREATE)) {
-            ps.setString(1, member.getName());
-            ps.setString(2, member.getPhoneNumber());
-            ps.setString(3, member.getEmail());
+            ps.setString(1, name);
+            ps.setString(2, phone);
+            ps.setString(3, email);
             return ps.executeUpdate() == 1;
         } catch (SQLException e) {
-            int code = e.getErrorCode();                 // ví dụ: -20020, -20021, 1…
-            String msg = e.getMessage().toUpperCase();   // để so sánh dễ hơn
-
-            // 1) Lỗi từ trigger: format email/phone
-            if (code == -20020) {
+            int code = e.getErrorCode();
+            String msg = e.getMessage().toUpperCase();
+            if (code == 20030) {
                 throw new FieldValidationException(
                         "email",
                         "Email không hợp lệ. Ví dụ hợp lệ: user@example.com"
                 );
             }
-            if (code == -20021) {
+            if (code == 20031 || code == 12899) {
                 throw new FieldValidationException(
                         "phoneNumber",
                         "Số điện thoại phải gồm đúng 10 chữ số, không chứa ký tự khác."

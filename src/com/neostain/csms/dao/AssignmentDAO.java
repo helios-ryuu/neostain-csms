@@ -22,4 +22,9 @@ public interface AssignmentDAO {
     boolean updateEndTime(String id, String endTime);
 
     boolean delete(String id);
+
+    List<Assignment> search(
+            String assignmentId, String employeeId, String storeId,
+            String from, String to
+    );
 }

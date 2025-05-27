@@ -49,4 +49,6 @@ public interface OperationService {
     List<Paycheck> getAllPaychecks();
 
     String generatePaycheck(String employeeId, BigDecimal deductions, Timestamp periodStart, Timestamp periodEnd);
+
+    List<Assignment> searchAssignments(String assignmentId, String employeeId, String storeId, String from, String to);
 } 

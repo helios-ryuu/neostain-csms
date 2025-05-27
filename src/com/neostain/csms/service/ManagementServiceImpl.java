@@ -51,8 +51,9 @@ public class ManagementServiceImpl implements ManagementService {
         boolean c = employeeDAO.updatePhoneNumber(employee.getId(), employee.getPhoneNumber());
         boolean d = employeeDAO.updateAddress(employee.getId(), employee.getAddress());
         boolean e = employeeDAO.updateHourlyWage(employee.getId(), employee.getHourlyWage());
+        boolean f = employeeDAO.updateStatus(employee.getId(), employee.getStatus());
 
-        return z && a && b && c && d && e;
+        return z && a && b && c && d && e && f;
     }
 
     // Member
@@ -86,8 +87,8 @@ public class ManagementServiceImpl implements ManagementService {
     }
 
     @Override
-    public boolean createMember(Member member) throws DuplicateFieldException, FieldValidationException {
-        return memberDAO.create(member);
+    public boolean createMember(String name, String phone, String email) throws DuplicateFieldException, FieldValidationException {
+        return memberDAO.create(name, phone, email);
     }
 
     @Override

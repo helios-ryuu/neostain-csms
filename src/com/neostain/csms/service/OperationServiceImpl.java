@@ -68,6 +68,16 @@ public class OperationServiceImpl implements OperationService {
         return assignmentDAO.delete(id);
     }
 
+    @Override
+    public List<Assignment> searchAssignments(String assignmentId, String employeeId, String storeId, String from, String to) {
+        if (assignmentId != null && assignmentId.isBlank()) assignmentId = null;
+        if (employeeId != null && employeeId.isBlank()) employeeId = null;
+        if (storeId != null && storeId.isBlank()) storeId = null;
+        if (from != null && from.isBlank()) from = null;
+        if (to != null && to.isBlank()) to = null;
+        return assignmentDAO.search(assignmentId, employeeId, storeId, from, to);
+    }
+
     // ShiftReport
     @Override
     public ShiftReport getShiftReportById(String id) {

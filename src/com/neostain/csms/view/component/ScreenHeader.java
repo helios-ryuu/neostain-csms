@@ -12,7 +12,10 @@ import java.awt.*;
 import java.io.File;
 
 public class ScreenHeader extends JPanel {
-    public ScreenHeader(String employeeName, String roleName) {
+    private final JLabel clockLabel = new JLabel();
+    private final Timer timer;
+
+    public ScreenHeader(String employeeId, String employeeName, String storeId, String storeName) {
 
         this.setLayout(new BorderLayout());
         this.setBackground(Constants.Color.COMPONENT_BACKGROUND_HEADER);
@@ -25,12 +28,25 @@ public class ScreenHeader extends JPanel {
         userInfoPanel.setOpaque(false);
         userInfoPanel.add(Box.createHorizontalStrut(10)); // Add some padding
 
-        JLabel userLabel = new JLabel(employeeName + " (" + roleName + ")");
-        userLabel.setFont(Constants.View.DEFAULT_FONT);
-        userLabel.setForeground(Color.WHITE);
-        userLabel.setAlignmentY(Component.CENTER_ALIGNMENT);
+        JLabel empIdLabel = new JLabel("Nhân viên: " + employeeId + " - " + employeeName + "    ");
+        empIdLabel.setFont(new Font(Constants.View.DEFAULT_FONT.getName(), Font.BOLD, Constants.View.DEFAULT_FONT.getSize()));
+        empIdLabel.setForeground(Color.WHITE);
+        empIdLabel.setAlignmentY(Component.CENTER_ALIGNMENT);
+        userInfoPanel.add(empIdLabel);
+        userInfoPanel.add(Box.createHorizontalStrut(15));
 
-        userInfoPanel.add(userLabel);
+        JLabel storeLabel = new JLabel("Cửa hàng: " + storeId + " - " + storeName + "    ");
+        storeLabel.setFont(new Font(Constants.View.DEFAULT_FONT.getName(), Font.BOLD, Constants.View.DEFAULT_FONT.getSize()));
+        storeLabel.setForeground(Color.WHITE);
+        storeLabel.setAlignmentY(Component.CENTER_ALIGNMENT);
+        userInfoPanel.add(storeLabel);
+        userInfoPanel.add(Box.createHorizontalStrut(15));
+
+        clockLabel.setFont(new Font(Constants.View.DEFAULT_FONT.getName(), Font.BOLD, Constants.View.DEFAULT_FONT.getSize()));
+        clockLabel.setForeground(Color.YELLOW);
+        clockLabel.setAlignmentY(Component.CENTER_ALIGNMENT);
+        userInfoPanel.add(clockLabel);
+        userInfoPanel.add(Box.createHorizontalStrut(15));
 
         // Actions on the right
         JPanel actionsPanel = new JPanel();
@@ -91,5 +107,16 @@ public class ScreenHeader extends JPanel {
         // Add panels to header
         this.add(leftContainer, BorderLayout.WEST);
         this.add(rightContainer, BorderLayout.EAST);
+
+        // Start clock
+        timer = new Timer(1000, e -> updateClock());
+        timer.setRepeats(true);
+        timer.start();
+        updateClock();
+    }
+
+    private void updateClock() {
+        java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+        clockLabel.setText(sdf.format(new java.util.Date()));
     }
 }

@@ -18,7 +18,7 @@ public interface MemberDAO {
     List<Member> search(String memberId, String phone, String email,
                         String dateFrom, String dateTo);
 
-    boolean create(Member member) throws DuplicateFieldException, FieldValidationException;
+    boolean create(String name, String phone, String email) throws DuplicateFieldException, FieldValidationException;
 
     boolean updateName(String id, String name);
 

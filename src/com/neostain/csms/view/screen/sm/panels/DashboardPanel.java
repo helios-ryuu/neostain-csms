@@ -4,6 +4,7 @@ import com.neostain.csms.ServiceManager;
 import com.neostain.csms.model.Account;
 import com.neostain.csms.model.Employee;
 import com.neostain.csms.model.Store;
+import com.neostain.csms.service.StatisticService;
 import com.neostain.csms.util.Constants;
 import com.neostain.csms.util.DialogFactory;
 import com.neostain.csms.util.StringUtils;
@@ -13,6 +14,7 @@ import com.neostain.csms.view.component.StandardButton;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.List;
 
 /**
  * Dashboard panels for the store manager screen
@@ -20,6 +22,9 @@ import java.awt.*;
 public class DashboardPanel extends JPanel {
     private static final ServiceManager serviceManager = ServiceManager.getInstance();
     private final String username;
+    private final StatisticService statisticService;
+    private Timer refreshTimer;
+    private List<DashboardTile> tilesList;
 
     // UI components for store info
     private JLabel storeName;
@@ -29,7 +34,9 @@ public class DashboardPanel extends JPanel {
 
     public DashboardPanel() {
         this.username = serviceManager.getCurrentUsername();
+        this.statisticService = serviceManager.getStatisticService();
         initializeComponents();
+        startAutoRefresh();
     }
 
     private void initializeComponents() {
@@ -58,27 +65,28 @@ public class DashboardPanel extends JPanel {
         panel.setLayout(new BorderLayout());
         panel.setBackground(Constants.Color.COMPONENT_BACKGROUND_WHITE);
 
-        // Tiles grid
-        JPanel tiles = new JPanel(new GridLayout(3, 4, 10, 10));
+        JPanel tiles = new JPanel(new GridLayout(4, 4, 10, 10));
         tiles.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         tiles.setBackground(Constants.Color.COMPONENT_BACKGROUND_WHITE);
 
-        // TODO: load real data
-        tiles.add(new DashboardTile("Tổng hoá đơn của cửa hàng", "128", new Color(41, 128, 185)));
-        tiles.add(new DashboardTile("Hoá đơn hôm nay", "24", new Color(39, 174, 96)));
-        tiles.add(new DashboardTile("Doanh thu hôm nay", "5,280,000 VNĐ", new Color(211, 84, 0)));
-        tiles.add(new DashboardTile("Doanh thu 30 ngày gần nhất", "42,750,000 VNĐ", new Color(142, 68, 173)));
-
-        tiles.add(new DashboardTile("Sản phẩm bán chạy", "Cà phê", new Color(52, 152, 219)));
-        tiles.add(new DashboardTile("Khách hàng mới", "15", new Color(46, 204, 113)));
-        tiles.add(new DashboardTile("Tổng nhân viên", "12", new Color(230, 126, 34)));
-        tiles.add(new DashboardTile("Tỉ lệ hủy hóa đơn", "8%", new Color(155, 89, 182)));
-
-        tiles.add(new DashboardTile("Sản phẩm bán chạy", "Cà phê", new Color(52, 152, 219)));
-        tiles.add(new DashboardTile("Khách hàng mới", "15", new Color(46, 204, 113)));
-        tiles.add(new DashboardTile("Tổng nhân viên", "12", new Color(230, 126, 34)));
-        tiles.add(new DashboardTile("Tỉ lệ hủy hóa đơn", "8%", new Color(155, 89, 182)));
-
+        // Placeholders for 12 single-value statistics
+        tilesList = List.of(
+                new DashboardTile("Hóa đơn 30 ngày gần nhất", "...", new Color(41, 128, 185)),
+                new DashboardTile("Doanh thu 30 ngày gần nhất", "...", new Color(39, 174, 96)),
+                new DashboardTile("Doanh thu hôm nay", "...", new Color(211, 84, 0)),
+                new DashboardTile("Số hóa đơn hôm nay", "...", new Color(142, 68, 173)),
+                new DashboardTile("Tổng thành viên", "...", new Color(52, 152, 219)),
+                new DashboardTile("Thành viên VIP", "...", new Color(46, 204, 113)),
+                new DashboardTile("Tổng hàng hóa trong kho", "...", new Color(230, 126, 34)),
+                new DashboardTile("Tổng nhân viên thuộc cửa hàng", "...", new Color(155, 89, 182)),
+                new DashboardTile("Hóa đơn đã hủy", "...", new Color(26, 188, 156)),
+                new DashboardTile("Hóa đơn chưa hoàn thành", "...", new Color(149, 165, 166)),
+                new DashboardTile("Khuyến mãi đang hoạt động", "...", new Color(127, 140, 141)),
+                new DashboardTile("Hóa đơn đang yêu cầu hủy", "...", new Color(241, 196, 15))
+        );
+        for (DashboardTile tile : tilesList) {
+            tiles.add(tile);
+        }
         panel.add(tiles, BorderLayout.CENTER);
         return panel;
     }
@@ -268,5 +276,53 @@ public class DashboardPanel extends JPanel {
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.insets = new Insets(5, 8, 5, 8);
         return gbc;
+    }
+
+    private void startAutoRefresh() {
+        refreshTimer = new Timer(1000, e -> refreshStatistics());
+        refreshTimer.setRepeats(true);
+        refreshTimer.start();
+    }
+
+    private void refreshStatistics() {
+        new SwingWorker<java.util.List<String>, Void>() {
+            @Override
+            protected java.util.List<String> doInBackground() {
+                try {
+                    Object totalRevenue30 = statisticService.getTotalRevenueLast30Days();
+                    Object todayRevenue = statisticService.getTodayRevenue();
+                    Account account = serviceManager.getAuthService().getAccountByUsername(username);
+                    String storeId = serviceManager.getManagementService().getStoreByManagerId(account.getEmployeeId()).getId();
+                    return java.util.List.of(
+                            String.valueOf(statisticService.getTotalInvoicesLast30Days()),
+                            totalRevenue30 == null ? "0" : String.valueOf(totalRevenue30),
+                            todayRevenue == null ? "0" : String.valueOf(todayRevenue),
+                            String.valueOf(statisticService.getTodayInvoices()),
+                            String.valueOf(statisticService.getTotalMembers()),
+                            String.valueOf(statisticService.getTotalVIPMembers()),
+                            String.valueOf(statisticService.getTotalProducts(storeId)),
+                            String.valueOf(statisticService.getTotalEmployees(storeId)),
+                            String.valueOf(statisticService.getCanceledInvoices()),
+                            String.valueOf(statisticService.getUncompletedInvoices()),
+                            String.valueOf(serviceManager.getSaleService().getActivePromotions().size()),
+                            String.valueOf(statisticService.getCancelRequestedInvoices())
+                    );
+                } catch (Exception e) {
+                    return java.util.Collections.nCopies(12, "Lỗi");
+                }
+            }
+
+            @Override
+            protected void done() {
+                try {
+                    java.util.List<String> results = get();
+                    for (int i = 0; i < tilesList.size(); i++) {
+                        tilesList.get(i).setValue(results.get(i));
+                    }
+                } catch (Exception ex) {
+                    // Optionally log error
+                }
+            }
+        }.execute();
     }
 }

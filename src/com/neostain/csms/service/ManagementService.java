@@ -35,7 +35,7 @@ public interface ManagementService {
 
     List<Member> getAllMembers();
 
-    boolean createMember(Member member) throws DuplicateFieldException, FieldValidationException;
+    boolean createMember(String name, String phone, String email) throws DuplicateFieldException, FieldValidationException;
 
     boolean updateMember(Member member) throws DuplicateFieldException, FieldValidationException;
 
