@@ -352,6 +352,119 @@ public class PrintingServiceImpl implements PrintingService {
 
     @Override
     public File printPaycheck(Paycheck paycheck) {
+        try {
+            ServiceManager svc = ServiceManager.getInstance();
+            Employee employee = svc.getManagementService().getEmployeeById(paycheck.getEmployeeId());
+            // Find store by managerId = employee.getManagerId() (if not null), else by employeeId
+            Store store = null;
+            if (employee != null && employee.getManagerId() != null) {
+                store = svc.getManagementService().getStoreByManagerId(employee.getManagerId());
+            }
+            if (store == null && employee != null) {
+                store = svc.getManagementService().getStoreByManagerId(employee.getId());
+            }
+            String paycheckId = paycheck.getId();
+
+            Document document = new Document(PageSize.A4);
+            String fileName = "Paycheck_" + paycheckId;
+            PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream("reports/" + fileName + ".pdf"));
+            document.open();
+            document.addAuthor("NeoStain");
+            document.addCreationDate();
+            document.addCreator("NeoStain");
+            document.addTitle("Paycheck");
+            document.addSubject("Paycheck");
+
+            File fileFont = new File("fonts/JetBrainsMono-Bold.ttf");
+            BaseFont bf = BaseFont.createFont(fileFont.getAbsolutePath(), BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
+            com.itextpdf.text.Font font1 = new com.itextpdf.text.Font(bf, 14);
+            com.itextpdf.text.Font font2 = new com.itextpdf.text.Font(bf, 12);
+            File fileFont2 = new File("fonts/JetBrainsMono-Regular.ttf");
+            BaseFont bf2 = BaseFont.createFont(fileFont2.getAbsolutePath(), BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
+            com.itextpdf.text.Font font3 = new com.itextpdf.text.Font(bf2, 12);
+
+            Paragraph prgDelimiter = new Paragraph("-------------------------------------------------------------------", font3);
+            prgDelimiter.setAlignment(Element.ALIGN_CENTER);
+            document.add(prgDelimiter);
+
+            Paragraph prgCompany = new Paragraph("NeoStain\nCửa hàng " + (store != null ? store.getName() : ""), font2);
+            prgCompany.setAlignment(Element.ALIGN_CENTER);
+            document.add(prgCompany);
+
+            Paragraph prgTitle = new Paragraph("PHIẾU LƯƠNG NHÂN VIÊN", font1);
+            prgTitle.setAlignment(Element.ALIGN_CENTER);
+            prgTitle.setSpacingBefore(10);
+            prgTitle.setSpacingAfter(10);
+            document.add(prgTitle);
+
+            SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
+            SimpleDateFormat sdfShort = new SimpleDateFormat("dd-MM-yyyy");
+
+            Paragraph prgContentMeta = new Paragraph(
+                    "Mã phiếu lương: " + paycheck.getId() +
+                            "\nNhân viên: " + (employee != null ? (employee.getName() + " - " + employee.getId()) : paycheck.getEmployeeId()) +
+                            (employee != null ? ("\nEmail: " + employee.getEmail() + "\nSĐT: " + employee.getPhoneNumber()) : "") +
+                            (store != null ? ("\nCửa hàng: " + store.getId() + " - " + store.getName() + "\nĐịa chỉ: " + store.getStoreAddress()) : "") +
+                            "\nKỳ trả lương: " + (paycheck.getPeriodStart() != null ? sdfShort.format(paycheck.getPeriodStart()) : "") + " - " + (paycheck.getPeriodEnd() != null ? sdfShort.format(paycheck.getPeriodEnd()) : "") +
+                            "\nNgày trả lương: " + (paycheck.getPayDate() != null ? sdf.format(paycheck.getPayDate()) : "")
+                    , font3
+            );
+            prgContentMeta.setAlignment(Element.ALIGN_LEFT);
+            prgContentMeta.setIndentationLeft(30);
+            document.add(prgContentMeta);
+            document.add(prgDelimiter);
+
+            PdfPTable table = new PdfPTable(new float[]{5, 5});
+            table.setWidthPercentage(70);
+            table.setHorizontalAlignment(Element.ALIGN_CENTER);
+
+            PdfPCell cellGross = new PdfPCell(new Paragraph("Lương gross", font2));
+            PdfPCell cellGrossVal = new PdfPCell(new Paragraph(paycheck.getGrossAmount() != null ? paycheck.getGrossAmount().toPlainString() : "", font2));
+            PdfPCell cellDeduct = new PdfPCell(new Paragraph("Khấu trừ", font2));
+            PdfPCell cellDeductVal = new PdfPCell(new Paragraph(paycheck.getDeductions() != null ? paycheck.getDeductions().toPlainString() : "", font2));
+            PdfPCell cellNet = new PdfPCell(new Paragraph("Lương net", font2));
+            PdfPCell cellNetVal = new PdfPCell(new Paragraph(paycheck.getNetAmount() != null ? paycheck.getNetAmount().toPlainString() : "", font2));
+
+            cellGross.setHorizontalAlignment(Element.ALIGN_LEFT);
+            cellGrossVal.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            cellDeduct.setHorizontalAlignment(Element.ALIGN_LEFT);
+            cellDeductVal.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            cellNet.setHorizontalAlignment(Element.ALIGN_LEFT);
+            cellNetVal.setHorizontalAlignment(Element.ALIGN_RIGHT);
+
+            table.addCell(cellGross);
+            table.addCell(cellGrossVal);
+            table.addCell(cellDeduct);
+            table.addCell(cellDeductVal);
+            table.addCell(cellNet);
+            table.addCell(cellNetVal);
+
+            document.add(table);
+            document.add(prgDelimiter);
+
+            Paragraph prgNote = new Paragraph(
+                    "Lưu ý: Vui lòng kiểm tra kỹ thông tin phiếu lương. Nếu có thắc mắc, liên hệ quản lý cửa hàng hoặc bộ phận nhân sự.", font3
+            );
+            prgNote.setAlignment(Element.ALIGN_LEFT);
+            prgNote.setIndentationLeft(30);
+            document.add(prgNote);
+            document.add(prgDelimiter);
+
+            document.close();
+            writer.close();
+
+            File file = new File("reports/" + fileName + ".pdf");
+            if (file.exists()) {
+                return file;
+            }
+        } catch (Exception ex) {
+            DialogFactory.showErrorDialog(
+                    null,
+                    "Lỗi",
+                    "Có lỗi xảy ra khi in phiếu lương: " + ex.getMessage()
+            );
+            return null;
+        }
         return null;
     }
 }

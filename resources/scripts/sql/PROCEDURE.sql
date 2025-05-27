@@ -241,6 +241,23 @@ BEGIN
         INSERT INTO POINT_UPDATE_LOG (MEMBER_ID, INVOICE_ID, POINT_CHANGE)
         VALUES (V_INVOICE.MEMBER_ID, V_INVOICE.ID, -V_POINT_CHANGE);
 
+        -- Restore inventory for each item in the invoice
+        FOR ITEM_REC IN (
+            SELECT PRODUCT_ID, QUANTITY_SOLD
+            FROM INVOICE_DETAIL
+            WHERE INVOICE_ID = P_INVOICE_ID
+            )
+            LOOP
+                INSERT INTO INVENTORY_TRANSACTION (PRODUCT_ID,
+                                                   STORE_ID,
+                                                   TRANSACTION_TYPE,
+                                                   QUANTITY)
+                VALUES (ITEM_REC.PRODUCT_ID,
+                        V_INVOICE.STORE_ID,
+                        ITEM_REC.QUANTITY_SOLD * -1,
+                        'ĐIỀU CHỈNH');
+            END LOOP;
+
         UPDATE INVOICE
         SET STATUS = 'ĐÃ HỦY'
         WHERE ID = P_INVOICE_ID;
@@ -392,34 +409,6 @@ BEGIN
             SYSTIMESTAMP, P_PERIOD_START, P_PERIOD_END)
     RETURNING ID INTO P_PAYCHECK_ID;
 END PRC_CALC_PAYCHECK;
-/
-
-CREATE OR REPLACE PROCEDURE PRC_GENERATE_PAYCHECKS(
-    P_DEDUCTIONS IN PAYCHECK.DEDUCTIONS%TYPE DEFAULT 0,
-    P_PERIOD_START IN TIMESTAMP,
-    P_PERIOD_END IN TIMESTAMP
-)
-AS
-    CURSOR C_EMP IS
-        SELECT ID
-        FROM EMPLOYEE
-        WHERE STATUS = 'ĐANG HOẠT ĐỘNG';
-    V_PC_ID PAYCHECK.ID%TYPE;
-BEGIN
-    FOR R IN C_EMP
-        LOOP
-            PRC_CALC_PAYCHECK(
-                    P_EMP_ID => R.ID,
-                    P_DEDUCTIONS => P_DEDUCTIONS,
-                    P_PERIOD_START => P_PERIOD_START,
-                    P_PERIOD_END => P_PERIOD_END,
-                    P_PAYCHECK_ID => V_PC_ID
-            );
-        END LOOP;
-EXCEPTION
-    WHEN OTHERS THEN
-        RAISE;
-END PRC_GENERATE_PAYCHECKS;
 /
 
 CREATE OR REPLACE PROCEDURE PRC_EMPLOYEE_CHANGE_MANAGER_ID(

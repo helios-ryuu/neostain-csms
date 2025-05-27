@@ -67,6 +67,21 @@ public class InventoryTransactionDAOImpl implements InventoryTransactionDAO {
         return list;
     }
 
+    @Override
+    public boolean create(InventoryTransaction tx) {
+        try (PreparedStatement stmt = connection.prepareStatement(
+                "INSERT INTO INVENTORY_TRANSACTION (PRODUCT_ID, STORE_ID, TRANSACTION_TYPE, QUANTITY) VALUES (?, ?, ?, ?)")
+        ) {
+            stmt.setString(1, tx.getProductId());
+            stmt.setString(2, tx.getStoreId());
+            stmt.setString(3, tx.getTransactionType());
+            stmt.setInt(4, tx.getQuantity());
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     private InventoryTransaction map(ResultSet rs) throws SQLException {
         InventoryTransaction tx = new InventoryTransaction();
         tx.setId(rs.getString("ID"));

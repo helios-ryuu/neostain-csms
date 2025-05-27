@@ -16,6 +16,4 @@ public interface PaycheckDAO {
     List<Paycheck> search(String id, String employeeId, String from, String to, String periodStart, String periodEnd);
 
     String create(String employeeId, BigDecimal deduction, Timestamp periodStard, Timestamp periodEnd);
-
-    boolean createForAll(BigDecimal deduction, Timestamp periodStard, Timestamp periodEnd);
 }

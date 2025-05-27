@@ -3,7 +3,6 @@ package com.neostain.csms.view.screen.sm;
 import com.neostain.csms.ServiceManager;
 import com.neostain.csms.model.Account;
 import com.neostain.csms.model.Employee;
-import com.neostain.csms.model.Role;
 import com.neostain.csms.util.Constants;
 import com.neostain.csms.util.DialogFactory;
 import com.neostain.csms.view.component.ScreenHeader;
@@ -21,15 +20,12 @@ public class StoreManagerScreen extends JPanel {
     private static final Logger LOGGER = Logger.getLogger(StoreManagerScreen.class.getName());
     private static final ServiceManager serviceManager = ServiceManager.getInstance();
 
-    private final Account account;
     private final Employee employee;
-    private final Role role;
 
     public StoreManagerScreen(String username) {
         // Load user data
-        this.account = serviceManager.getAuthService().getAccountByUsername(username);
+        Account account = serviceManager.getAuthService().getAccountByUsername(username);
         this.employee = serviceManager.getManagementService().getEmployeeById(account.getEmployeeId());
-        this.role = serviceManager.getAuthService().getRoleById(this.account.getRoleId());
 
         // Call to set up the UI components
         initializeComponents();
@@ -60,11 +56,10 @@ public class StoreManagerScreen extends JPanel {
             JPanel employeeTabPanel = new EmployeePanel();
             JPanel assignmentTabPanel = new AssignmentPanel();
             JPanel memberTabPanel = new MemberPanel();
-            JPanel paycheckTabPanel = new JPanel(new BorderLayout());
-            paycheckTabPanel.add(new JLabel("Chức năng đang phát triển...", SwingConstants.CENTER), BorderLayout.CENTER);
-            JPanel accountTabPanel = new JPanel(new BorderLayout());
-            accountTabPanel.add(new JLabel("Chức năng đang phát triển...", SwingConstants.CENTER), BorderLayout.CENTER);
+            JPanel paycheckTabPanel = new PaycheckPanel();
+            JPanel accountTabPanel = new AccountPanel();
             JPanel warehouseTabPanel = new WarehousePanel();
+            JPanel promotionTabPanel = new PromotionPanel();
 
             // Add tabs to the mainManagerPane
             mainManagerPane.addTab("Dashboard", dashboardTabPanel);
@@ -75,6 +70,7 @@ public class StoreManagerScreen extends JPanel {
             mainManagerPane.addTab("Quản lý kho", warehouseTabPanel);
             mainManagerPane.addTab("Quản lý phiếu lương", paycheckTabPanel);
             mainManagerPane.addTab("Quản lý tài khoản", accountTabPanel);
+            mainManagerPane.addTab("Quản lý khuyến mãi", promotionTabPanel);
 
             // Add mainManagerPane to StoreManagerScreen
             this.add(mainManagerPane, BorderLayout.CENTER);

@@ -38,10 +38,8 @@ public class EmployeePanel extends JPanel {
     };
     private final SimpleDateFormat df1 = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
     private final SimpleDateFormat df2 = new SimpleDateFormat("yyyy-MM-dd");
-    private ScrollableTable employeeTable;
-
-
     private final Account account = serviceManager.getAuthService().getAccountByUsername(serviceManager.getCurrentUsername());
+    private ScrollableTable employeeTable;
 
     public EmployeePanel() {
         initializeComponents();

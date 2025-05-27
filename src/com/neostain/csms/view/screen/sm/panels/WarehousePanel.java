@@ -104,8 +104,8 @@ public class WarehousePanel extends JPanel {
             dateToSpinner.setValue(new GregorianCalendar(2100, Calendar.JANUARY, 1).getTime());
             refreshInventoryTable("", defaultFrom, defaultTo);
         });
-        importBtn.addActionListener(e -> DialogFactory.showInfoDialog(this, "Nhập hàng", "Chức năng đang phát triển..."));
-        adjustBtn.addActionListener(e -> DialogFactory.showInfoDialog(this, "Điều chỉnh tồn kho", "Chức năng đang phát triển..."));
+        importBtn.addActionListener(e -> showImportDialog());
+        adjustBtn.addActionListener(e -> showAdjustDialog());
 
         return panel;
     }
@@ -214,5 +214,185 @@ public class WarehousePanel extends JPanel {
         Product p = serviceManager.getSaleService().getProductById(productId);
         if (p != null) productCache.put(productId, p);
         return p;
+    }
+
+    private void showImportDialog() {
+        JDialog dialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Nhập hàng", true);
+        dialog.setLayout(new BorderLayout(10, 10));
+        JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
+        JPanel formPanel = new JPanel(new GridLayout(0, 2, 10, 10));
+
+        JLabel productIdLabel = new JLabel("Nhập mã sản phẩm:");
+        JTextField productIdField = new JTextField(15);
+        JLabel storeLabel = new JLabel("Cửa hàng:");
+        JTextField storeField = new JTextField(currentStore.getId() + " - " + currentStore.getName());
+        storeField.setEditable(false);
+        JLabel typeLabel = new JLabel("Loại giao dịch:");
+        JTextField typeField = new JTextField("NHẬP KHO");
+        typeField.setEditable(false);
+        JLabel qtyLabel = new JLabel("Số lượng:");
+        JFormattedTextField qtyField = new JFormattedTextField(java.text.NumberFormat.getIntegerInstance());
+        qtyField.setColumns(10);
+        qtyField.setValue(1);
+
+        formPanel.add(productIdLabel);
+        formPanel.add(productIdField);
+        formPanel.add(storeLabel);
+        formPanel.add(storeField);
+        formPanel.add(typeLabel);
+        formPanel.add(typeField);
+        formPanel.add(qtyLabel);
+        formPanel.add(qtyField);
+        mainPanel.add(formPanel, BorderLayout.CENTER);
+        JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0));
+        JButton okBtn = new JButton("Nhập hàng");
+        JButton cancelBtn = new JButton("Hủy");
+        btnPanel.add(okBtn);
+        btnPanel.add(cancelBtn);
+        mainPanel.add(btnPanel, BorderLayout.SOUTH);
+        dialog.add(mainPanel, BorderLayout.CENTER);
+
+        // Only allow digits in productIdField
+        productIdField.setDocument(new javax.swing.text.PlainDocument() {
+            @Override
+            public void insertString(int offs, String str, javax.swing.text.AttributeSet a) throws javax.swing.text.BadLocationException {
+                if (str != null && str.matches("\\d+")) super.insertString(offs, str, a);
+            }
+        });
+        // Only allow positive numbers in qtyField
+        qtyField.addPropertyChangeListener("value", evt -> {
+            Object v = qtyField.getValue();
+            if (v == null || (v instanceof Number && ((Number) v).intValue() <= 0)) qtyField.setValue(1);
+        });
+
+        cancelBtn.addActionListener(ev -> dialog.dispose());
+        okBtn.addActionListener(ev -> {
+            String productId = productIdField.getText().trim();
+            int qty;
+            try {
+                qty = Integer.parseInt(qtyField.getText().replaceAll(",", "").trim());
+            } catch (Exception ex) {
+                qty = 1;
+            }
+            if (productId.isEmpty()) {
+                DialogFactory.showErrorDialog(dialog, "Lỗi", "Vui lòng nhập mã sản phẩm.");
+                return;
+            }
+            if (serviceManager.getSaleService().getProductById(productId) == null) {
+                DialogFactory.showErrorDialog(dialog, "Lỗi", "Mã sản phẩm không tồn tại.");
+                return;
+            }
+            if (qty <= 0) qty = 1;
+            InventoryTransaction tx = new InventoryTransaction();
+            tx.setProductId(productId);
+            tx.setStoreId(currentStore.getId());
+            tx.setTransactionType("NHẬP KHO");
+            tx.setQuantity(qty);
+            boolean ok = serviceManager.getSaleService().createInventoryTransaction(tx);
+            if (!ok) {
+                DialogFactory.showErrorDialog(dialog, "Lỗi", "Không thể nhập hàng. Vui lòng thử lại.");
+                return;
+            }
+            String info = "Mã sản phẩm: " + productId +
+                    "\nCửa hàng: " + currentStore.getId() + " - " + currentStore.getName() +
+                    "\nLoại giao dịch: NHẬP KHO" +
+                    "\nSố lượng: " + qty;
+            DialogFactory.showInfoDialog(dialog, "Nhập hàng thành công", info);
+            refreshInventoryTable("", new GregorianCalendar(1970, Calendar.JANUARY, 1).getTime(), new GregorianCalendar(2100, Calendar.JANUARY, 1).getTime());
+            dialog.dispose();
+        });
+        dialog.pack();
+        dialog.setLocationRelativeTo(this);
+        dialog.setVisible(true);
+    }
+
+    private void showAdjustDialog() {
+        JDialog dialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Điều chỉnh tồn kho", true);
+        dialog.setLayout(new BorderLayout(10, 10));
+        JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
+        JPanel formPanel = new JPanel(new GridLayout(0, 2, 10, 10));
+
+        JLabel productIdLabel = new JLabel("Nhập mã sản phẩm:");
+        JTextField productIdField = new JTextField(15);
+        JLabel storeLabel = new JLabel("Cửa hàng:");
+        JTextField storeField = new JTextField(currentStore.getId() + " - " + currentStore.getName());
+        storeField.setEditable(false);
+        JLabel typeLabel = new JLabel("Loại giao dịch:");
+        JTextField typeField = new JTextField("ĐIỀU CHỈNH");
+        typeField.setEditable(false);
+        JLabel qtyLabel = new JLabel("Số lượng:");
+        JFormattedTextField qtyField = new JFormattedTextField(java.text.NumberFormat.getIntegerInstance());
+        qtyField.setColumns(10);
+        qtyField.setValue(1);
+
+        formPanel.add(productIdLabel);
+        formPanel.add(productIdField);
+        formPanel.add(storeLabel);
+        formPanel.add(storeField);
+        formPanel.add(typeLabel);
+        formPanel.add(typeField);
+        formPanel.add(qtyLabel);
+        formPanel.add(qtyField);
+        mainPanel.add(formPanel, BorderLayout.CENTER);
+        JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0));
+        JButton okBtn = new JButton("Điều chỉnh");
+        JButton cancelBtn = new JButton("Hủy");
+        btnPanel.add(okBtn);
+        btnPanel.add(cancelBtn);
+        mainPanel.add(btnPanel, BorderLayout.SOUTH);
+        dialog.add(mainPanel, BorderLayout.CENTER);
+
+        // Only allow digits in productIdField
+        productIdField.setDocument(new javax.swing.text.PlainDocument() {
+            @Override
+            public void insertString(int offs, String str, javax.swing.text.AttributeSet a) throws javax.swing.text.BadLocationException {
+                if (str != null && str.matches("\\d+")) super.insertString(offs, str, a);
+            }
+        });
+        // Allow negative/positive numbers in qtyField, but not zero
+        qtyField.addPropertyChangeListener("value", evt -> {
+            Object v = qtyField.getValue();
+            if (v == null || (v instanceof Number && ((Number) v).intValue() == 0)) qtyField.setValue(1);
+        });
+
+        cancelBtn.addActionListener(ev -> dialog.dispose());
+        okBtn.addActionListener(ev -> {
+            String productId = productIdField.getText().trim();
+            int qty;
+            try {
+                qty = Integer.parseInt(qtyField.getText().replaceAll(",", "").trim());
+            } catch (Exception ex) {
+                qty = 1;
+            }
+            if (productId.isEmpty()) {
+                DialogFactory.showErrorDialog(dialog, "Lỗi", "Vui lòng nhập mã sản phẩm.");
+                return;
+            }
+            if (serviceManager.getSaleService().getProductById(productId) == null) {
+                DialogFactory.showErrorDialog(dialog, "Lỗi", "Mã sản phẩm không tồn tại.");
+                return;
+            }
+            if (qty == 0) qty = 1;
+            InventoryTransaction tx = new InventoryTransaction();
+            tx.setProductId(productId);
+            tx.setStoreId(currentStore.getId());
+            tx.setTransactionType("ĐIỀU CHỈNH");
+            tx.setQuantity(qty);
+            boolean ok = serviceManager.getSaleService().createInventoryTransaction(tx);
+            if (!ok) {
+                DialogFactory.showErrorDialog(dialog, "Lỗi", "Không thể điều chỉnh tồn kho. Vui lòng thử lại.");
+                return;
+            }
+            String info = "Mã sản phẩm: " + productId +
+                    "\nCửa hàng: " + currentStore.getId() + " - " + currentStore.getName() +
+                    "\nLoại giao dịch: ĐIỀU CHỈNH" +
+                    "\nSố lượng: " + qty;
+            DialogFactory.showInfoDialog(dialog, "Điều chỉnh thành công", info);
+            refreshInventoryTable("", new GregorianCalendar(1970, Calendar.JANUARY, 1).getTime(), new GregorianCalendar(2100, Calendar.JANUARY, 1).getTime());
+            dialog.dispose();
+        });
+        dialog.pack();
+        dialog.setLocationRelativeTo(this);
+        dialog.setVisible(true);
     }
 } 

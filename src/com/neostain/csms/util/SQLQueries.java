@@ -12,7 +12,6 @@ public class SQLQueries {
     public static final String ACCOUNT_FIND_BY_ROLE_ID = "SELECT * FROM ACCOUNT WHERE ROLE_ID = ?";
     public static final String ACCOUNT_FIND_BY_STATUS = "SELECT * FROM ACCOUNT WHERE STATUS = ?";
     public static final String ACCOUNT_FIND_ALL = "SELECT * FROM ACCOUNT";
-    public static final String ACCOUNT_GET_PASSWORD_HASH = "SELECT PASSWORD_HASH FROM ACCOUNT WHERE USERNAME = ?";
     public static final String ACCOUNT_GET_ROLE_NAME =
             "SELECT r.NAME FROM ACCOUNT a JOIN ROLE r ON a.ROLE_ID = r.ID WHERE a.USERNAME = ?";
 
@@ -93,9 +92,7 @@ public class SQLQueries {
     public static final String PAYCHECK_FIND_BY_ID = "SELECT * FROM PAYCHECK WHERE ID = ?";
     public static final String PAYCHECK_FIND_BY_EMPLOYEE_ID = "SELECT * FROM PAYCHECK WHERE EMPLOYEE_ID = ?";
     public static final String PAYCHECK_FIND_ALL = "SELECT * FROM PAYCHECK";
-
     public static final String PAYCHECK_CREATE = "{CALL PRC_CALC_PAYCHECK(?,?,?,?,?)}"; // (EMPLOYEE_ID, GROSS_AMOUNT, DEDUCTIONS, OUT NET_AMOUNT, OUT PC_ID)
-    public static final String PAYCHECK_CREATE_FOR_ALL = "{CALL PRC_GENERATE_PAYCHECKS(?,?,?)}"; // (YEAR, MONTH, BATCH_ID)
 
     // Payment method queries
     public static final String PAYMENT_FIND_BY_ID = "SELECT * FROM PAYMENT WHERE ID = ? AND IS_DELETED = 0";

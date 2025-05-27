@@ -187,6 +187,11 @@ public class SaleServiceImpl implements SaleService {
         return promotionDAO.delete(id);
     }
 
+    @Override
+    public List<Promotion> getAllPromotions() {
+        return promotionDAO.findAll();
+    }
+
     // Point
     @Override
     public List<PointUpdateLog> getPointLogsByMember(String memberId) {
@@ -241,5 +246,10 @@ public class SaleServiceImpl implements SaleService {
     @Override
     public List<Inventory> getAllInventories() {
         return inventoryDAO.findAll();
+    }
+
+    @Override
+    public boolean createInventoryTransaction(InventoryTransaction tx) {
+        return inventoryTransactionDAO.create(tx);
     }
 } 

@@ -12,4 +12,6 @@ public interface InventoryTransactionDAO {
     List<InventoryTransaction> findByStoreId(String storeId);
 
     List<InventoryTransaction> findAll();
+
+    boolean create(InventoryTransaction tx);
 } 

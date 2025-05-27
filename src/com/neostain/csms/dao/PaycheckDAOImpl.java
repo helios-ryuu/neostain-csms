@@ -148,20 +148,6 @@ public class PaycheckDAOImpl implements PaycheckDAO {
         return "";
     }
 
-    @Override
-    public boolean createForAll(BigDecimal deduction, Timestamp periodStard, Timestamp periodEnd) {
-        try (CallableStatement cs = conn.prepareCall(SQLQueries.PAYCHECK_CREATE_FOR_ALL)) {
-            cs.setBigDecimal(1, deduction);
-            cs.setTimestamp(2, periodStard);
-            cs.setTimestamp(3, periodEnd);
-            cs.execute();
-            return cs.executeUpdate() > 0;
-        } catch (SQLException e) {
-            LOGGER.severe("[CREATE_FOR_ALL] Error: " + e.getMessage());
-        }
-        return false;
-    }
-
     private Paycheck mapResultSetToPaycheck(ResultSet rs) throws SQLException {
         return new Paycheck(
                 rs.getString("ID"),

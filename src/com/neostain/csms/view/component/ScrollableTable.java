@@ -111,9 +111,9 @@ public class ScrollableTable extends JScrollPane {
 
         // Cột dữ liệu đầu tiên cố định width, có thể tuỳ chỉnh giống trước
         if (table.getColumnCount() > 0) {
-            table.getColumnModel().getColumn(0).setPreferredWidth(260);
-            table.getColumnModel().getColumn(0).setMinWidth(260);
-            table.getColumnModel().getColumn(0).setMaxWidth(260);
+            table.getColumnModel().getColumn(0).setPreferredWidth(200);
+            table.getColumnModel().getColumn(0).setMinWidth(200);
+            table.getColumnModel().getColumn(0).setMaxWidth(200);
         }
         // Set left alignment for all data columns (not action columns)
         for (int i = 0; i < baseColumns.length; i++) {

@@ -63,6 +63,8 @@ public interface SaleService {
 
     List<Promotion> getActivePromotions();
 
+    List<Promotion> getAllPromotions();
+
     boolean createPromotion(Promotion promotion);
 
     boolean updatePromotion(Promotion promotion);
@@ -94,4 +96,6 @@ public interface SaleService {
     List<Inventory> getInventoriesByStoreId(String storeId);
 
     List<Inventory> getAllInventories();
+
+    boolean createInventoryTransaction(InventoryTransaction tx);
 }
