@@ -14,11 +14,9 @@ public interface ManagementService {
 
     List<Employee> getEmployeeByManagerId(String id);
 
-    List<Employee> getAllEmployees();
-
     boolean createEmployee(Employee employee) throws DuplicateFieldException, FieldValidationException;
 
-    boolean updateEmployee(Employee employee) throws FieldValidationException, DuplicateFieldException;
+    void updateEmployee(Employee employee) throws FieldValidationException, DuplicateFieldException;
 
     // Member
     Member getMemberById(String id);
@@ -35,11 +33,11 @@ public interface ManagementService {
 
     List<Member> getAllMembers();
 
-    boolean createMember(String name, String phone, String email) throws DuplicateFieldException, FieldValidationException;
+    void createMember(String name, String phone, String email) throws DuplicateFieldException, FieldValidationException;
 
-    boolean updateMember(Member member) throws DuplicateFieldException, FieldValidationException;
+    void updateMember(Member member) throws DuplicateFieldException, FieldValidationException;
 
-    boolean deleteMember(String id);
+    void deleteMember(String id);
 
     // Store
     Store getStoreById(String id);
@@ -50,7 +48,7 @@ public interface ManagementService {
 
     boolean createStore(Store store);
 
-    boolean updateStore(Store store);
+    void updateStore(Store store);
 
     List<Employee> searchEmployees(String id, String managerId, String from, String to, String email, String phoneNumber, String status);
 }

@@ -1,6 +1,5 @@
 package com.neostain.csms.view.screen.cs.panels;
 
-import com.neostain.csms.ServiceManager;
 import com.neostain.csms.model.Product;
 import com.neostain.csms.view.component.BorderedPanel;
 import com.neostain.csms.view.component.ScrollableTable;
@@ -15,7 +14,6 @@ import java.util.Map;
 public class PromotionProductPanel extends BorderedPanel {
     private final String[] columns = {"Mã sản phẩm", "Tên sản phẩm", "Số lượng"};
     private final Map<String, PromoEntry> promoEntries = new LinkedHashMap<>();
-    private final ServiceManager serviceManager = ServiceManager.getInstance();
     private final ScrollableTable table;
     private boolean deleteEnabled = true;
     private Runnable onPromoChanged;

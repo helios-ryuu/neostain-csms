@@ -23,13 +23,15 @@ public interface SaleService {
 
     String createInvoice(String storeId, String memberId, String paymentId, String employeeId, int pointUsed);
 
-    boolean addItemToInvoice(String invoiceId, String productId, int quantity);
+    void addItemToInvoice(String invoiceId, String productId, int quantity);
 
-    boolean addGiftToInvoice(String invoiceId, String productId, int quantity);
+    void addGiftToInvoice(String invoiceId, String productId, int quantity);
 
     boolean calculateInvoiceTotal(String invoiceId);
 
     boolean cancelInvoice(String invoiceId);
+
+    boolean updateStatus(String invoiceId, String status);
 
     // Invoice Detail
     List<InvoiceDetail> getInvoiceDetailsByInvoiceId(String invoiceId);
@@ -46,6 +48,8 @@ public interface SaleService {
     boolean updateProduct(Product product);
 
     boolean deleteProduct(String id);
+
+    boolean updateProductUnitPrice(String productId, int unitPrice);
 
     // Category
     Category getCategoryById(String id);
@@ -86,16 +90,12 @@ public interface SaleService {
 
     List<InventoryTransaction> getInventoryTransactionsByStoreId(String storeId);
 
-    List<InventoryTransaction> getAllInventoryTransactions();
-
     // Inventory
     Inventory getInventoryById(String id);
 
     List<Inventory> getInventoriesByProductId(String productId);
 
     List<Inventory> getInventoriesByStoreId(String storeId);
-
-    List<Inventory> getAllInventories();
 
     boolean createInventoryTransaction(InventoryTransaction tx);
 }

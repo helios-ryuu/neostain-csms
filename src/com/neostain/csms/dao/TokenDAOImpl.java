@@ -7,8 +7,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.logging.Logger;
 
 /**
@@ -60,23 +58,6 @@ public class TokenDAOImpl implements TokenDAO {
     }
 
     @Override
-    public List<Token> findByUsername(String username) {
-        List<Token> tokens = new ArrayList<>();
-        try (PreparedStatement ps = conn.prepareStatement(SQLQueries.TOKEN_FIND_BY_USERNAME)) {
-            ps.setString(1, username);
-            try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    tokens.add(mapResultSetToToken(rs));
-                }
-                return tokens;
-            }
-        } catch (SQLException e) {
-            LOGGER.severe("[FIND_BY_USERNAME] Lỗi: " + e.getMessage());
-            return null;
-        }
-    }
-
-    @Override
     public boolean create(Token token) {
         try (PreparedStatement ps = conn.prepareStatement(SQLQueries.TOKEN_CREATE)) {
             ps.setString(1, token.getUsername());
@@ -87,18 +68,6 @@ public class TokenDAOImpl implements TokenDAO {
             return ps.executeUpdate() == 1;
         } catch (SQLException e) {
             LOGGER.severe("[CREATE] Lỗi: " + e.getMessage());
-            return false;
-        }
-    }
-
-    @Override
-    public boolean updateValue(String id, String tokenValue) {
-        try (PreparedStatement ps = conn.prepareStatement(SQLQueries.TOKEN_UPDATE_VALUE)) {
-            ps.setString(1, tokenValue);
-            ps.setString(2, id);
-            return ps.executeUpdate() == 1;
-        } catch (SQLException e) {
-            LOGGER.severe("[UPDATE_VALUE] Lỗi: " + e.getMessage());
             return false;
         }
     }

@@ -214,20 +214,54 @@ public class InvoicePanel extends JPanel {
     }
 
     private List<ScrollableTable.ActionDefinition> createActions() {
-        return List.of(
-                new ScrollableTable.ActionDefinition("In", "In hóa đơn", (row, table) -> {
+        return java.util.List.of(
+                new ScrollableTable.ActionDefinition("In hóa đơn", "In", (row, table) -> {
                     try {
                         String id = table.getValueAt(row, 0).toString();
                         Invoice invoice = serviceManager.getSaleService().getInvoiceById(id);
                         File invoiceFile = serviceManager.getPrintingService().printInvoice(invoice);
-
                         if (invoiceFile != null) {
                             Desktop desktop = Desktop.getDesktop();
                             desktop.open(invoiceFile);
                         }
                     } catch (Exception e) {
-                        System.out.println("Error printing invoice: " + e.getMessage());
+                        DialogFactory.showErrorDialog(this, "Lỗi", "Không thể in hóa đơn: " + e.getMessage());
                     }
+                }),
+                new ScrollableTable.ActionDefinition("Chi tiết hóa đơn", "Chi tiết", (row, table) -> {
+                    String id = table.getValueAt(row, 0).toString();
+                    java.util.List<com.neostain.csms.model.InvoiceDetail> details = serviceManager.getSaleService().getInvoiceDetailsByInvoiceId(id);
+                    java.util.List<com.neostain.csms.model.Product> allProducts = serviceManager.getSaleService().getAllProducts();
+                    java.util.Map<String, com.neostain.csms.model.Product> productMap = new java.util.HashMap<>();
+                    for (com.neostain.csms.model.Product p : allProducts) productMap.put(p.getId(), p);
+                    String[] cols = {"Mã SP", "Tên SP", "SL", "Đơn giá"};
+                    Object[][] data = new Object[details.size()][cols.length];
+                    java.text.DecimalFormat decf = new java.text.DecimalFormat("#,###");
+                    for (int i = 0; i < details.size(); i++) {
+                        com.neostain.csms.model.InvoiceDetail d = details.get(i);
+                        com.neostain.csms.model.Product p = productMap.get(d.getProductId());
+                        String name = p != null ? p.getName() : d.getProductId();
+                        if (d.getUnitPrice() != null && d.getUnitPrice().compareTo(java.math.BigDecimal.ZERO) == 0) {
+                            name = "KM - " + name;
+                        }
+                        data[i][0] = d.getProductId();
+                        data[i][1] = name;
+                        data[i][2] = d.getQuantitySold();
+                        data[i][3] = d.getUnitPrice() != null ? decf.format(d.getUnitPrice()) + " VND" : "";
+                    }
+                    ScrollableTable detailTable = new ScrollableTable(cols, data, java.util.List.of());
+                    JPanel panel = new JPanel(new BorderLayout(10, 10));
+                    panel.add(detailTable, BorderLayout.CENTER);
+                    JButton okBtn = new JButton("OK");
+                    JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+                    btnPanel.add(okBtn);
+                    panel.add(btnPanel, BorderLayout.SOUTH);
+                    JDialog dialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Chi tiết hóa đơn", true);
+                    dialog.setContentPane(panel);
+                    dialog.setSize(600, 400);
+                    dialog.setLocationRelativeTo(this);
+                    okBtn.addActionListener(ev -> dialog.dispose());
+                    dialog.setVisible(true);
                 }),
                 new ScrollableTable.ActionDefinition("Hủy", "Hủy hóa đơn", (row, table) -> {
                     String id = table.getValueAt(row, 0).toString();

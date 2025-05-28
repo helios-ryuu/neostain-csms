@@ -23,7 +23,6 @@ public class DashboardPanel extends JPanel {
     private static final ServiceManager serviceManager = ServiceManager.getInstance();
     private final String username;
     private final StatisticService statisticService;
-    private Timer refreshTimer;
     private List<DashboardTile> tilesList;
 
     // UI components for store info
@@ -261,7 +260,7 @@ public class DashboardPanel extends JPanel {
     // GridBag helper
     private void addRow(JPanel panel, String text, JComponent comp, int row) {
         JLabel label = new JLabel(text);
-        label.setFont(new Font(Constants.Font.DEFAULT_FONT_NAME, Font.BOLD, Constants.Font.DEFAULT_SIZE));
+        label.setFont(Constants.View.BOLD_FONT);
         GridBagConstraints gbc1 = makeGbc(0, row, 0.1);
         GridBagConstraints gbc2 = makeGbc(1, row, 0.9);
         panel.add(label, gbc1);
@@ -279,7 +278,7 @@ public class DashboardPanel extends JPanel {
     }
 
     private void startAutoRefresh() {
-        refreshTimer = new Timer(1000, e -> refreshStatistics());
+        Timer refreshTimer = new Timer(1000, e -> refreshStatistics());
         refreshTimer.setRepeats(true);
         refreshTimer.start();
     }

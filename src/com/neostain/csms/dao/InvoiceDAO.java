@@ -27,11 +27,13 @@ public interface InvoiceDAO {
 
     String create(String storeId, String memberId, String paymentId, String employeeId, int pointUsed);
 
-    boolean addItem(String invoiceId, String productId, int quantity);
+    void addItem(String invoiceId, String productId, int quantity);
 
-    boolean addGift(String invoiceId, String productId, int quantity);
+    void addGift(String invoiceId, String productId, int quantity);
 
     boolean calculateTotal(String invoiceId);
 
     boolean cancel(String invoiceId);
+
+    boolean updateStatus(String invoiceId, String status);
 }

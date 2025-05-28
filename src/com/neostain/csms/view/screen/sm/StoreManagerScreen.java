@@ -60,6 +60,7 @@ public class StoreManagerScreen extends JPanel {
             JPanel accountTabPanel = new AccountPanel();
             JPanel warehouseTabPanel = new WarehousePanel();
             JPanel promotionTabPanel = new PromotionPanel();
+            JPanel shiftReportTabPanel = new ShiftReportPanel();
 
             // Add tabs to the mainManagerPane
             mainManagerPane.addTab("Dashboard", dashboardTabPanel);
@@ -71,6 +72,7 @@ public class StoreManagerScreen extends JPanel {
             mainManagerPane.addTab("Quản lý phiếu lương", paycheckTabPanel);
             mainManagerPane.addTab("Quản lý tài khoản", accountTabPanel);
             mainManagerPane.addTab("Quản lý khuyến mãi", promotionTabPanel);
+            mainManagerPane.addTab("Quản lý báo cáo kết ca", shiftReportTabPanel);
 
             // Add mainManagerPane to StoreManagerScreen
             this.add(mainManagerPane, BorderLayout.CENTER);

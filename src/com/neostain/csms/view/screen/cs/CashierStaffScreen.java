@@ -3,7 +3,6 @@ package com.neostain.csms.view.screen.cs;
 import com.neostain.csms.ServiceManager;
 import com.neostain.csms.model.Account;
 import com.neostain.csms.model.Employee;
-import com.neostain.csms.model.Role;
 import com.neostain.csms.util.Constants;
 import com.neostain.csms.util.DialogFactory;
 import com.neostain.csms.view.component.ScreenHeader;
@@ -21,15 +20,14 @@ public class CashierStaffScreen extends JPanel {
     private static final Logger LOGGER = Logger.getLogger(CashierStaffScreen.class.getName());
     private static final ServiceManager serviceManager = ServiceManager.getInstance();
 
-    private final Account account;
     private final Employee employee;
-    private final Role role;
+
+    private JTabbedPane mainCashierPanel;
 
     public CashierStaffScreen(String username) {
         // Load user data
-        this.account = serviceManager.getAuthService().getAccountByUsername(username);
+        Account account = serviceManager.getAuthService().getAccountByUsername(username);
         this.employee = serviceManager.getManagementService().getEmployeeById(account.getEmployeeId());
-        this.role = serviceManager.getAuthService().getRoleById(this.account.getRoleId());
 
         // Call to set up the UI components
         initializeComponents();
@@ -42,8 +40,9 @@ public class CashierStaffScreen extends JPanel {
             this.setBackground(Constants.Color.COMPONENT_BACKGROUND_WHITE);
 
             // Create a header toolbar with user info and logout
-            String storeId = serviceManager.getManagementService().getStoreByManagerId(this.employee.getId()).getId();
-            String storeName = serviceManager.getManagementService().getStoreByManagerId(this.employee.getId()).getName();
+            String managerId = serviceManager.getManagementService().getEmployeeById(this.employee.getManagerId()).getId();
+            String storeId = serviceManager.getManagementService().getStoreByManagerId(managerId).getId();
+            String storeName = serviceManager.getManagementService().getStoreByManagerId(managerId).getName();
             JPanel headerPanel = new ScreenHeader(
                     this.employee.getId(),
                     this.employee.getName(),
@@ -53,13 +52,12 @@ public class CashierStaffScreen extends JPanel {
             this.add(headerPanel, BorderLayout.NORTH);
 
             // Create tabbed pane for the main content
-            JTabbedPane mainCashierPanel = new StandardTabbedPane();
-
-            // Initialize tabs
-            JPanel POSTabPanel = new POSPanel();
-            JPanel invoiceTabPanel = new InvoicePanel();
-            JPanel promotionTabPanel = new PromotionPanel();
-            JPanel productTabPanel = new ProductPanel();
+            mainCashierPanel = new StandardTabbedPane();
+            POSPanel POSTabPanel = new POSPanel();
+            InvoicePanel invoiceTabPanel = new InvoicePanel();
+            invoiceTabPanel.setPOSPanel(POSTabPanel);
+            PromotionPanel promotionTabPanel = new PromotionPanel(POSTabPanel, () -> mainCashierPanel.setSelectedIndex(0));
+            JPanel productTabPanel = new ProductPanel(POSTabPanel, () -> mainCashierPanel.setSelectedIndex(0));
 
             // Add tabs to the mainCashierPanel
             mainCashierPanel.addTab("POS", POSTabPanel);

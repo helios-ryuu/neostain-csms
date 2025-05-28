@@ -129,7 +129,7 @@ public class ProductDAOImpl implements ProductDAO {
     }
 
     @Override
-    public boolean updateUInitPrice(String id, int unitPrice) {
+    public boolean updateUnitPrice(String id, int unitPrice) {
         if (StringUtils.isNullOrEmpty(id)) {
             LOGGER.warning("[UPDATE_UNIT_PRICE] Product ID is empty");
             return false;

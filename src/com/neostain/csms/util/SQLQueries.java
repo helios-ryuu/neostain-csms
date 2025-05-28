@@ -72,6 +72,7 @@ public class SQLQueries {
     public static final String INVOICE_ADD_GIFT = "{CALL PRC_ADD_GIFT_TO_INVOICE(?,?,?)}";
     public static final String INVOICE_CALCULATE = "{CALL PRC_CALC_TOTAL(?)}"; // (INVOICE_ID)
     public static final String INVOICE_CANCEL = "{CALL PRC_CANCEL_INVOICE(?)}"; // (INVOICE_ID)
+    public static final String INVOICE_UPDATE_STATUS = "UPDATE INVOICE SET STATUS = ? WHERE ID = ?";
 
     // Invoice Detail queries
     public static final String INVOICE_DETAIL_FIND_BY_INVOICE_ID = "SELECT * FROM INVOICE_DETAIL WHERE INVOICE_ID = ?";
@@ -98,10 +99,6 @@ public class SQLQueries {
     public static final String PAYMENT_FIND_BY_ID = "SELECT * FROM PAYMENT WHERE ID = ? AND IS_DELETED = 0";
     public static final String PAYMENT_FIND_BY_NAME = "SELECT * FROM PAYMENT WHERE NAME = ? AND IS_DELETED = 0";
     public static final String PAYMENT_FIND_ALL = "SELECT * FROM PAYMENT WHERE IS_DELETED = 0";
-
-    public static final String PAYMENT_CREATE = "INSERT INTO PAYMENT(NAME) VALUES(?)";
-    public static final String PAYMENT_UPDATE_NAME = "UPDATE PAYMENT SET NAME = ? WHERE ID = ?";
-    public static final String PAYMENT_DELETE = "UPDATE PAYMENT SET IS_DELETED = 1 WHERE ID = ?";
 
     // Point update log queries
     public static final String POINT_UPDATE_LOG_FIND_BY_ID = "SELECT * FROM POINT_UPDATE_LOG WHERE ID = ?";
@@ -168,11 +165,9 @@ public class SQLQueries {
 
     // Token queries
     public static final String TOKEN_FIND_BY_ID = "SELECT * FROM TOKEN WHERE ID = ?";
-    public static final String TOKEN_FIND_BY_USERNAME = "SELECT * FROM TOKEN WHERE USERNAME = ?";
     public static final String TOKEN_FIND_BY_VALUE = "SELECT * FROM TOKEN WHERE VALUE = ?";
 
     public static final String TOKEN_CREATE = "INSERT INTO TOKEN(USERNAME, VALUE, EXPIRES_AT, ISSUED_AT, STATUS) VALUES(?, ?, ?, ?, ?)";
-    public static final String TOKEN_UPDATE_VALUE = "UPDATE TOKEN SET VALUE = ? WHERE ID = ?";
     public static final String TOKEN_UPDATE_STATUS = "UPDATE TOKEN SET STATUS = ? WHERE VALUE = ?";
 
     // InventoryTransaction queries

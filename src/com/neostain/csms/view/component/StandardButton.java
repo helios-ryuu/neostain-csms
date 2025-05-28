@@ -12,7 +12,7 @@ public class StandardButton extends JButton {
         this.parent = component;
         this.setText(text);
         this.setFocusPainted(false);
-        this.setFont(new Font(Constants.Font.DEFAULT_FONT_NAME, Font.PLAIN, Constants.Font.DEFAULT_SIZE));
+        this.setFont(Constants.View.DEFAULT_FONT);
         this.setFocusable(false);
     }
 }

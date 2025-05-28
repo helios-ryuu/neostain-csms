@@ -25,10 +25,11 @@ AS
     V_EWALLET NUMBER    := 0;
     V_BANK    NUMBER    := 0;
     V_COUNT   NUMBER    := 0;
+    V_EMP_ID EMPLOYEE.ID%TYPE;
 BEGIN
     -- 1) LẤY VÀ CẬP NHẬT END_TIME
-    SELECT START_TIME
-    INTO V_START
+    SELECT START_TIME, EMPLOYEE_ID
+    INTO V_START, V_EMP_ID
     FROM SHIFT_REPORT
     WHERE ID = P_SHIFT_ID
       AND END_TIME IS NULL; -- ĐẢM BẢO CHỈ CHẠY 1 LẦN
@@ -44,7 +45,8 @@ BEGIN
     INTO V_CASH, V_EWALLET, V_BANK
     FROM INVOICE
     WHERE CREATION_TIME BETWEEN V_START AND V_END
-      AND STATUS = 'ĐÃ HOÀN THÀNH';
+      AND STATUS = 'ĐÃ HOÀN THÀNH'
+      AND EMPLOYEE_ID = V_EMP_ID;
 
     SELECT COUNT(*)
     INTO V_COUNT
@@ -254,8 +256,8 @@ BEGIN
                                                    QUANTITY)
                 VALUES (ITEM_REC.PRODUCT_ID,
                         V_INVOICE.STORE_ID,
-                        ITEM_REC.QUANTITY_SOLD * -1,
-                        'ĐIỀU CHỈNH');
+                        'ĐIỀU CHỈNH',
+                        ITEM_REC.QUANTITY_SOLD);
             END LOOP;
 
         UPDATE INVOICE

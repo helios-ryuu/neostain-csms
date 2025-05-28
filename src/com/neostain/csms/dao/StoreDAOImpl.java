@@ -72,26 +72,24 @@ public class StoreDAOImpl implements StoreDAO {
     }
 
     @Override
-    public boolean updateStoreName(String id, String name) {
+    public void updateStoreName(String id, String name) {
         try (PreparedStatement ps = conn.prepareStatement(SQLQueries.STORE_UPDATE_NAME)) {
             ps.setString(1, name);
             ps.setString(2, id);
-            return ps.executeUpdate() == 1;
+            ps.executeUpdate();
         } catch (SQLException e) {
             LOGGER.severe("[UPDATE_STORE_NAME] Lỗi: " + e.getMessage());
-            return false;
         }
     }
 
     @Override
-    public boolean updateStoreAddress(String id, String address) {
+    public void updateStoreAddress(String id, String address) {
         try (PreparedStatement ps = conn.prepareStatement(SQLQueries.STORE_UPDATE_ADDRESS)) {
             ps.setString(1, address);
             ps.setString(2, id);
-            return ps.executeUpdate() == 1;
+            ps.executeUpdate();
         } catch (SQLException e) {
             LOGGER.severe("[UPDATE_STORE_ADDRESS] Lỗi: " + e.getMessage());
-            return false;
         }
     }
 

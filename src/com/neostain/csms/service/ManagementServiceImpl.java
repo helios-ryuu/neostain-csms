@@ -34,26 +34,19 @@ public class ManagementServiceImpl implements ManagementService {
     }
 
     @Override
-    public List<Employee> getAllEmployees() {
-        return employeeDAO.findAll();
-    }
-
-    @Override
     public boolean createEmployee(Employee employee) throws DuplicateFieldException, FieldValidationException {
         return employeeDAO.create(employee);
     }
 
     @Override
-    public boolean updateEmployee(Employee employee) throws FieldValidationException, DuplicateFieldException {
-        boolean z = employeeDAO.updateManagerId(employee.getId(), employee.getManagerId());
-        boolean a = employeeDAO.updateName(employee.getId(), employee.getName());
-        boolean b = employeeDAO.updateEmail(employee.getId(), employee.getEmail());
-        boolean c = employeeDAO.updatePhoneNumber(employee.getId(), employee.getPhoneNumber());
-        boolean d = employeeDAO.updateAddress(employee.getId(), employee.getAddress());
-        boolean e = employeeDAO.updateHourlyWage(employee.getId(), employee.getHourlyWage());
-        boolean f = employeeDAO.updateStatus(employee.getId(), employee.getStatus());
-
-        return z && a && b && c && d && e && f;
+    public void updateEmployee(Employee employee) throws FieldValidationException, DuplicateFieldException {
+        employeeDAO.updateManagerId(employee.getId(), employee.getManagerId());
+        employeeDAO.updateName(employee.getId(), employee.getName());
+        employeeDAO.updateEmail(employee.getId(), employee.getEmail());
+        employeeDAO.updatePhoneNumber(employee.getId(), employee.getPhoneNumber());
+        employeeDAO.updateAddress(employee.getId(), employee.getAddress());
+        employeeDAO.updateHourlyWage(employee.getId(), employee.getHourlyWage());
+        employeeDAO.updateStatus(employee.getId(), employee.getStatus());
     }
 
     // Member
@@ -87,22 +80,20 @@ public class ManagementServiceImpl implements ManagementService {
     }
 
     @Override
-    public boolean createMember(String name, String phone, String email) throws DuplicateFieldException, FieldValidationException {
-        return memberDAO.create(name, phone, email);
+    public void createMember(String name, String phone, String email) throws DuplicateFieldException, FieldValidationException {
+        memberDAO.create(name, phone, email);
     }
 
     @Override
-    public boolean updateMember(Member member) throws DuplicateFieldException, FieldValidationException {
-        boolean a = memberDAO.updateName(member.getId(), member.getName());
-        boolean b = memberDAO.updatePhoneNumber(member.getId(), member.getPhoneNumber());
-        boolean c = memberDAO.updateEmail(member.getId(), member.getEmail());
-
-        return a && b && c;
+    public void updateMember(Member member) throws DuplicateFieldException, FieldValidationException {
+        memberDAO.updateName(member.getId(), member.getName());
+        memberDAO.updatePhoneNumber(member.getId(), member.getPhoneNumber());
+        memberDAO.updateEmail(member.getId(), member.getEmail());
     }
 
     @Override
-    public boolean deleteMember(String id) {
-        return memberDAO.delete(id);
+    public void deleteMember(String id) {
+        memberDAO.delete(id);
     }
 
     // Store
@@ -127,20 +118,13 @@ public class ManagementServiceImpl implements ManagementService {
     }
 
     @Override
-    public boolean updateStore(Store store) {
-        return storeDAO.updateStoreName(store.getId(), store.getName());
+    public void updateStore(Store store) {
+        storeDAO.updateStoreName(store.getId(), store.getName());
+        storeDAO.updateStoreAddress(store.getId(), store.getStoreAddress());
     }
 
     @Override
     public List<Employee> searchEmployees(String id, String managerId, String from, String to, String email, String phoneNumber, String status) {
-        if (id != null && id.isBlank()) id = null;
-        if (managerId != null && managerId.isBlank()) managerId = null;
-        if (from != null && from.isBlank()) from = null;
-        if (to != null && to.isBlank()) to = null;
-        if (email != null && email.isBlank()) email = null;
-        if (phoneNumber != null && phoneNumber.isBlank()) phoneNumber = null;
-        if (status != null && status.isBlank()) status = null;
-
         return employeeDAO.search(id, managerId, from, to, email, phoneNumber, status);
     }
 } 

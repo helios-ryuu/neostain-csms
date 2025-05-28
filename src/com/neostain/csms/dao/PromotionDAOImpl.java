@@ -211,13 +211,13 @@ public class PromotionDAOImpl implements PromotionDAO {
     }
 
     @Override
-    public boolean updatePromoProductQuantity(String id, String promoProductQuantity) {
-        if (StringUtils.isNullOrEmpty(id) || StringUtils.isNullOrEmpty(promoProductQuantity)) {
-            LOGGER.warning("[UPDATE_PROMO_PRODUCT_QUANTITY] Promotion ID or promo product quantity is empty");
+    public boolean updatePromoProductQuantity(String id, int promoProductQuantity) {
+        if (StringUtils.isNullOrEmpty(id)) {
+            LOGGER.warning("[UPDATE_PROMO_PRODUCT_QUANTITY] Promotion ID is empty");
             return false;
         }
         try (PreparedStatement ps = conn.prepareStatement(SQLQueries.PROMOTION_UPDATE_PROMO_PRODUCT_QUANTITY)) {
-            ps.setString(1, promoProductQuantity);
+            ps.setInt(1, promoProductQuantity);
             ps.setString(2, id);
             return ps.executeUpdate() == 1;
         } catch (SQLException e) {

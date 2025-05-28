@@ -13,7 +13,7 @@ public interface StoreDAO {
 
     boolean create(Store store);
 
-    boolean updateStoreName(String id, String name);
+    void updateStoreName(String id, String name);
 
-    boolean updateStoreAddress(String id, String address);
+    void updateStoreAddress(String id, String address);
 }

@@ -447,7 +447,30 @@ public class MemberPanel extends JPanel {
                     dialog.pack();
                     dialog.setLocationRelativeTo(this);
                     dialog.setVisible(true);
-                }))
+                })),
+                new ScrollableTable.ActionDefinition("Lịch sử tích điểm", "Lịch sử tích điểm", (rowIndex, table) -> {
+                    String memberId = table.getValueAt(rowIndex, 0).toString();
+                    java.util.List<com.neostain.csms.model.PointUpdateLog> logs = serviceManager.getSaleService().getPointLogsByMember(memberId);
+                    String[] columns = {"Mã hóa đơn", "Số điểm thay đổi"};
+                    Object[][] data = new Object[logs.size()][2];
+                    for (int i = 0; i < logs.size(); i++) {
+                        data[i][0] = logs.get(i).getInvoiceId();
+                        data[i][1] = logs.get(i).getPointChange();
+                    }
+                    ScrollableTable tableLog = new ScrollableTable(columns, data, java.util.List.of());
+                    JPanel panel = new JPanel(new BorderLayout(10, 10));
+                    panel.add(tableLog, BorderLayout.CENTER);
+                    JButton okBtn = new JButton("OK");
+                    JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+                    btnPanel.add(okBtn);
+                    panel.add(btnPanel, BorderLayout.SOUTH);
+                    JDialog dialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Lịch sử tích điểm", true);
+                    dialog.setContentPane(panel);
+                    dialog.setSize(400, 300);
+                    dialog.setLocationRelativeTo(this);
+                    okBtn.addActionListener(ev -> dialog.dispose());
+                    dialog.setVisible(true);
+                })
         );
     }
 }

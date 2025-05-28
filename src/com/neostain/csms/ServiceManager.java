@@ -93,7 +93,7 @@ public class ServiceManager {
 
     private <T> T getServiceWithAuthCheck(Class<T> serviceClass, boolean requiresAuth) {
         // Kiểm tra authentication nếu cần
-        if (requiresAuth && !isLoggedIn()) {
+        if (requiresAuth && isLoggedIn()) {
             String serviceName = serviceClass.getSimpleName();
             LOGGER.log(Level.WARNING, "[GET_" + serviceName + "] Access denied to " + serviceName);
             throw new SecurityException("Access denied to " + serviceName);
@@ -169,11 +169,11 @@ public class ServiceManager {
      */
     public boolean isLoggedIn() {
         if (StringUtils.isNullOrEmpty(currentToken)) {
-            return false;
+            return true;
         }
 
         AuthService authService = getServiceWithAuthCheck(AuthService.class, false);
-        return authService.validate(currentToken);
+        return !authService.validate(currentToken);
     }
 
     /**

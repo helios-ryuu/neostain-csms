@@ -125,7 +125,7 @@ public class ScrollableTable extends JScrollPane {
         table.setShowGrid(true);
         table.setGridColor(new Color(220, 220, 220));
         table.getTableHeader().setFont(
-                new Font(Constants.Font.DEFAULT_FONT_NAME, Font.BOLD, Constants.Font.DEFAULT_SIZE)
+                Constants.View.BOLD_FONT
         );
     }
 

@@ -19,10 +19,9 @@ import java.util.List;
 
 public class WarehousePanel extends JPanel {
     private static final ServiceManager serviceManager = ServiceManager.getInstance();
-    private final String[] inventoryColumns = {"Sản phẩm", "Số lượng hiện tại", "Lần điều chỉnh gần nhất"};
+    private final String[] inventoryColumns = {"Sản phẩm", "Số lượng hiện tại", "Đơn giá", "Danh mục", "Lần điều chỉnh gần nhất"};
     private final String[] transactionColumns = {"Sản phẩm", "Loại giao dịch", "Số lượng giao dịch", "Thời gian giao dịch"};
     private final SimpleDateFormat df1 = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
-    private final SimpleDateFormat df2 = new SimpleDateFormat("yyyy-MM-dd");
     private final String[] transactionTypes = {"TẤT CẢ", "NHẬP KHO", "BÁN HÀNG", "KHUYẾN MÃI", "ĐIỀU CHỈNH"};
     private final Store currentStore;
     private final Map<String, Product> productCache = new HashMap<>();
@@ -75,7 +74,9 @@ public class WarehousePanel extends JPanel {
         JButton searchBtn = new StandardButton(this, "Tìm kiếm");
         JButton resetBtn = new StandardButton(this, "Đặt lại");
         JButton importBtn = new StandardButton(this, "Nhập hàng");
+        JButton importNewBtn = new StandardButton(this, "Nhập hàng mới");
         JButton adjustBtn = new StandardButton(this, "Điều chỉnh");
+        JButton createCategoryBtn = new StandardButton(this, "Tạo danh mục mới");
 
         panel.add(new JLabel("Mã sản phẩm:"));
         panel.add(Box.createHorizontalStrut(8));
@@ -95,7 +96,11 @@ public class WarehousePanel extends JPanel {
         panel.add(Box.createHorizontalStrut(5));
         panel.add(importBtn);
         panel.add(Box.createHorizontalStrut(5));
+        panel.add(importNewBtn);
+        panel.add(Box.createHorizontalStrut(5));
         panel.add(adjustBtn);
+        panel.add(Box.createHorizontalStrut(5));
+        panel.add(createCategoryBtn);
 
         searchBtn.addActionListener(e -> refreshInventoryTable(productIdField.getText().trim(), (Date) dateFromSpinner.getValue(), (Date) dateToSpinner.getValue()));
         resetBtn.addActionListener(e -> {
@@ -105,7 +110,9 @@ public class WarehousePanel extends JPanel {
             refreshInventoryTable("", defaultFrom, defaultTo);
         });
         importBtn.addActionListener(e -> showImportDialog());
+        importNewBtn.addActionListener(e -> showImportNewProductDialog());
         adjustBtn.addActionListener(e -> showAdjustDialog());
+        createCategoryBtn.addActionListener(e -> showCreateCategoryDialog());
 
         return panel;
     }
@@ -164,10 +171,99 @@ public class WarehousePanel extends JPanel {
         BorderedPanel panel = new BorderedPanel("Danh sách tồn kho");
         panel.setLayout(new BorderLayout());
         panel.setBackground(Constants.Color.COMPONENT_BACKGROUND_WHITE);
-        inventoryTable = new ScrollableTable(inventoryColumns, new Object[0][inventoryColumns.length], List.of());
+        java.util.List<ScrollableTable.ActionDefinition> actions = java.util.List.of(
+                new ScrollableTable.ActionDefinition("Điều chỉnh thông tin", "Điều chỉnh thông tin", this::onUpdateProductInfo)
+        );
+        inventoryTable = new ScrollableTable(inventoryColumns, new Object[0][inventoryColumns.length], actions);
         panel.add(inventoryTable, BorderLayout.CENTER);
         refreshInventoryTable("", new GregorianCalendar(1970, Calendar.JANUARY, 1).getTime(), new GregorianCalendar(2100, Calendar.JANUARY, 1).getTime());
         return panel;
+    }
+
+    private void onUpdateProductInfo(int row, JTable tbl) {
+        String prodDisplay = tbl.getValueAt(row, 0).toString();
+        String productId = prodDisplay.split(" - ")[0];
+        Product product = getProduct(productId);
+        if (product == null) {
+            DialogFactory.showErrorDialog(this, "Lỗi", "Không tìm thấy sản phẩm.");
+            return;
+        }
+        JDialog dialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Điều chỉnh thông tin sản phẩm", true);
+        dialog.setLayout(new BorderLayout(10, 10));
+        JPanel formPanel = new JPanel(new GridLayout(3, 2, 10, 10));
+        JLabel prodLabel = new JLabel("Sản phẩm:");
+        JTextField prodField = new JTextField(product.getId() + " - " + product.getName());
+        prodField.setEditable(false);
+        JLabel priceLabel = new JLabel("Đơn giá:");
+        JFormattedTextField priceField = new JFormattedTextField(java.text.NumberFormat.getIntegerInstance());
+        priceField.setColumns(10);
+        priceField.setValue(product.getUnitPrice().intValue());
+        JLabel catLabel = new JLabel("Danh mục:");
+        java.util.List<com.neostain.csms.model.Category> categories = serviceManager.getSaleService().getAllCategories();
+        String[] catItems = new String[categories.size()];
+        int selectedIdx = 0;
+        for (int i = 0; i < categories.size(); i++) {
+            catItems[i] = categories.get(i).getId() + " - " + categories.get(i).getName();
+            if (categories.get(i).getId().equals(product.getCategoryId())) selectedIdx = i;
+        }
+        JComboBox<String> catBox = new JComboBox<>(catItems);
+        catBox.setSelectedIndex(selectedIdx);
+        formPanel.add(prodLabel);
+        formPanel.add(prodField);
+        formPanel.add(priceLabel);
+        formPanel.add(priceField);
+        formPanel.add(catLabel);
+        formPanel.add(catBox);
+        JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0));
+        JButton okBtn = new JButton("Cập nhật");
+        JButton cancelBtn = new JButton("Hủy");
+        btnPanel.add(okBtn);
+        btnPanel.add(cancelBtn);
+        dialog.add(formPanel, BorderLayout.CENTER);
+        dialog.add(btnPanel, BorderLayout.SOUTH);
+        priceField.addPropertyChangeListener("value", evt -> {
+            Object v = priceField.getValue();
+            if (v == null || (v instanceof Number && ((Number) v).intValue() <= 0)) priceField.setValue(1);
+        });
+        cancelBtn.addActionListener(ev -> dialog.dispose());
+        okBtn.addActionListener(ev -> {
+            int price;
+            try {
+                price = Integer.parseInt(priceField.getText().replaceAll(",", "").trim());
+            } catch (Exception ex) {
+                price = 1;
+            }
+            if (price <= 0) {
+                DialogFactory.showErrorDialog(dialog, "Lỗi", "Đơn giá phải lớn hơn 0.");
+                return;
+            }
+            int catIdx = catBox.getSelectedIndex();
+            String newCatId = categories.get(catIdx).getId();
+            boolean priceChanged = !product.getUnitPrice().equals(new java.math.BigDecimal(price));
+            boolean catChanged = !product.getCategoryId().equals(newCatId);
+            boolean ok = true;
+            if (priceChanged) {
+                ok = serviceManager.getSaleService().updateProductUnitPrice(productId, price);
+            }
+            if (ok && catChanged) {
+                ok = serviceManager.getSaleService().updateProduct(new com.neostain.csms.model.Product(productId, product.getName(), new java.math.BigDecimal(price), newCatId, false));
+            }
+            if (!ok) {
+                DialogFactory.showErrorDialog(dialog, "Lỗi", "Không thể cập nhật thông tin sản phẩm. Vui lòng thử lại.");
+                return;
+            }
+            String info = "Mã sản phẩm: " + productId +
+                    "\nTên sản phẩm: " + product.getName() +
+                    "\nĐơn giá mới: " + price +
+                    "\nDanh mục mới: " + catItems[catIdx];
+            DialogFactory.showInfoDialog(dialog, "Cập nhật thông tin thành công", info);
+            productCache.clear();
+            refreshInventoryTable("", new GregorianCalendar(1970, Calendar.JANUARY, 1).getTime(), new GregorianCalendar(2100, Calendar.JANUARY, 1).getTime());
+            dialog.dispose();
+        });
+        dialog.pack();
+        dialog.setLocationRelativeTo(this);
+        dialog.setVisible(true);
     }
 
     private JPanel createTransactionListPanel() {
@@ -189,7 +285,13 @@ public class WarehousePanel extends JPanel {
             if (to != null && inv.getModificationTime().after(to)) continue;
             Product p = getProduct(inv.getProductId());
             String prodDisplay = p == null ? inv.getProductId() : (p.getId() + " - " + p.getName());
-            rows.add(new Object[]{prodDisplay, inv.getQuantity(), df1.format(inv.getModificationTime())});
+            String unitPrice = p == null ? "" : (p.getUnitPrice() != null ? p.getUnitPrice().toPlainString() : "");
+            String catDisplay = "";
+            if (p != null) {
+                com.neostain.csms.model.Category cat = serviceManager.getSaleService().getCategoryById(p.getCategoryId());
+                catDisplay = cat != null ? (cat.getId() + " - " + cat.getName()) : p.getCategoryId();
+            }
+            rows.add(new Object[]{prodDisplay, inv.getQuantity(), unitPrice, catDisplay, df1.format(inv.getModificationTime())});
         }
         inventoryTable.refreshData(rows.toArray(new Object[0][0]));
     }
@@ -390,6 +492,175 @@ public class WarehousePanel extends JPanel {
             DialogFactory.showInfoDialog(dialog, "Điều chỉnh thành công", info);
             refreshInventoryTable("", new GregorianCalendar(1970, Calendar.JANUARY, 1).getTime(), new GregorianCalendar(2100, Calendar.JANUARY, 1).getTime());
             dialog.dispose();
+        });
+        dialog.pack();
+        dialog.setLocationRelativeTo(this);
+        dialog.setVisible(true);
+    }
+
+    private void showImportNewProductDialog() {
+        JDialog dialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Nhập hàng mới", true);
+        dialog.setLayout(new BorderLayout(10, 10));
+        JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
+        JPanel formPanel = new JPanel(new GridLayout(0, 2, 10, 10));
+
+        JLabel productIdLabel = new JLabel("Mã sản phẩm:");
+        JTextField productIdField = new JTextField(15);
+        JLabel nameLabel = new JLabel("Tên sản phẩm:");
+        JTextField nameField = new JTextField(30);
+        JLabel priceLabel = new JLabel("Đơn giá:");
+        JFormattedTextField priceField = new JFormattedTextField(java.text.NumberFormat.getIntegerInstance());
+        priceField.setColumns(10);
+        priceField.setValue(1);
+        JLabel categoryLabel = new JLabel("Danh mục:");
+        java.util.List<com.neostain.csms.model.Category> categories = serviceManager.getSaleService().getAllCategories();
+        String[] categoryItems = new String[categories.size()];
+        for (int i = 0; i < categories.size(); i++) {
+            categoryItems[i] = categories.get(i).getId() + " - " + categories.get(i).getName();
+        }
+        JComboBox<String> categoryBox = new JComboBox<>(categoryItems);
+
+        formPanel.add(productIdLabel);
+        formPanel.add(productIdField);
+        formPanel.add(nameLabel);
+        formPanel.add(nameField);
+        formPanel.add(priceLabel);
+        formPanel.add(priceField);
+        formPanel.add(categoryLabel);
+        formPanel.add(categoryBox);
+        mainPanel.add(formPanel, BorderLayout.CENTER);
+        JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0));
+        JButton okBtn = new JButton("Nhập hàng mới");
+        JButton cancelBtn = new JButton("Hủy");
+        btnPanel.add(okBtn);
+        btnPanel.add(cancelBtn);
+        mainPanel.add(btnPanel, BorderLayout.SOUTH);
+        dialog.add(mainPanel, BorderLayout.CENTER);
+
+        // Only allow exactly 13 digits in productIdField
+        productIdField.setDocument(new javax.swing.text.PlainDocument() {
+            @Override
+            public void insertString(int offs, String str, javax.swing.text.AttributeSet a) throws javax.swing.text.BadLocationException {
+                if (str != null && str.matches("\\d+") && (getLength() + str.length() <= 13))
+                    super.insertString(offs, str, a);
+            }
+        });
+        // Only allow positive numbers in priceField
+        priceField.addPropertyChangeListener("value", evt -> {
+            Object v = priceField.getValue();
+            if (v == null || (v instanceof Number && ((Number) v).intValue() <= 0)) priceField.setValue(1);
+        });
+
+        cancelBtn.addActionListener(ev -> dialog.dispose());
+        okBtn.addActionListener(ev -> {
+            String productId = productIdField.getText().trim();
+            String name = nameField.getText().trim();
+            int price;
+            try {
+                price = Integer.parseInt(priceField.getText().replaceAll(",", "").trim());
+            } catch (Exception ex) {
+                price = 1;
+            }
+            int catIdx = categoryBox.getSelectedIndex();
+            String categoryId = catIdx >= 0 ? categories.get(catIdx).getId() : null;
+            if (productId.isEmpty()) {
+                DialogFactory.showErrorDialog(dialog, "Lỗi", "Vui lòng nhập mã sản phẩm.");
+                return;
+            }
+            if (!productId.matches("\\d{13}")) {
+                DialogFactory.showErrorDialog(dialog, "Lỗi", "Mã sản phẩm phải gồm đúng 13 ký tự số.");
+                return;
+            }
+            if (name.isEmpty()) {
+                DialogFactory.showErrorDialog(dialog, "Lỗi", "Vui lòng nhập tên sản phẩm.");
+                return;
+            }
+            if (price <= 0) {
+                DialogFactory.showErrorDialog(dialog, "Lỗi", "Đơn giá phải lớn hơn 0.");
+                return;
+            }
+            if (categoryId == null) {
+                DialogFactory.showErrorDialog(dialog, "Lỗi", "Vui lòng chọn danh mục.");
+                return;
+            }
+            if (serviceManager.getSaleService().getProductById(productId) != null) {
+                DialogFactory.showErrorDialog(dialog, "Lỗi", "Mã sản phẩm đã tồn tại.");
+                return;
+            }
+            com.neostain.csms.model.Product product = new com.neostain.csms.model.Product(productId, name, new java.math.BigDecimal(price), categoryId, false);
+            boolean ok = serviceManager.getSaleService().createProduct(product);
+            if (!ok) {
+                DialogFactory.showErrorDialog(dialog, "Lỗi", "Không thể tạo sản phẩm mới. Vui lòng thử lại.");
+                return;
+            }
+            String info = "Mã sản phẩm: " + productId +
+                    "\nTên sản phẩm: " + name +
+                    "\nĐơn giá: " + price +
+                    "\nDanh mục: " + categoryItems[catIdx];
+            DialogFactory.showInfoDialog(dialog, "Nhập hàng mới thành công", info);
+            refreshInventoryTable("", new GregorianCalendar(1970, Calendar.JANUARY, 1).getTime(), new GregorianCalendar(2100, Calendar.JANUARY, 1).getTime());
+            dialog.dispose();
+        });
+        dialog.pack();
+        dialog.setLocationRelativeTo(this);
+        dialog.setVisible(true);
+    }
+
+    /**
+     * Hiển thị dialog tạo danh mục mới
+     */
+    private void showCreateCategoryDialog() {
+        JDialog dialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Tạo danh mục mới", true);
+        dialog.setLayout(new BorderLayout(10, 10));
+        JPanel formPanel = new JPanel(new GridLayout(1, 2, 10, 10));
+        JLabel nameLabel = new JLabel("Nhập tên danh mục mới:");
+        JTextField nameField = new JTextField(30);
+        formPanel.add(nameLabel);
+        formPanel.add(nameField);
+        JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0));
+        JButton createBtn = new JButton("Tạo danh mục");
+        JButton cancelBtn = new JButton("Hủy");
+        btnPanel.add(createBtn);
+        btnPanel.add(cancelBtn);
+        dialog.add(formPanel, BorderLayout.CENTER);
+        dialog.add(btnPanel, BorderLayout.SOUTH);
+        // Action: Hủy
+        cancelBtn.addActionListener(ev -> dialog.dispose());
+        // Action: Tạo danh mục
+        createBtn.addActionListener(ev -> {
+            String name = nameField.getText().trim();
+            if (com.neostain.csms.util.StringUtils.isNullOrEmpty(name)) {
+                DialogFactory.showErrorDialog(dialog, "Lỗi", "Vui lòng nhập tên danh mục.");
+                return;
+            }
+            // Check duplicate (case-insensitive, not deleted)
+            java.util.List<com.neostain.csms.model.Category> categories = serviceManager.getSaleService().getAllCategories();
+            boolean exists = categories.stream().anyMatch(c -> !c.isDeleted() && c.getName().trim().equalsIgnoreCase(name));
+            if (exists) {
+                DialogFactory.showErrorDialog(dialog, "Lỗi", "Tên danh mục đã tồn tại.");
+                return;
+            }
+            // Create category (id=null for trigger, isDeleted=false)
+            com.neostain.csms.model.Category newCat = new com.neostain.csms.model.Category(null, name, false);
+            try {
+                boolean ok = serviceManager.getSaleService().createCategory(newCat);
+                if (!ok) {
+                    DialogFactory.showErrorDialog(dialog, "Lỗi", "Không thể tạo danh mục mới. Vui lòng thử lại.");
+                    return;
+                }
+                // Lấy lại danh mục vừa tạo (tìm theo tên, lấy bản ghi mới nhất)
+                categories = serviceManager.getSaleService().getAllCategories();
+                com.neostain.csms.model.Category created = categories.stream()
+                        .filter(c -> !c.isDeleted() && c.getName().trim().equalsIgnoreCase(name))
+                        .findFirst().orElse(null);
+                String info = created == null ? ("Tên: " + name) : ("Mã: " + created.getId() + "\nTên: " + created.getName());
+                DialogFactory.showInfoDialog(dialog, "Tạo danh mục thành công", info);
+                dialog.dispose();
+            } catch (com.neostain.csms.util.exception.DuplicateFieldException ex) {
+                DialogFactory.showErrorDialog(dialog, "Lỗi", "Tên danh mục đã tồn tại.");
+            } catch (Exception ex) {
+                DialogFactory.showErrorDialog(dialog, "Lỗi", ex.getMessage());
+            }
         });
         dialog.pack();
         dialog.setLocationRelativeTo(this);

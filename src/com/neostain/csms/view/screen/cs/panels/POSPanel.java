@@ -20,7 +20,6 @@ import java.util.Map;
 public class POSPanel extends JPanel {
     private static final ServiceManager serviceManager = ServiceManager.getInstance();
     // --- CONSTANTS ---
-    private static final Font BOLD_FONT = new Font(Constants.Font.DEFAULT_FONT_NAME, Font.BOLD, Constants.Font.DEFAULT_SIZE);
     private static final String TITLE_CART = "Giỏ hàng";
     private static final String TITLE_INFO = "Thông tin";
     private static final String TITLE_PAYMENT = "Thanh toán";
@@ -34,7 +33,6 @@ public class POSPanel extends JPanel {
     private static final String BTN_EARN = "Tích điểm";
     private static final String BTN_USE = "Sử dụng điểm";
     private static final String BTN_CANCEL = "Hủy tích điểm";
-    private static final String BTN_CANCEL_PAYMENT = "Hủy thanh toán";
     private static final String TITLE_SUCCESS = "Thanh toán thành công";
     private static final Color SUCCESS_COLOR = new Color(0, 128, 0);
     private final String[] cartColumns = {"Mã sản phẩm", "Tên sản phẩm", "Đơn giá", "SL", "Giảm giá", "Thành tiền"};
@@ -122,7 +120,7 @@ public class POSPanel extends JPanel {
         gbcInfo.gridwidth = 1;
         gbcInfo.weightx = 1;
         gbcInfo.fill = GridBagConstraints.HORIZONTAL;
-        Font boldFont = new Font(Constants.Font.DEFAULT_FONT_NAME, Font.BOLD, Constants.Font.DEFAULT_SIZE);
+        Font boldFont = Constants.View.BOLD_FONT;
         JLabel prodType = new JLabel("Số loại sản phẩm:");
         prodType.setFont(boldFont);
         infoPanel.add(prodType, gbcInfo);
@@ -722,9 +720,7 @@ public class POSPanel extends JPanel {
             }
         });
         // Đủ tiền mặt button logic
-        btnExactCash.addActionListener(ev -> {
-            givenField.setText(totalDue.setScale(0, java.math.RoundingMode.HALF_UP).toPlainString());
-        });
+        btnExactCash.addActionListener(ev -> givenField.setText(totalDue.setScale(0, java.math.RoundingMode.HALF_UP).toPlainString()));
         gbc.gridx = 0;
         gbc.gridy++;
         JLabel lblChange = new JLabel("Số tiền trả lại khách:");
@@ -873,7 +869,7 @@ public class POSPanel extends JPanel {
         gbc.gridy = 0;
         gbc.gridwidth = 2;
         JLabel lblTitle = new JLabel("Chọn phương thức thanh toán");
-        lblTitle.setFont(new Font(Constants.Font.DEFAULT_FONT_NAME, Font.BOLD, 14));
+        lblTitle.setFont(Constants.View.BOLD_FONT);
         methodDialog.add(lblTitle, gbc);
         gbc.gridy++;
         ButtonGroup group = new ButtonGroup();
@@ -1065,28 +1061,6 @@ public class POSPanel extends JPanel {
         dialog.setVisible(true);
     }
 
-    // --- UI HELPERS ---
-    private JLabel createLabel(String text, Font font) {
-        JLabel label = new JLabel(text);
-        if (font != null) label.setFont(font);
-        return label;
-    }
-
-    private void addLabelValue(GridBagConstraints gbc, JPanel panel, String label, JLabel valueLabel, Font font) {
-        JLabel lbl = createLabel(label, font);
-        panel.add(lbl, gbc);
-        gbc.gridx = 1;
-        panel.add(valueLabel, gbc);
-        gbc.gridx = 0;
-        gbc.gridy++;
-    }
-
-    private JButton createButton(String text, Runnable action) {
-        JButton btn = new JButton(text);
-        btn.addActionListener(e -> action.run());
-        return btn;
-    }
-
     private void showSuccessDialog(String message, Runnable onClose) {
         JDialog infoDialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), TITLE_SUCCESS, true);
         infoDialog.setLayout(new GridBagLayout());
@@ -1146,6 +1120,53 @@ public class POSPanel extends JPanel {
             return true;
         }
         return false;
+    }
+
+    /**
+     * Add a product to the cart programmatically (simulate scan logic)
+     */
+    public void addProductToCart(String productId, int quantity) {
+        if (pointsLocked) return;
+        if (productId == null || productId.isEmpty() || quantity <= 0) return;
+        Product product = ServiceManager.getInstance().getSaleService().getProductById(productId);
+        if (product == null) {
+            DialogFactory.showErrorDialog(this, "Lỗi", "Không tìm thấy sản phẩm với mã: " + productId);
+            return;
+        }
+        for (int i = 0; i < quantity; i++) {
+            cartItems.compute(productId, (k, v) -> v == null ? new CartItem(product, 1) : new CartItem(product, v.quantity + 1));
+            // Promotion logic (same as onAddProduct)
+            List<Promotion> activePromos = ServiceManager.getInstance().getSaleService().getActivePromotions();
+            for (Promotion promo : activePromos) {
+                if (promo.getProductId() != null && promo.getProductId().equals(productId)) {
+                    int progress = promoProgress.getOrDefault(promo.getId(), 0) + 1;
+                    int sets = 0;
+                    while (progress >= promo.getMinimumPurchaseQuantity()) {
+                        sets++;
+                        progress -= promo.getMinimumPurchaseQuantity();
+                    }
+                    promoProgress.put(promo.getId(), progress);
+                    if (sets > 0) {
+                        if (promo.getPromoProductId() != null && promo.getPromoProductQuantity() > 0) {
+                            Product promoProduct = ServiceManager.getInstance().getSaleService().getProductById(promo.getPromoProductId());
+                            if (promoProduct != null) {
+                                promoPanel.addPromoProduct(promoProduct, sets * promo.getPromoProductQuantity());
+                            }
+                        }
+                        promoGiftCounts.put(promo.getId(), promoGiftCounts.getOrDefault(promo.getId(), 0) + sets);
+                    }
+                }
+            }
+        }
+        refreshCartTable();
+        updateInfoPanel();
+    }
+
+    /**
+     * Returns true if the cart is locked (points have been used and no more products can be added)
+     */
+    public boolean isPointsLocked() {
+        return pointsLocked;
     }
 
     private static class CartItem {

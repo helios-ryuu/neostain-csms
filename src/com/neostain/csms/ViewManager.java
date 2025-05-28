@@ -20,7 +20,6 @@ public class ViewManager {
 
     // Tham chiếu đến ServiceManager để truy cập thông tin token
     private final ServiceManager serviceManager;
-    private JPanel currentScreen;
 
     private ViewManager(MainFrame mainFrame) {
         this.mainFrame = mainFrame;
@@ -42,7 +41,7 @@ public class ViewManager {
      */
     public void switchScreen(ScreenType screenType, String username) {
         // Kiểm tra quyền truy cập màn hình
-        if (screenType != ScreenType.LOGIN && !serviceManager.isLoggedIn()) {
+        if (screenType != ScreenType.LOGIN && serviceManager.isLoggedIn()) {
             LOGGER.warning("[AUTHENTICATION_ERROR] Attempting to access " + screenType + " without valid token");
             DialogFactory.showWarningDialog(mainFrame, "Authentication Error", "Vui lòng đăng nhập để tiếp tục");
             this.switchScreen(ScreenType.LOGIN, username);
@@ -97,7 +96,6 @@ public class ViewManager {
 
     private void setScreen(JPanel newScreen) {
         mainFrame.setContentPane(newScreen);
-        currentScreen = newScreen;
 
         // Add additional validation to ensure UI is properly refreshed
         mainFrame.invalidate();
@@ -118,10 +116,6 @@ public class ViewManager {
      */
     public String getCurrentUser() {
         return serviceManager.getCurrentUsername();
-    }
-
-    public JPanel getCurrentScreen() {
-        return currentScreen;
     }
 
     /**

@@ -17,7 +17,7 @@ public interface ProductDAO {
 
     boolean updateName(String id, String name);
 
-    boolean updateUInitPrice(String id, int unitPrice);
+    boolean updateUnitPrice(String id, int unitPrice);
 
     boolean updateCategoryId(String id, String categoryId);
 

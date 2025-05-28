@@ -77,13 +77,13 @@ public class SaleServiceImpl implements SaleService {
     }
 
     @Override
-    public boolean addItemToInvoice(String invoiceId, String productId, int quantity) {
-        return invoiceDAO.addItem(invoiceId, productId, quantity);
+    public void addItemToInvoice(String invoiceId, String productId, int quantity) {
+        invoiceDAO.addItem(invoiceId, productId, quantity);
     }
 
     @Override
-    public boolean addGiftToInvoice(String invoiceId, String productId, int quantity) {
-        return invoiceDAO.addGift(invoiceId, productId, quantity);
+    public void addGiftToInvoice(String invoiceId, String productId, int quantity) {
+        invoiceDAO.addGift(invoiceId, productId, quantity);
     }
 
     @Override
@@ -124,12 +124,19 @@ public class SaleServiceImpl implements SaleService {
 
     @Override
     public boolean updateProduct(Product product) {
-        return productDAO.updateName(product.getId(), product.getName());
+        boolean a = productDAO.updateName(product.getId(), product.getName());
+        boolean b = productDAO.updateCategoryId(product.getId(), product.getCategoryId());
+        return a && b;
     }
 
     @Override
     public boolean deleteProduct(String id) {
         return productDAO.delete(id);
+    }
+
+    @Override
+    public boolean updateProductUnitPrice(String productId, int unitPrice) {
+        return productDAO.updateUnitPrice(productId, unitPrice);
     }
 
     // Category
@@ -179,7 +186,15 @@ public class SaleServiceImpl implements SaleService {
 
     @Override
     public boolean updatePromotion(Promotion promotion) {
-        return promotionDAO.updateName(promotion.getId(), promotion.getName());
+        boolean a = promotionDAO.updateStartTime(promotion.getId(), promotion.getStartTime());
+        boolean b = promotionDAO.updateEndTime(promotion.getId(), promotion.getEndTime());
+        boolean c = promotionDAO.updateName(promotion.getId(), promotion.getName());
+        boolean d = promotionDAO.updateProductId(promotion.getId(), promotion.getProductId());
+        boolean e = promotionDAO.updateMinimumPurchaseQuantity(promotion.getId(), promotion.getMinimumPurchaseQuantity());
+        boolean f = promotionDAO.updateDiscountRate(promotion.getId(), promotion.getDiscountRate());
+        boolean g = promotionDAO.updatePromoProductId(promotion.getId(), promotion.getPromoProductId());
+        boolean h = promotionDAO.updatePromoProductQuantity(promotion.getId(), promotion.getPromoProductQuantity());
+        return a && b && c && d && e && f && g && h;
     }
 
     @Override
@@ -224,11 +239,6 @@ public class SaleServiceImpl implements SaleService {
     }
 
     @Override
-    public List<InventoryTransaction> getAllInventoryTransactions() {
-        return inventoryTransactionDAO.findAll();
-    }
-
-    @Override
     public Inventory getInventoryById(String id) {
         return inventoryDAO.findById(id);
     }
@@ -244,12 +254,12 @@ public class SaleServiceImpl implements SaleService {
     }
 
     @Override
-    public List<Inventory> getAllInventories() {
-        return inventoryDAO.findAll();
+    public boolean createInventoryTransaction(InventoryTransaction tx) {
+        return inventoryTransactionDAO.create(tx);
     }
 
     @Override
-    public boolean createInventoryTransaction(InventoryTransaction tx) {
-        return inventoryTransactionDAO.create(tx);
+    public boolean updateStatus(String invoiceId, String status) {
+        return invoiceDAO.updateStatus(invoiceId, status);
     }
 } 

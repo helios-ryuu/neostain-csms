@@ -16,7 +16,7 @@ public class StatisticServiceImpl implements StatisticService {
                 return rs.getObject(1);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.out.println("Error: " + e.getMessage());
         }
         return null;
     }
@@ -49,7 +49,7 @@ public class StatisticServiceImpl implements StatisticService {
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) return rs.getObject(1);
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.out.println("Error: " + e.getMessage());
         }
         return null;
     }
@@ -63,7 +63,7 @@ public class StatisticServiceImpl implements StatisticService {
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) return rs.getObject(1);
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.out.println("Error: " + e.getMessage());
         }
         return null;
     }
@@ -79,18 +79,13 @@ public class StatisticServiceImpl implements StatisticService {
     }
 
     @Override
-    public Object getActivePromotions() {
-        return runSingleValueQuery("SELECT ");
-    }
-
-    @Override
     public Object getTotalInvoicesLast30Days() {
-        return runSingleValueQuery("SELECT COUNT(*) FROM INVOICE WHERE CREATION_TIME >= TRUNC(SYSDATE) - 30");
+        return runSingleValueQuery("SELECT COUNT(*) FROM INVOICE WHERE CREATION_TIME >= TRUNC(SYSDATE) - 30 AND STATUS NOT IN ('ĐÃ HỦY', 'CHƯA HOÀN THÀNH')");
     }
 
     @Override
     public Object getTotalRevenueLast30Days() {
-        return runSingleValueQuery("SELECT SUM(TOTAL_DUE) FROM INVOICE WHERE CREATION_TIME >= TRUNC(SYSDATE) - 30");
+        return runSingleValueQuery("SELECT SUM(TOTAL_DUE) FROM INVOICE WHERE CREATION_TIME >= TRUNC(SYSDATE) - 30 AND STATUS NOT IN ('ĐÃ HỦY', 'CHƯA HOÀN THÀNH')");
     }
 
     @Override

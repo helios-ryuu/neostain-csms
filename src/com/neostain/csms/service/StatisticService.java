@@ -21,7 +21,5 @@ public interface StatisticService {
 
     Object getUncompletedInvoices();
 
-    Object getActivePromotions();
-
     Object getCancelRequestedInvoices();
 } 

@@ -241,37 +241,35 @@ public class InvoiceDAOImpl implements InvoiceDAO {
 
 
     @Override
-    public boolean addItem(String invoiceId, String productId, int quantity) {
+    public void addItem(String invoiceId, String productId, int quantity) {
         if (StringUtils.isNullOrEmpty(invoiceId) || StringUtils.isNullOrEmpty(productId) || quantity < 0) {
             LOGGER.warning("[ADD_ITEM] invoiceId or productId is empty");
-            return false;
+            return;
         }
         try (CallableStatement cs = conn.prepareCall(SQLQueries.INVOICE_ADD_ITEM)) {
             cs.setString(1, invoiceId);
             cs.setString(2, productId);
             cs.setInt(3, quantity);
-            return cs.executeUpdate() > 0;
+            cs.executeUpdate();
         } catch (SQLException e) {
             LOGGER.severe("[ADD_ITEM] Error: " + e.getMessage());
         }
-        return false;
     }
 
     @Override
-    public boolean addGift(String invoiceId, String productId, int quantity) {
+    public void addGift(String invoiceId, String productId, int quantity) {
         if (StringUtils.isNullOrEmpty(invoiceId) || StringUtils.isNullOrEmpty(productId) || quantity < 0) {
             LOGGER.warning("[ADD_GIFT] invoiceId or productId is empty");
-            return false;
+            return;
         }
         try (CallableStatement cs = conn.prepareCall(SQLQueries.INVOICE_ADD_GIFT)) {
             cs.setString(1, invoiceId);
             cs.setString(2, productId);
             cs.setInt(3, quantity);
-            return cs.executeUpdate() > 0;
+            cs.executeUpdate();
         } catch (SQLException e) {
             LOGGER.severe("[ADD_GIFT] Error: " + e.getMessage());
         }
-        return false;
     }
 
     @Override
@@ -306,6 +304,18 @@ public class InvoiceDAOImpl implements InvoiceDAO {
             LOGGER.severe("[CANCEL] Error: " + e.getMessage());
         }
         return false;
+    }
+
+    @Override
+    public boolean updateStatus(String invoiceId, String status) {
+        try (PreparedStatement stmt = conn.prepareStatement(SQLQueries.INVOICE_UPDATE_STATUS)) {
+            stmt.setString(1, status);
+            stmt.setString(2, invoiceId);
+            return stmt.executeUpdate() > 0;
+        } catch (Exception e) {
+            LOGGER.warning("[INVOICE] Error updating status: " + e.getMessage());
+            return false;
+        }
     }
 
     private Invoice mapResultSetToInvoice(ResultSet rs) throws SQLException {

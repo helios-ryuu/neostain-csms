@@ -29,7 +29,7 @@ public interface PromotionDAO {
 
     boolean updatePromoProductId(String id, String promoProductId);
 
-    boolean updatePromoProductQuantity(String id, String promoProductQuantity);
+    boolean updatePromoProductQuantity(String id, int promoProductQuantity);
 
     boolean updateDiscountRate(String id, BigDecimal discountRate);
 
