@@ -11,6 +11,7 @@ import com.neostain.csms.util.DialogFactory;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -18,6 +19,18 @@ import java.util.List;
 import java.util.Objects;
 
 public class PrintingServiceImpl implements PrintingService {
+    private static void createReportsDir() throws IOException {
+        String reportsDir = "reports/";
+
+        File reportDirFile = new File(reportsDir);
+        if (!reportDirFile.exists()) {
+            boolean created = reportDirFile.mkdirs();
+            if (!created) {
+                throw new IOException("Không thể tạo thư mục: " + reportsDir);
+            }
+        }
+    }
+
     @Override
     public File printShiftReport(ShiftReport shiftReport) {
         try {
@@ -28,6 +41,7 @@ public class PrintingServiceImpl implements PrintingService {
 
             Document document = new Document(PageSize.A4);
             String fileName = "ShiftReport_" + shiftReportId;
+            createReportsDir();
             PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream("reports/" + fileName + ".pdf"));
             document.open();
             document.addAuthor("NeoStain");
@@ -146,6 +160,7 @@ public class PrintingServiceImpl implements PrintingService {
             Document document = new Document(pageSize, 0, 0, 5, 5);
 
             String fileName = "Invoice_" + invoiceId;
+            createReportsDir();
             PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream("reports/" + fileName + ".pdf"));
 
             document.open();
@@ -367,6 +382,7 @@ public class PrintingServiceImpl implements PrintingService {
 
             Document document = new Document(PageSize.A4);
             String fileName = "Paycheck_" + paycheckId;
+            createReportsDir();
             PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream("reports/" + fileName + ".pdf"));
             document.open();
             document.addAuthor("NeoStain");

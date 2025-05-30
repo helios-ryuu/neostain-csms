@@ -284,7 +284,7 @@ FROM DUAL;
 -- 6. MEMBER (Khách hàng thành viên)
 -- ====================================
 INSERT ALL INTO MEMBER (NAME, PHONE_NUMBER, EMAIL)
-VALUES ('Tạ Việt Phương', '0941234567', 'ttb@member.com')
+VALUES ('Văn Đức Sơn Hà', '0941234567', 'havd@uit.edu.vn')
 INTO MEMBER (NAME, PHONE_NUMBER, EMAIL)
 VALUES ('Nguyễn Văn A', '0941234500', 'nguyenvana00@member.com')
 INTO MEMBER (NAME, PHONE_NUMBER, EMAIL)
