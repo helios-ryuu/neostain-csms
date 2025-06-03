@@ -246,7 +246,7 @@ public class EmployeePanel extends JPanel {
                                     .filter(e1 -> e1.getPhoneNumber().equals(phone)).findFirst().orElseThrow().getId()
                     );
                     // Tạo account
-                    String passwordHash = com.neostain.csms.util.PasswordUtils.hash("12345678");
+                    String passwordHash = com.neostain.csms.util.PasswordUtils.hash("Java@123");
                     java.sql.Timestamp now = new java.sql.Timestamp(System.currentTimeMillis());
                     com.neostain.csms.model.Account acc = new com.neostain.csms.model.Account(
                             null, newEmp.getId(), phone, passwordHash, roleId, now, "ĐANG HOẠT ĐỘNG"
@@ -344,6 +344,34 @@ public class EmployeePanel extends JPanel {
 
     private List<ScrollableTable.ActionDefinition> createActions() {
         return List.of(
+                new ScrollableTable.ActionDefinition("Tiến hành nghỉ việc", "Tiến hành", (row, table) -> {
+                    String id = table.getValueAt(row, 0).toString();
+                    String name = table.getValueAt(row, 1).toString();
+                    boolean confirm = DialogFactory.showConfirmYesNoDialog(
+                            this,
+                            "Xác nhận nghỉ việc",
+                            "Bạn có chắc chắn muốn chuyển trạng thái nhân viên " + name + " (" + id + ") sang Nghỉ việc không?"
+                    );
+                    if (confirm) {
+                        try {
+                            // Update employee status to "ĐÃ NGHỈ VIỆC"
+                            Employee emp = serviceManager.getManagementService().getEmployeeById(id);
+                            if (emp != null) {
+                                emp.setStatus("ĐÃ NGHỈ VIỆC");
+                                serviceManager.getManagementService().updateEmployee(emp);
+                                DialogFactory.showInfoDialog(this, "Thành công", "Đã chuyển trạng thái nhân viên " + name + " sang Nghỉ việc.");
+                                // Refresh the table
+                                List<Employee> results = serviceManager.getManagementService().getEmployeeByManagerId(account.getEmployeeId());
+                                String[][] data = this.toTableData(results);
+                                employeeTable.refreshData(data);
+                            } else {
+                                DialogFactory.showErrorDialog(this, "Lỗi", "Không tìm thấy thông tin nhân viên.");
+                            }
+                        } catch (Exception ex) {
+                            DialogFactory.showErrorDialog(this, "Lỗi", "Không thể cập nhật trạng thái nhân viên: " + ex.getMessage());
+                        }
+                    }
+                }),
                 new ScrollableTable.ActionDefinition("Cập nhật", "Cập nhật thông tin", (row, table) -> {
                     String id = table.getValueAt(row, 0).toString();
                     String managerId = serviceManager.getManagementService().getEmployeeById(id).getManagerId();
@@ -405,20 +433,6 @@ public class EmployeePanel extends JPanel {
                     JTextField hourlyWageField = new JTextField(hourlyWage, 20);
                     form.add(hourlyWageField);
 
-                    // 8. Trạng thái (combo box)
-                    form.add(new JLabel("Trạng thái:"));
-                    String[] statusOptions = {"ĐANG HOẠT ĐỘNG", "TẠM NGỪNG HOẠT ĐỘNG", "ĐÃ NGHỈ VIỆC"};
-                    JComboBox<String> statusCombo = new JComboBox<>(statusOptions);
-                    // Set current status
-                    String currentStatus = table.getValueAt(row, 7).toString();
-                    for (int i = 0; i < statusOptions.length; i++) {
-                        if (statusOptions[i].equalsIgnoreCase(currentStatus)) {
-                            statusCombo.setSelectedIndex(i);
-                            break;
-                        }
-                    }
-                    form.add(statusCombo);
-
                     gbc.gridx = 0;
                     gbc.gridy = 0;
                     gbc.gridwidth = 2;
@@ -448,7 +462,6 @@ public class EmployeePanel extends JPanel {
                         String oldEmail = e.getEmail();
                         String oldAddress = e.getAddress();
                         String oldHourlyWage = e.getHourlyWage().toString();
-                        String oldStatus = e.getStatus();
 
                         // Lấy giá trị mới
                         String newManagerId = managerIdField.getText().trim();
@@ -457,7 +470,6 @@ public class EmployeePanel extends JPanel {
                         String newEmail = emailField.getText().trim();
                         String newAddress = addressField.getText().trim();
                         String newHourlyWage = hourlyWageField.getText().trim();
-                        String newStatus = (String) statusCombo.getSelectedItem();
 
                         // Đặt lại trên model
                         e.setManagerId(newManagerId);
@@ -466,7 +478,6 @@ public class EmployeePanel extends JPanel {
                         e.setEmail(newEmail);
                         e.setAddress(newAddress);
                         e.setHourlyWage(new BigDecimal(newHourlyWage).setScale(2, RoundingMode.DOWN));
-                        e.setStatus(newStatus);
 
                         try {
                             serviceManager.getManagementService().updateEmployee(e);
@@ -499,10 +510,6 @@ public class EmployeePanel extends JPanel {
                             infoPanel.add(new JLabel(oldHourlyWage));
                             infoPanel.add(new JLabel("          >>>"));
                             infoPanel.add(new JLabel(newHourlyWage));
-                            infoPanel.add(new JLabel("Trạng thái: "));
-                            infoPanel.add(new JLabel(oldStatus));
-                            infoPanel.add(new JLabel("          >>>"));
-                            infoPanel.add(new JLabel(newStatus));
                             DialogFactory.showInfoDialog(
                                     dialog,
                                     "Cập nhật thành công!",

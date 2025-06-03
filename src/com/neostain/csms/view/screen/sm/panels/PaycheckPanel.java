@@ -5,6 +5,7 @@ import com.neostain.csms.model.Employee;
 import com.neostain.csms.model.Paycheck;
 import com.neostain.csms.util.Constants;
 import com.neostain.csms.util.DialogFactory;
+import com.neostain.csms.util.StringUtils;
 import com.neostain.csms.view.component.BorderedPanel;
 import com.neostain.csms.view.component.ScrollableTable;
 import com.neostain.csms.view.component.StandardButton;
@@ -13,6 +14,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.File;
 import java.math.RoundingMode;
+import java.sql.SQLException;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -269,7 +271,7 @@ public class PaycheckPanel extends JPanel {
                     searchBtn.doClick();
                     dialog.dispose();
                 } catch (Exception ex) {
-                    DialogFactory.showErrorDialog(dialog, "Lỗi", "Không thể tạo phiếu lương: " + ex.getMessage());
+                    DialogFactory.showErrorDialog(dialog, "Lỗi", "Không thể tạo phiếu lương: \n" + (ex instanceof SQLException ? StringUtils.fetchMessage((SQLException) ex) : ex.getMessage()));
                 }
             });
 
@@ -411,7 +413,7 @@ public class PaycheckPanel extends JPanel {
                     searchBtn.doClick();
                     dialog.dispose();
                 } catch (Exception ex) {
-                    DialogFactory.showErrorDialog(dialog, "Lỗi", "Không thể tạo phiếu lương hàng loạt: " + ex.getMessage());
+                    DialogFactory.showErrorDialog(dialog, "Lỗi", "Không thể tạo phiếu lương hàng loạt: \n" + (ex instanceof SQLException ? StringUtils.fetchMessage((SQLException) ex) : ex.getMessage()));
                 }
             });
 

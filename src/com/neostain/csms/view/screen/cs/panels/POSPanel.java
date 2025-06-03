@@ -548,6 +548,11 @@ public class POSPanel extends JPanel {
     }
 
     private void onUsePoints() {
+        if (isCartProductDataOutdated()) {
+            DialogFactory.showWarningDialog(this, "Cảnh báo", "Dữ liệu sản phẩm đã thay đổi. Giỏ hàng sẽ được làm mới.");
+            onRefreshCart(true);
+            return;
+        }
         if (pointsLocked) return;
         if (currentMember == null) {
             DialogFactory.showErrorDialog(this, "Không có thành viên", "Không có thông tin thành viên.\nHãy nhập thông tin thành viên bằng nút Tích điểm trong menu Thành viên");
@@ -674,7 +679,30 @@ public class POSPanel extends JPanel {
         return label;
     }
 
+    // Kiểm tra dữ liệu sản phẩm trong giỏ hàng có bị thay đổi không
+    private boolean isCartProductDataOutdated() {
+        for (CartItem item : cartItems.values()) {
+            Product latest = ServiceManager.getInstance().getSaleService().getProductById(item.product.getId());
+            if (latest == null) return true; // Sản phẩm đã bị xóa
+            if (latest.getUnitPrice().compareTo(item.product.getUnitPrice()) != 0) {
+                return true;
+            }
+            if (latest.getCategoryId().compareTo(item.product.getCategoryId()) != 0) {
+                return true;
+            }
+            if (latest.getName().compareTo(item.product.getName()) != 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private void onCashPayment() {
+        if (isCartProductDataOutdated()) {
+            DialogFactory.showWarningDialog(this, "Cảnh báo", "Dữ liệu sản phẩm đã thay đổi. Giỏ hàng sẽ được làm mới.");
+            onRefreshCart(true);
+            return;
+        }
         if (!pointsLocked) {
             int confirm = DialogFactory.showConfirmOkCancelDialog(this, "Xác nhận thanh toán", "Bạn chưa sử dụng điểm. Tiếp tục thanh toán?");
             if (confirm != JOptionPane.OK_OPTION) return;
@@ -852,6 +880,11 @@ public class POSPanel extends JPanel {
     }
 
     private void onEWalletPayment() {
+        if (isCartProductDataOutdated()) {
+            DialogFactory.showWarningDialog(this, "Cảnh báo", "Dữ liệu sản phẩm đã thay đổi. Giỏ hàng sẽ được làm mới.");
+            onRefreshCart(true);
+            return;
+        }
         if (!pointsLocked) {
             int confirm = DialogFactory.showConfirmOkCancelDialog(this, "Xác nhận thanh toán", "Bạn chưa sử dụng điểm. Tiếp tục thanh toán?");
             if (confirm != JOptionPane.OK_OPTION) return;
@@ -1011,6 +1044,11 @@ public class POSPanel extends JPanel {
     }
 
     private void onBankPayment() {
+        if (isCartProductDataOutdated()) {
+            DialogFactory.showWarningDialog(this, "Cảnh báo", "Dữ liệu sản phẩm đã thay đổi. Giỏ hàng sẽ được làm mới.");
+            onRefreshCart(true);
+            return;
+        }
         if (!pointsLocked) {
             int confirm = DialogFactory.showConfirmOkCancelDialog(this, "Xác nhận thanh toán", "Bạn chưa sử dụng điểm. Tiếp tục thanh toán?");
             if (confirm != JOptionPane.OK_OPTION) return;

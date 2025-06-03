@@ -2,10 +2,13 @@ package com.neostain.csms;
 
 import com.neostain.csms.dao.*;
 import com.neostain.csms.model.Account;
+import com.neostain.csms.model.Employee;
 import com.neostain.csms.model.Store;
 import com.neostain.csms.service.*;
 import com.neostain.csms.util.DatabaseUtils;
 import com.neostain.csms.util.StringUtils;
+import com.neostain.csms.util.exception.DuplicateFieldException;
+import com.neostain.csms.util.exception.FieldValidationException;
 
 import java.sql.Connection;
 import java.util.Map;
@@ -184,7 +187,7 @@ public class ServiceManager {
      * @param password Password
      * @return Token if login successful, null if failed
      */
-    public String login(String username, String password, String storeId) {
+    public String login(String username, String password, String storeId) throws FieldValidationException, DuplicateFieldException {
         // Get services without auth check
         AuthService authService = getAuthService();
         ManagementService managementService = getServiceWithAuthCheck(ManagementService.class, false);
@@ -198,6 +201,10 @@ public class ServiceManager {
             Account account = authService.getAccountByUsername(username);
 
             String shiftReportId = operationService.createShiftReport(store.getId(), account.getEmployeeId());
+            authService.updateAccountStatus(username, "ĐANG HOẠT ĐỘNG");
+            Employee employee = managementService.getEmployeeById(account.getEmployeeId());
+            employee.setStatus("ĐANG HOẠT ĐỘNG");
+            managementService.updateEmployee(employee);
 
             setCurrentShiftId(shiftReportId);
             setCurrentToken(token);

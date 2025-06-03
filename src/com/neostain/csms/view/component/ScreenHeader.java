@@ -2,6 +2,8 @@ package com.neostain.csms.view.component;
 
 import com.neostain.csms.ServiceManager;
 import com.neostain.csms.ViewManager;
+import com.neostain.csms.model.Account;
+import com.neostain.csms.model.Employee;
 import com.neostain.csms.model.ShiftReport;
 import com.neostain.csms.util.Constants;
 import com.neostain.csms.util.DialogFactory;
@@ -53,6 +55,35 @@ public class ScreenHeader extends JPanel {
         actionsPanel.setLayout(new BoxLayout(actionsPanel, BoxLayout.X_AXIS));
         actionsPanel.setOpaque(false);
 
+        // Add Reload button before logout
+        JButton reloadButton = new StandardButton(this, "Reload");
+        reloadButton.setFont(Constants.View.DEFAULT_FONT);
+        reloadButton.setForeground(new Color(0, 102, 204));
+        reloadButton.setAlignmentY(Component.CENTER_ALIGNMENT);
+        reloadButton.addActionListener(e -> {
+            try {
+                MainFrame mainFrame = (MainFrame) SwingUtilities.getWindowAncestor(this);
+                ViewManager viewManager = ViewManager.getInstance(mainFrame);
+                // Determine current screen type and username
+                String username = viewManager.getCurrentUser();
+                // Guess screen type by checking content pane class
+                JPanel content = (JPanel) mainFrame.getContentPane();
+                com.neostain.csms.util.ScreenType screenType;
+                if (content instanceof com.neostain.csms.view.screen.cs.CashierStaffScreen) {
+                    screenType = com.neostain.csms.util.ScreenType.POS;
+                } else if (content instanceof com.neostain.csms.view.screen.sm.StoreManagerScreen) {
+                    screenType = com.neostain.csms.util.ScreenType.STORE_MANAGER;
+                } else {
+                    screenType = com.neostain.csms.util.ScreenType.LOGIN;
+                }
+                viewManager.switchScreen(screenType, username);
+            } catch (Exception ex) {
+                DialogFactory.showErrorDialog(this, "Lỗi", "Không thể tải lại màn hình: " + ex.getMessage());
+            }
+        });
+        actionsPanel.add(reloadButton);
+        actionsPanel.add(Box.createHorizontalStrut(10));
+
         JButton logoutButton = new StandardButton(this, "Kết ca");
         logoutButton.setFont(Constants.View.DEFAULT_FONT);
         logoutButton.setForeground(Color.RED);
@@ -71,6 +102,13 @@ public class ScreenHeader extends JPanel {
 
                     // Get the current MainFrame instance instead of creating a new one
                     MainFrame mainFrame = (MainFrame) SwingUtilities.getWindowAncestor(this);
+                    // Deactivate account and employee
+                    serviceManager.getAuthService().updateAccountStatus(serviceManager.getCurrentUsername(), "NGỪNG HOẠT ĐỘNG");
+                    Account account = serviceManager.getAuthService().getAccountByUsername(serviceManager.getCurrentUsername());
+                    Employee employee = serviceManager.getManagementService().getEmployeeById(account.getEmployeeId());
+                    employee.setStatus("ĐANG HOẠT ĐỘNG");
+                    serviceManager.getManagementService().updateEmployee(employee);
+
                     boolean isShiftReportClosed = serviceManager.getOperationService().closeShiftReport(currentShiftId);
                     if (isShiftReportClosed) {
                         ShiftReport shiftReport = serviceManager.getOperationService().getShiftReportById(currentShiftId);

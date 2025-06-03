@@ -50,10 +50,29 @@ public class WarehousePanel extends JPanel {
         topPanel.add(createTransactionSearchPanel());
         this.add(topPanel, BorderLayout.NORTH);
 
-        JPanel bottomPanel = new JPanel(new GridLayout(1, 2, 10, 0));
+        // 1. Panel chính sử dụng GridBagLayout
+        JPanel bottomPanel = new JPanel(new GridBagLayout());
         bottomPanel.setBackground(Constants.Color.COMPONENT_BACKGROUND_WHITE);
-        bottomPanel.add(createInventoryListPanel());
-        bottomPanel.add(createTransactionListPanel());
+
+        // 2. Tạo GridBagConstraints chung (sẽ tái sử dụng, chỉ thay đổi gridx và weightx)
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.weighty = 1.0;
+        gbc.gridy = 0;                 // duy nhất một hàng (row = 0)
+        gbc.insets = new Insets(0, 0, 0, 10); // khoảng cách 10px giữa 2 panel
+
+        // 3. Thêm createInventoryListPanel() - chiếm 70% chiều ngang
+        gbc.gridx = 0;                 // cột 0
+        gbc.weightx = 0.7;             // tỉ lệ 70%
+        gbc.fill = GridBagConstraints.BOTH; // phóng to theo cả hai chiều
+        JPanel inventoryPanel = createInventoryListPanel();
+        bottomPanel.add(inventoryPanel, gbc);
+
+        // 4. Thêm createTransactionListPanel() - chiếm 30% chiều ngang
+        gbc.gridx = 1;                 // cột 1
+        gbc.weightx = 0.3;             // tỉ lệ 30%
+        gbc.insets = new Insets(0, 0, 0, 0); // không cần khoảng cách bên phải
+        JPanel transactionPanel = createTransactionListPanel();
+        bottomPanel.add(transactionPanel, gbc);
         this.add(bottomPanel, BorderLayout.CENTER);
     }
 
@@ -114,6 +133,16 @@ public class WarehousePanel extends JPanel {
         adjustBtn.addActionListener(e -> showAdjustDialog());
         createCategoryBtn.addActionListener(e -> showCreateCategoryDialog());
 
+        productIdField.addKeyListener(new java.awt.event.KeyAdapter() {
+            @Override
+            public void keyTyped(java.awt.event.KeyEvent e) {
+                char c = e.getKeyChar();
+                if (!Character.isDigit(c)) {
+                    e.consume();
+                }
+            }
+        });
+
         return panel;
     }
 
@@ -162,6 +191,16 @@ public class WarehousePanel extends JPanel {
             dateFromSpinner.setValue(new GregorianCalendar(1970, Calendar.JANUARY, 1).getTime());
             dateToSpinner.setValue(new GregorianCalendar(2100, Calendar.JANUARY, 1).getTime());
             refreshTransactionTable("", "TẤT CẢ", defaultFrom, defaultTo);
+        });
+
+        productIdField.addKeyListener(new java.awt.event.KeyAdapter() {
+            @Override
+            public void keyTyped(java.awt.event.KeyEvent e) {
+                char c = e.getKeyChar();
+                if (!Character.isDigit(c)) {
+                    e.consume();
+                }
+            }
         });
 
         return panel;
@@ -221,9 +260,14 @@ public class WarehousePanel extends JPanel {
         btnPanel.add(cancelBtn);
         dialog.add(formPanel, BorderLayout.CENTER);
         dialog.add(btnPanel, BorderLayout.SOUTH);
-        priceField.addPropertyChangeListener("value", evt -> {
-            Object v = priceField.getValue();
-            if (v == null || (v instanceof Number && ((Number) v).intValue() <= 0)) priceField.setValue(1);
+        priceField.addKeyListener(new java.awt.event.KeyAdapter() {
+            @Override
+            public void keyTyped(java.awt.event.KeyEvent e) {
+                char c = e.getKeyChar();
+                if (!Character.isDigit(c)) {
+                    e.consume();
+                }
+            }
         });
         cancelBtn.addActionListener(ev -> dialog.dispose());
         okBtn.addActionListener(ev -> {
@@ -337,6 +381,21 @@ public class WarehousePanel extends JPanel {
         qtyField.setColumns(10);
         qtyField.setValue(1);
 
+        // Ngăn nhập ký tự không phải số (chỉ nhận 0-9)
+        qtyField.addKeyListener(new java.awt.event.KeyAdapter() {
+            @Override
+            public void keyTyped(java.awt.event.KeyEvent e) {
+                char c = e.getKeyChar();
+                if (!Character.isDigit(c)) {
+                    e.consume();
+                }
+            }
+        });
+        qtyField.addPropertyChangeListener("value", evt -> {
+            Object v = qtyField.getValue();
+            if (v == null || (v instanceof Number && ((Number) v).intValue() < 1)) qtyField.setValue(1);
+        });
+
         formPanel.add(productIdLabel);
         formPanel.add(productIdField);
         formPanel.add(storeLabel);
@@ -384,7 +443,10 @@ public class WarehousePanel extends JPanel {
                 DialogFactory.showErrorDialog(dialog, "Lỗi", "Mã sản phẩm không tồn tại.");
                 return;
             }
-            if (qty <= 0) qty = 1;
+            if (qty < 1) {
+                DialogFactory.showErrorDialog(dialog, "Lỗi", "Số lượng nhập phải lớn hơn hoặc bằng 1.");
+                return;
+            }
             InventoryTransaction tx = new InventoryTransaction();
             tx.setProductId(productId);
             tx.setStoreId(currentStore.getId());

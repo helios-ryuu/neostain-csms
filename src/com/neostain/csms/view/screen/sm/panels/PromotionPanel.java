@@ -265,6 +265,15 @@ public class PromotionPanel extends JPanel {
                     DialogFactory.showErrorDialog(dialog, "Lỗi", "Vui lòng nhập thời gian bắt đầu và kết thúc.");
                     return;
                 }
+                java.util.Date now = new java.util.Date();
+                if (startDate.before(now)) {
+                    DialogFactory.showErrorDialog(dialog, "Lỗi", "Thời gian bắt đầu không được ở quá khứ so với hiện tại.");
+                    return;
+                }
+                if (endDate.before(now)) {
+                    DialogFactory.showErrorDialog(dialog, "Lỗi", "Thời gian kết thúc không được ở quá khứ so với hiện tại.");
+                    return;
+                }
                 if (!endDate.after(startDate)) {
                     DialogFactory.showErrorDialog(dialog, "Lỗi", "Thời gian kết thúc phải sau thời gian bắt đầu.");
                     return;
@@ -526,6 +535,15 @@ public class PromotionPanel extends JPanel {
                         }
                         if (startDate == null || endDate == null) {
                             DialogFactory.showErrorDialog(dialog, "Lỗi", "Vui lòng nhập thời gian bắt đầu và kết thúc.");
+                            return;
+                        }
+                        java.util.Date now = new java.util.Date();
+                        if (startDate.before(now)) {
+                            DialogFactory.showErrorDialog(dialog, "Lỗi", "Thời gian bắt đầu không được ở quá khứ so với hiện tại.");
+                            return;
+                        }
+                        if (endDate.before(now)) {
+                            DialogFactory.showErrorDialog(dialog, "Lỗi", "Thời gian kết thúc không được ở quá khứ so với hiện tại.");
                             return;
                         }
                         if (!endDate.after(startDate)) {
