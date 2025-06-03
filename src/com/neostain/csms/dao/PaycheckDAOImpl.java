@@ -129,7 +129,7 @@ public class PaycheckDAOImpl implements PaycheckDAO {
     }
 
     @Override
-    public String create(String employeeId, BigDecimal deduction, Timestamp periodStard, Timestamp periodEnd) {
+    public String create(String employeeId, BigDecimal deduction, Timestamp periodStard, Timestamp periodEnd) throws SQLException {
         if (StringUtils.isNullOrEmpty(employeeId) || deduction == null || periodStard == null || periodEnd == null) {
             LOGGER.warning("[CREATE] Employee ID, deduction or periodStard or periodEnd is empty");
             return "";
@@ -144,8 +144,8 @@ public class PaycheckDAOImpl implements PaycheckDAO {
             return cs.getString(5);
         } catch (SQLException e) {
             LOGGER.severe("[CREATE] Error: " + e.getMessage());
+            throw e;
         }
-        return "";
     }
 
     private Paycheck mapResultSetToPaycheck(ResultSet rs) throws SQLException {

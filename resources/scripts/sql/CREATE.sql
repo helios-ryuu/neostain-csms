@@ -34,15 +34,15 @@ CREATE TABLE CATEGORY
 
 CREATE TABLE EMPLOYEE
 (
-    ID           CHAR(12)                               NOT NULL,
+    ID           CHAR(12)                                    NOT NULL,
     MANAGER_ID   CHAR(12),
-    NAME         NVARCHAR2(50)                          NOT NULL,
-    HIRE_DATE    TIMESTAMP     DEFAULT SYSTIMESTAMP     NOT NULL,
-    EMAIL        VARCHAR2(40)                           NOT NULL,
-    PHONE_NUMBER VARCHAR2(10)                           NOT NULL,
-    ADDRESS      NVARCHAR2(255)                         NOT NULL,
-    HOURLY_WAGE  NUMBER(15, 2) DEFAULT 0                NOT NULL,
-    STATUS       NVARCHAR2(50) DEFAULT 'ĐANG HOẠT ĐỘNG' NOT NULL,
+    NAME         NVARCHAR2(50)                               NOT NULL,
+    HIRE_DATE    TIMESTAMP     DEFAULT SYSTIMESTAMP          NOT NULL,
+    EMAIL        VARCHAR2(40)                                NOT NULL,
+    PHONE_NUMBER VARCHAR2(10)                                NOT NULL,
+    ADDRESS      NVARCHAR2(255)                              NOT NULL,
+    HOURLY_WAGE  NUMBER(15, 2) DEFAULT 0                     NOT NULL,
+    STATUS       NVARCHAR2(50) DEFAULT 'TẠM NGỪNG HOẠT ĐỘNG' NOT NULL,
     CONSTRAINT PK_EMPLOYEE PRIMARY KEY (ID),
     CONSTRAINT UK_EMPLOYEE_EMAIL UNIQUE (EMAIL),
     CONSTRAINT UK_EMPLOYEE_PHONE_NUMBER UNIQUE (PHONE_NUMBER),
@@ -119,13 +119,13 @@ CREATE TABLE PROMOTION
 
 CREATE TABLE ACCOUNT
 (
-    ID            CHAR(24)                               NOT NULL,
-    EMPLOYEE_ID   CHAR(12)                               NOT NULL,
-    USERNAME      VARCHAR2(50)                           NOT NULL,
-    PASSWORD_HASH CHAR(64)                               NOT NULL,
-    ROLE_ID       CHAR(4)                                NOT NULL,
-    CREATION_TIME TIMESTAMP     DEFAULT SYSTIMESTAMP     NOT NULL,
-    STATUS        NVARCHAR2(50) DEFAULT 'ĐANG HOẠT ĐỘNG' NOT NULL,
+    ID            CHAR(24)                                NOT NULL,
+    EMPLOYEE_ID   CHAR(12)                                NOT NULL,
+    USERNAME      VARCHAR2(50)                            NOT NULL,
+    PASSWORD_HASH CHAR(64)                                NOT NULL,
+    ROLE_ID       CHAR(4)                                 NOT NULL,
+    CREATION_TIME TIMESTAMP     DEFAULT SYSTIMESTAMP      NOT NULL,
+    STATUS        NVARCHAR2(50) DEFAULT 'NGỪNG HOẠT ĐỘNG' NOT NULL,
     CONSTRAINT PK_ACCOUNT PRIMARY KEY (ID),
     CONSTRAINT UK_ACCOUNT_USERNAME UNIQUE (USERNAME),
     CONSTRAINT FK_ACCOUNT_EMPLOYEE_ID FOREIGN KEY (EMPLOYEE_ID)

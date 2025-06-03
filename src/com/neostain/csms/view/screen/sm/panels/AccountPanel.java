@@ -6,6 +6,7 @@ import com.neostain.csms.model.Employee;
 import com.neostain.csms.model.Role;
 import com.neostain.csms.util.Constants;
 import com.neostain.csms.util.DialogFactory;
+import com.neostain.csms.util.PasswordUtils;
 import com.neostain.csms.view.component.BorderedPanel;
 import com.neostain.csms.view.component.ScrollableTable;
 import com.neostain.csms.view.component.StandardButton;
@@ -304,19 +305,9 @@ public class AccountPanel extends JPanel {
                     creationField.setEditable(false);
                     formPanel.add(creationField);
 
-                    formPanel.add(new JLabel("Trạng thái:"));
-                    // Only show valid statuses, not the 'TẤT CẢ TRẠNG THÁI' option
-                    String[] validStatusOptions = new String[statusOptions.length - 1];
-                    System.arraycopy(statusOptions, 1, validStatusOptions, 0, statusOptions.length - 1);
-                    JComboBox<String> statusCombo = new JComboBox<>(validStatusOptions);
-                    // Set current status
-                    for (int i = 0; i < validStatusOptions.length; i++) {
-                        if (acc.getStatus() != null && acc.getStatus().equalsIgnoreCase(validStatusOptions[i])) {
-                            statusCombo.setSelectedIndex(i);
-                            break;
-                        }
-                    }
-                    formPanel.add(statusCombo);
+                    formPanel.add(new JLabel("Mật khẩu mới:"));
+                    JPasswordField newPasswordField = new JPasswordField(10);
+                    formPanel.add(newPasswordField);
 
                     mainPanel.add(formPanel, BorderLayout.CENTER);
                     JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0));
@@ -329,22 +320,28 @@ public class AccountPanel extends JPanel {
 
                     cancelBtn.addActionListener(ev -> dialog.dispose());
                     updateBtn.addActionListener(ev -> {
-                        String newStatus = (String) statusCombo.getSelectedItem();
-                        if (newStatus == null) {
-                            DialogFactory.showErrorDialog(dialog, "Lỗi", "Vui lòng chọn trạng thái hợp lệ.");
-                            return;
-                        }
-                        try {
-                            boolean ok = serviceManager.getAuthService().updateAccountStatus(acc.getUsername(), newStatus);
-                            if (!ok) {
-                                DialogFactory.showErrorDialog(dialog, "Lỗi", "Không thể cập nhật trạng thái tài khoản. Vui lòng thử lại.");
-                                return;
+                        String newPassword = new String(newPasswordField.getPassword());
+
+                        // Only update password if the field is not empty
+                        if (!newPassword.trim().isEmpty()) {
+                            try {
+                                if (!PasswordUtils.isComplex(newPassword)) {
+                                    DialogFactory.showErrorDialog(dialog, "Lỗi", "Mật khẩu phải ≥ 8 ký tự, có ít nhất 1 chữ viết in hoa, 1 chữ số và 1 ký tự đặc biệt");
+                                    return;
+                                }
+                                boolean ok = serviceManager.getAuthService().updateAccountPassword(acc.getUsername(), com.neostain.csms.util.PasswordUtils.hash(newPassword));
+                                if (!ok) {
+                                    DialogFactory.showErrorDialog(dialog, "Lỗi", "Không thể cập nhật mật khẩu. Vui lòng thử lại.");
+                                    return;
+                                }
+                                DialogFactory.showInfoDialog(dialog, "Cập nhật thành công", "Mật khẩu tài khoản đã được cập nhật.\nMã: " + acc.getId() + "\nTên: " + acc.getUsername());
+                                searchBtn.doClick();
+                                dialog.dispose();
+                            } catch (Exception ex) {
+                                DialogFactory.showErrorDialog(dialog, "Lỗi", "Không thể cập nhật mật khẩu: " + ex.getMessage());
                             }
-                            DialogFactory.showInfoDialog(dialog, "Cập nhật thành công", "Tài khoản đã được cập nhật:\nMã: " + acc.getId() + "\nTên: " + acc.getUsername() + "\nTrạng thái mới: " + newStatus);
-                            searchBtn.doClick();
-                            dialog.dispose();
-                        } catch (Exception ex) {
-                            DialogFactory.showErrorDialog(dialog, "Lỗi", "Không thể cập nhật trạng thái: " + ex.getMessage());
+                        } else {
+                            DialogFactory.showErrorDialog(dialog, "Lỗi", "Vui lòng nhập mật khẩu mới.");
                         }
                     });
                     dialog.pack();

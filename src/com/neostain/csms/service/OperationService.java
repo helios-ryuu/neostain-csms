@@ -5,6 +5,7 @@ import com.neostain.csms.model.Paycheck;
 import com.neostain.csms.model.ShiftReport;
 
 import java.math.BigDecimal;
+import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.List;
 
@@ -48,7 +49,7 @@ public interface OperationService {
 
     List<Paycheck> getAllPaychecks();
 
-    String generatePaycheck(String employeeId, BigDecimal deductions, Timestamp periodStart, Timestamp periodEnd);
+    String generatePaycheck(String employeeId, BigDecimal deductions, Timestamp periodStart, Timestamp periodEnd) throws SQLException;
 
     List<Assignment> searchAssignments(String assignmentId, String employeeId, String storeId, String from, String to);
 } 

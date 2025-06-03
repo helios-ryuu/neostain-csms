@@ -14,6 +14,7 @@ import com.neostain.csms.view.component.StandardButton;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.File;
 import java.util.List;
 
 /**
@@ -73,15 +74,15 @@ public class DashboardPanel extends JPanel {
                 new DashboardTile("Hóa đơn 30 ngày gần nhất", "...", new Color(41, 128, 185)),
                 new DashboardTile("Doanh thu 30 ngày gần nhất", "...", new Color(39, 174, 96)),
                 new DashboardTile("Doanh thu hôm nay", "...", new Color(211, 84, 0)),
-                new DashboardTile("Số hóa đơn hôm nay", "...", new Color(142, 68, 173)),
-                new DashboardTile("Tổng thành viên", "...", new Color(52, 152, 219)),
-                new DashboardTile("Thành viên VIP", "...", new Color(46, 204, 113)),
-                new DashboardTile("Tổng hàng hóa trong kho", "...", new Color(230, 126, 34)),
-                new DashboardTile("Tổng nhân viên thuộc cửa hàng", "...", new Color(155, 89, 182)),
-                new DashboardTile("Hóa đơn đã hủy", "...", new Color(26, 188, 156)),
-                new DashboardTile("Hóa đơn chưa hoàn thành", "...", new Color(149, 165, 166)),
-                new DashboardTile("Khuyến mãi đang hoạt động", "...", new Color(127, 140, 141)),
-                new DashboardTile("Hóa đơn đang yêu cầu hủy", "...", new Color(241, 196, 15))
+                new DashboardTile("Số lượng hóa đơn hôm nay", "...", new Color(142, 68, 173)),
+                new DashboardTile("Số lượng khách hàng thành viên", "...", new Color(52, 152, 219)),
+                new DashboardTile("Số lượng khánh hàng thành viên VIP (>= 1000 điểm)", "...", new Color(46, 204, 113)),
+                new DashboardTile("Số loại hàng hóa trong kho", "...", new Color(230, 126, 34)),
+                new DashboardTile("Số lượng nhân viên thuộc cửa hàng", "...", new Color(155, 89, 182)),
+                new DashboardTile("Số lượng đơn đã hủy", "...", new Color(26, 188, 156)),
+                new DashboardTile("Số lượng hóa đơn chưa hoàn thành", "...", new Color(149, 165, 166)),
+                new DashboardTile("Số lượng khuyến mãi đang hoạt động", "...", new Color(127, 140, 141)),
+                new DashboardTile("Số lượng hóa đơn đang yêu cầu hủy", "...", new Color(241, 196, 15))
         );
         for (DashboardTile tile : tilesList) {
             tiles.add(tile);
@@ -231,9 +232,25 @@ public class DashboardPanel extends JPanel {
             }
         });
 
+        JButton printStatsBtn = new StandardButton(this, "In báo cáo thống kê");
+        printStatsBtn.setAlignmentX(Component.LEFT_ALIGNMENT);
+        printStatsBtn.addActionListener(e -> {
+            File file = serviceManager.getPrintingService().printStatisticsReport(store);
+            if (file != null && file.exists()) {
+                try {
+                    Desktop.getDesktop().open(file);
+                } catch (Exception ex) {
+                    DialogFactory.showErrorDialog(this, "Lỗi", "Không thể mở file báo cáo: " + ex.getMessage());
+                }
+            } else {
+                DialogFactory.showErrorDialog(this, "Lỗi", "Không thể tạo file báo cáo thống kê.");
+            }
+        });
         tools.add(editNameBtn);
         tools.add(Box.createVerticalStrut(5));
         tools.add(editAddrBtn);
+        tools.add(Box.createVerticalStrut(5));
+        tools.add(printStatsBtn);
         tools.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
         container.add(tools, BorderLayout.WEST);

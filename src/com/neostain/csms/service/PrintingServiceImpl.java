@@ -483,4 +483,116 @@ public class PrintingServiceImpl implements PrintingService {
         }
         return null;
     }
+
+    @Override
+    public File printStatisticsReport(Store store) {
+        try {
+            createReportsDir();
+            String fileName = "StatisticsReport_" + store.getId();
+            Document document = new Document(PageSize.A4);
+            PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream("reports/" + fileName + ".pdf"));
+            document.open();
+            document.addAuthor("NeoStain");
+            document.addCreationDate();
+            document.addCreator("NeoStain");
+            document.addTitle("Báo cáo thống kê");
+            document.addSubject("Báo cáo thống kê");
+
+            File fileFont = new File("fonts/JetBrainsMono-Bold.ttf");
+            BaseFont bf = BaseFont.createFont(fileFont.getAbsolutePath(), BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
+            com.itextpdf.text.Font font1 = new com.itextpdf.text.Font(bf, 14);
+            com.itextpdf.text.Font font2 = new com.itextpdf.text.Font(bf, 12);
+            File fileFont2 = new File("fonts/JetBrainsMono-Regular.ttf");
+            BaseFont bf2 = BaseFont.createFont(fileFont2.getAbsolutePath(), BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
+            com.itextpdf.text.Font font3 = new com.itextpdf.text.Font(bf2, 12);
+
+            Paragraph prgDelimiter = new Paragraph("-------------------------------------------------------------------", font3);
+            prgDelimiter.setAlignment(Element.ALIGN_CENTER);
+            document.add(prgDelimiter);
+
+            Paragraph prgCompany = new Paragraph("NeoStain\nCửa hàng " + store.getName(), font2);
+            prgCompany.setAlignment(Element.ALIGN_CENTER);
+            document.add(prgCompany);
+
+            Paragraph prgTitle = new Paragraph("BÁO CÁO THỐNG KÊ CỬA HÀNG", font1);
+            prgTitle.setAlignment(Element.ALIGN_CENTER);
+            prgTitle.setSpacingBefore(10);
+            prgTitle.setSpacingAfter(10);
+            document.add(prgTitle);
+
+            SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
+            String dateNow = sdf.format(new java.util.Date());
+
+            Paragraph prgContentMeta = new Paragraph(
+                    "Mã cửa hàng: " + store.getId() +
+                            "\nTên cửa hàng: " + store.getName() +
+                            "\nĐịa chỉ: " + store.getStoreAddress() +
+                            "\nNgày in: " + dateNow
+                    , font3
+            );
+            prgContentMeta.setAlignment(Element.ALIGN_LEFT);
+            prgContentMeta.setIndentationLeft(30);
+            document.add(prgContentMeta);
+            document.add(prgDelimiter);
+
+            // Lấy số liệu thống kê
+            ServiceManager svc = ServiceManager.getInstance();
+            StatisticService stats = svc.getStatisticService();
+            String storeId = store.getId();
+            Object totalInvoices30 = stats.getTotalInvoicesLast30Days();
+            Object totalRevenue30 = stats.getTotalRevenueLast30Days();
+            Object todayRevenue = stats.getTodayRevenue();
+            Object todayInvoices = stats.getTodayInvoices();
+            Object totalMembers = stats.getTotalMembers();
+            Object totalVIPMembers = stats.getTotalVIPMembers();
+            Object totalProducts = stats.getTotalProducts(storeId);
+            Object totalEmployees = stats.getTotalEmployees(storeId);
+            Object canceledInvoices = stats.getCanceledInvoices();
+            Object uncompletedInvoices = stats.getUncompletedInvoices();
+            Object activePromos = svc.getSaleService().getActivePromotions().size();
+            Object cancelRequestedInvoices = stats.getCancelRequestedInvoices();
+
+            PdfPTable table = new PdfPTable(2);
+            table.setWidthPercentage(80);
+            table.setSpacingBefore(10);
+            table.setSpacingAfter(10);
+            table.addCell(new PdfPCell(new Phrase("Hóa đơn 30 ngày gần nhất", font2)));
+            table.addCell(new PdfPCell(new Phrase(String.valueOf(totalInvoices30), font3)));
+            table.addCell(new PdfPCell(new Phrase("Doanh thu 30 ngày gần nhất", font2)));
+            table.addCell(new PdfPCell(new Phrase(String.valueOf(totalRevenue30), font3)));
+            table.addCell(new PdfPCell(new Phrase("Doanh thu hôm nay", font2)));
+            table.addCell(new PdfPCell(new Phrase(String.valueOf(todayRevenue), font3)));
+            table.addCell(new PdfPCell(new Phrase("Số lượng hóa đơn hôm nay", font2)));
+            table.addCell(new PdfPCell(new Phrase(String.valueOf(todayInvoices), font3)));
+            table.addCell(new PdfPCell(new Phrase("Số lượng khách hàng thành viên", font2)));
+            table.addCell(new PdfPCell(new Phrase(String.valueOf(totalMembers), font3)));
+            table.addCell(new PdfPCell(new Phrase("Số lượng khách hàng thành viên VIP (>= 1000 điểm)", font2)));
+            table.addCell(new PdfPCell(new Phrase(String.valueOf(totalVIPMembers), font3)));
+            table.addCell(new PdfPCell(new Phrase("Số loại hàng hóa trong kho", font2)));
+            table.addCell(new PdfPCell(new Phrase(String.valueOf(totalProducts), font3)));
+            table.addCell(new PdfPCell(new Phrase("Số lượng nhân viên thuộc cửa hàng", font2)));
+            table.addCell(new PdfPCell(new Phrase(String.valueOf(totalEmployees), font3)));
+            table.addCell(new PdfPCell(new Phrase("Số lượng đơn đã hủy", font2)));
+            table.addCell(new PdfPCell(new Phrase(String.valueOf(canceledInvoices), font3)));
+            table.addCell(new PdfPCell(new Phrase("Số lượng hóa đơn chưa hoàn thành", font2)));
+            table.addCell(new PdfPCell(new Phrase(String.valueOf(uncompletedInvoices), font3)));
+            table.addCell(new PdfPCell(new Phrase("Số lượng khuyến mãi đang hoạt động", font2)));
+            table.addCell(new PdfPCell(new Phrase(String.valueOf(activePromos), font3)));
+            table.addCell(new PdfPCell(new Phrase("Số lượng hóa đơn đang yêu cầu hủy", font2)));
+            table.addCell(new PdfPCell(new Phrase(String.valueOf(cancelRequestedInvoices), font3)));
+            document.add(table);
+            document.add(prgDelimiter);
+
+            document.close();
+            writer.close();
+
+            File file = new File("reports/" + fileName + ".pdf");
+            if (file.exists()) {
+                return file;
+            }
+        } catch (Exception e) {
+            return null;
+        }
+        return null;
+    }
 }

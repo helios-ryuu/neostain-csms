@@ -152,6 +152,11 @@ public class PromotionPanel extends JPanel {
                                         DialogFactory.showErrorDialog(this, "Lỗi", "Không tìm thấy khuyến mãi.");
                                         return;
                                     }
+                                    java.util.Date now = new java.util.Date();
+                                    if (promo.getStartTime() == null || promo.getEndTime() == null || now.before(promo.getStartTime()) || now.after(promo.getEndTime())) {
+                                        DialogFactory.showErrorDialog(this, "Lỗi", "Khuyến mãi này hiện không hoạt động (ngoài thời gian hiệu lực).");
+                                        return;
+                                    }
                                     if (promo.getProductId() == null || promo.getMinimumPurchaseQuantity() <= 0) {
                                         DialogFactory.showErrorDialog(this, "Lỗi", "Khuyến mãi không hợp lệ.");
                                         return;

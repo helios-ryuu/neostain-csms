@@ -8,6 +8,7 @@ import com.neostain.csms.model.Paycheck;
 import com.neostain.csms.model.ShiftReport;
 
 import java.math.BigDecimal;
+import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.List;
 
@@ -127,7 +128,7 @@ public class OperationServiceImpl implements OperationService {
     }
 
     @Override
-    public String generatePaycheck(String employeeId, BigDecimal deductions, Timestamp periodStart, Timestamp periodEnd) {
+    public String generatePaycheck(String employeeId, BigDecimal deductions, Timestamp periodStart, Timestamp periodEnd) throws SQLException {
         // This would call a stored procedure in the DAO, but for now, just return false
         return paycheckDAO.create(employeeId, deductions, periodStart, periodEnd);
     }
