@@ -74,6 +74,7 @@ Chạy tuần tự các script SQL theo đúng thứ tự sau:
 * `SEQUENCE_TRIGGER.sql` – tạo sequence và trigger.
 * `PROCEDURE.sql` – tạo stored procedures.
 * `FUNCTION.sql` – tạo functions.
+* `SCHEDULE_JOBS.sql` – tạo job theo lịch.
 * `INSERT.sql` – thêm dữ liệu mẫu.
 
 🔁 **Nếu gặp lỗi:** Chạy `DROP.sql` để xóa toàn bộ cấu trúc và bắt đầu lại.
