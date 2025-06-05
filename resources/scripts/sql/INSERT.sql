@@ -1,8 +1,4 @@
--- THIS FILE IS FINALIZED AND SEALED.
--- DO NOT MODIFY THIS FILE.
--- [SEALED BY HELIOS 23/5/2025] --
-
--- ================================ SAMPLE_DATASET ================================ --
+-- ================================ SAMPLE DATASET ================================ --
 -- ================================
 -- 1. ROLE (Vai trò)
 -- ================================
@@ -457,5 +453,172 @@ BEGIN
             INSERT INTO ASSIGNMENT (EMPLOYEE_ID, STORE_ID, START_TIME, END_TIME)
             VALUES (REC.ID, 'VN000002', SYSTIMESTAMP, SYSTIMESTAMP + INTERVAL '8' HOUR);
         END LOOP;
+END;
+/
+
+-- ====================================
+-- 12, 13, 14, 15, 16: TOKEN, SHIFT_REPORT, INVOICE, INVOICE_DETAIL, POINT_UPDATE_LOG
+-- ====================================
+DECLARE
+    V_USERNAME            VARCHAR2(50) := 'iamsm1';
+    V_PASSWORD            VARCHAR2(50) := 'Java@123';
+    V_STORE_ID            CHAR(8)      := 'VN000001';
+    V_INPUT_PASSWORD_HASH VARCHAR2(64);
+    V_USER_PASSWORD_HASH  VARCHAR2(64);
+    V_EMPLOYEE_ID         CHAR(12);
+    V_TOKEN_VALUE         VARCHAR2(64);
+    V_INVOICE_ID          CHAR(20);
+    V_MEMBER_ID           CHAR(20);
+    V_PAYMENT_ID          CHAR(4);
+    V_SHIFT_REPORT_ID     CHAR(30);
+    V_PAYCHECK_ID         CHAR(24);
+BEGIN
+    SELECT RAWTOHEX(STANDARD_HASH(V_PASSWORD, 'SHA256'))
+    INTO V_INPUT_PASSWORD_HASH
+    FROM DUAL;
+
+    SELECT PASSWORD_HASH
+    INTO V_USER_PASSWORD_HASH
+    FROM ACCOUNT
+    WHERE USERNAME = V_USERNAME;
+
+    IF (LOWER(V_INPUT_PASSWORD_HASH) = V_USER_PASSWORD_HASH) THEN
+        -- LOGIN
+        SELECT LOWER(RAWTOHEX(STANDARD_HASH(SYSTIMESTAMP || V_USERNAME, 'SHA256')))
+        INTO V_TOKEN_VALUE
+        FROM DUAL;
+
+        INSERT INTO TOKEN(USERNAME, VALUE, EXPIRES_AT)
+        VALUES (V_USERNAME, V_TOKEN_VALUE, SYSTIMESTAMP + INTERVAL '7' DAY);
+
+        SELECT EMPLOYEE_ID
+        INTO V_EMPLOYEE_ID
+        FROM ACCOUNT
+        WHERE USERNAME = V_USERNAME;
+
+        PRC_INITIATE_SHIFT(V_STORE_ID, V_EMPLOYEE_ID, V_SHIFT_REPORT_ID);
+
+        UPDATE EMPLOYEE
+        SET STATUS = 'ĐANG HOẠT ĐỘNG'
+        WHERE ID = V_EMPLOYEE_ID;
+
+        UPDATE ACCOUNT
+        SET STATUS = 'ĐANG HOẠT ĐỘNG'
+        WHERE USERNAME = V_USERNAME;
+
+        COMMIT;
+
+        -- PAYMENT PROCESS
+        SELECT ID
+        INTO V_PAYMENT_ID
+        FROM PAYMENT
+        WHERE NAME = 'Tiền mặt';
+
+        SELECT ID
+        INTO V_MEMBER_ID
+        FROM MEMBER
+        WHERE NAME = 'Vũ Minh Sang';
+        -- INVOICE 1
+        PRC_INITIATE_INVOICE(V_STORE_ID,
+                             V_MEMBER_ID,
+                             V_PAYMENT_ID,
+                             V_EMPLOYEE_ID,
+                             0,
+                             V_INVOICE_ID
+        );
+        PRC_ADD_ITEM_TO_INVOICE(V_INVOICE_ID, '0123456789001', 3);
+        PRC_ADD_ITEM_TO_INVOICE(V_INVOICE_ID, '0123456789003', 3);
+        PRC_ADD_GIFT_TO_INVOICE(V_INVOICE_ID, '0123456789001', 1);
+        PRC_CALC_TOTAL(V_INVOICE_ID);
+        COMMIT;
+
+        -- INVOICE 2
+        PRC_INITIATE_INVOICE(V_STORE_ID,
+                             V_MEMBER_ID,
+                             V_PAYMENT_ID,
+                             V_EMPLOYEE_ID,
+                             100,
+                             V_INVOICE_ID
+        );
+        PRC_ADD_ITEM_TO_INVOICE(V_INVOICE_ID, '0123456789025', 3);
+        PRC_ADD_ITEM_TO_INVOICE(V_INVOICE_ID, '0123456789003', 3);
+        PRC_CALC_TOTAL(V_INVOICE_ID);
+        COMMIT;
+
+        -- INVOICE 3
+        PRC_INITIATE_INVOICE(V_STORE_ID,
+                             V_MEMBER_ID,
+                             V_PAYMENT_ID,
+                             V_EMPLOYEE_ID,
+                             150,
+                             V_INVOICE_ID
+        );
+        PRC_ADD_ITEM_TO_INVOICE(V_INVOICE_ID, '0123456789020', 3);
+        PRC_ADD_ITEM_TO_INVOICE(V_INVOICE_ID, '0123456789003', 3);
+        PRC_CALC_TOTAL(V_INVOICE_ID);
+        COMMIT;
+
+        -- LOGOUT
+        PRC_END_SHIFT(V_SHIFT_REPORT_ID);
+
+        UPDATE EMPLOYEE
+        SET STATUS = 'TẠM NGỪNG HOẠT ĐỘNG'
+        WHERE ID = V_EMPLOYEE_ID;
+
+        UPDATE ACCOUNT
+        SET STATUS = 'NGỪNG HOẠT ĐỘNG'
+        WHERE USERNAME = V_USERNAME;
+
+        UPDATE TOKEN
+        SET STATUS = 'VÔ HIỆU'
+        WHERE VALUE = V_TOKEN_VALUE;
+
+        PRC_CALC_PAYCHECK(V_EMPLOYEE_ID,
+                          0,
+                          SYSTIMESTAMP - INTERVAL '15' DAY,
+                          SYSTIMESTAMP + INTERVAL '15' DAY,
+                          V_PAYCHECK_ID
+        );
+        COMMIT;
+    END IF;
+
+    -- DEMO
+    BEGIN
+        DBMS_OUTPUT.PUT_LINE('1. FNC_DAY_REVENUE                = ' ||
+                             FNC_DAY_REVENUE(SYSDATE));
+
+        DBMS_OUTPUT.PUT_LINE('2. FNC_DAY_INVOICE_COUNT          = ' ||
+                             FNC_DAY_INVOICE_COUNT(SYSDATE));
+
+        DBMS_OUTPUT.PUT_LINE('3. FNC_TOTAL_MEMBERS              = ' ||
+                             FNC_TOTAL_MEMBERS);
+
+        DBMS_OUTPUT.PUT_LINE('4. FNC_TOTAL_VIP_MEMBERS          = ' ||
+                             FNC_TOTAL_VIP_MEMBERS);
+
+        DBMS_OUTPUT.PUT_LINE('5. FNC_TOTAL_PRODUCTS             = ' ||
+                             FNC_TOTAL_PRODUCTS(V_STORE_ID));
+
+        DBMS_OUTPUT.PUT_LINE('6. FNC_TOTAL_EMPLOYEES            = ' ||
+                             FNC_TOTAL_EMPLOYEES(V_STORE_ID));
+
+        DBMS_OUTPUT.PUT_LINE('7. FNC_CANCELED_INVOICES          = ' ||
+                             FNC_CANCELED_INVOICES);
+
+        DBMS_OUTPUT.PUT_LINE('8. FNC_UNCOMPLETED_INVOICES       = ' ||
+                             FNC_UNCOMPLETED_INVOICES);
+
+        DBMS_OUTPUT.PUT_LINE('9. FNC_TOTAL_INVOICES_LAST_30D    = ' ||
+                             FNC_TOTAL_INVOICES_LAST_30D);
+
+        DBMS_OUTPUT.PUT_LINE('10. FNC_TOTAL_REVENUE_LAST_30D    = ' ||
+                             FNC_TOTAL_REVENUE_LAST_30D);
+
+        DBMS_OUTPUT.PUT_LINE('11. FNC_CANCEL_REQUESTED_INVOICES = ' ||
+                             FNC_CANCEL_REQUESTED_INVOICES);
+    END;
+EXCEPTION
+    WHEN OTHERS THEN
+        ROLLBACK;
 END;
 /

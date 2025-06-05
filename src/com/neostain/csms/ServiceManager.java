@@ -196,7 +196,6 @@ public class ServiceManager {
 
         // Authenticate user
         if (authService.authenticate(username, password, storeId)) {
-            // Generate and store token
             String token = authService.generateToken(username);
             Account account = authService.getAccountByUsername(username);
 

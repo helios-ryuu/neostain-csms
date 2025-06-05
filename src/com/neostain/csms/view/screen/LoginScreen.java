@@ -26,7 +26,6 @@ public class LoginScreen extends JPanel {
     private static final Logger LOGGER = Logger.getLogger(LoginScreen.class.getName());
     private static final ServiceManager serviceManager = ServiceManager.getInstance();
 
-    // Các thành phần giao diện
     private final JTextField usernameField;
     private final JPasswordField passwordField;
     private final JComboBox<String> storeBox;
@@ -37,9 +36,9 @@ public class LoginScreen extends JPanel {
      * Khởi tạo màn hình xác thực với các thành phần giao diện
      */
     public LoginScreen() {
-        // Initialize fields before parent class constructor is called
         this.usernameField = new JTextField(30);
         this.passwordField = new JPasswordField(30);
+
         // Payment methods dropdown (load from DB)
         List<Store> stores = serviceManager.getManagementService(false).getAllStores();
         this.storeItems = new String[stores.size()];
@@ -49,8 +48,6 @@ public class LoginScreen extends JPanel {
         this.storeBox = new JComboBox<>(storeItems);
         this.statusLabel = new JLabel("Vui lòng đăng nhập");
 
-
-        // Now call initializeContent which will call our initializeComponents() method
         initializeComponents();
     }
 

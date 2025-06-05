@@ -17,8 +17,6 @@ public class ViewManager {
     private final static Logger LOGGER = Logger.getLogger(ViewManager.class.getName());
     private static ViewManager instance;
     private final MainFrame mainFrame;
-
-    // Tham chiếu đến ServiceManager để truy cập thông tin token
     private final ServiceManager serviceManager;
 
     private ViewManager(MainFrame mainFrame) {

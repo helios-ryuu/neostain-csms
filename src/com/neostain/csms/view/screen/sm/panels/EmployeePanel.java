@@ -276,7 +276,7 @@ public class EmployeePanel extends JPanel {
                     infoPanel.add(new JLabel("Tên tài khoản:"));
                     infoPanel.add(new JLabel(phone));
                     infoPanel.add(new JLabel("Mật khẩu:"));
-                    infoPanel.add(new JLabel("12345678"));
+                    infoPanel.add(new JLabel("Java@123"));
                     infoPanel.add(new JLabel("Vai trò:"));
                     infoPanel.add(new JLabel(roleId + " - " + roles.get(roleCombo.getSelectedIndex()).getName()));
                     JOptionPane.showMessageDialog(dialog, infoPanel, "Thông tin nhân viên mới", JOptionPane.INFORMATION_MESSAGE);

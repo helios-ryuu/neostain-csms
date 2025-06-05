@@ -1,7 +1,3 @@
--- THIS FILE IS FINALIZED AND SEALED.
--- DO NOT MODIFY THIS FILE.
--- [SEALED BY HELIOS 23/5/2025] --
-
 CREATE TABLE ROLE
 (
     ID         CHAR(4)             NOT NULL,
@@ -235,7 +231,7 @@ CREATE TABLE TOKEN
 (
     ID         CHAR(20)                            NOT NULL,
     USERNAME   VARCHAR2(50)                        NOT NULL,
-    VALUE      VARCHAR2(4000)                      NOT NULL,
+    VALUE VARCHAR2(64) NOT NULL,
     EXPIRES_AT TIMESTAMP                           NOT NULL,
     ISSUED_AT  TIMESTAMP     DEFAULT SYSTIMESTAMP  NOT NULL,
     STATUS     NVARCHAR2(50) DEFAULT 'CÓ HIỆU LỰC' NOT NULL,

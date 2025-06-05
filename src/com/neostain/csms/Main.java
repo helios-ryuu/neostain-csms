@@ -5,7 +5,7 @@ import com.neostain.csms.view.MainFrame;
 import javax.swing.*;
 
 /**
- * Entry point of the application.
+ * Điểm đầu vào của ứng dụng
  */
 public class Main {
     public static void main(String[] args) {

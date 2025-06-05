@@ -90,7 +90,6 @@ public class ScrollableTable extends JScrollPane {
                 if (col < baseColumns.length) {
                     super.setValueAt(aValue, row, col);
                 }
-                // Cột action hoàn toàn không gọi super -> không phát sinh setValueAt với row = -1
             }
         };
         table.setModel(model);
