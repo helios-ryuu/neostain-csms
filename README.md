@@ -1,78 +1,122 @@
-# Cài đặt môi trường phát triển
+# 🟢 NeoStain CSMS – Hệ Thống Quản Lý Cửa Hàng
 
-- Git
-- Java Runtime Environment (JRE)
-- Java Development Kit (JDK)
-- IntelliJ IDEA Ultimate
-- Oracle Enterprise Edition 21
-- Radmin VPN (Nếu chia sẻ cơ sở dữ liệu cho các máy khác qua mạng cục bộ)
+NeoStain CSMS (Customer & Store Management System) là một ứng dụng Java tích hợp quản lý dữ liệu cửa hàng, nhân viên, kho hàng, tài khoản người dùng, và các báo cáo thống kê.
 
-## Thiết lập Pluggable Database
+---
 
-### Bước 1: Mở SQL Plus và kết nối tới user SYS
+## 🚀 Yêu Cầu Hệ Thống
 
-```powershell
-PS C:\Users\admin> SQLPLUS
+Để cài đặt và chạy NeoStain CSMS, bạn cần có:
 
-SQL*Plus: Release 21.0.0.0.0 - Production on Mon Mar 17 09:31:09 2025
-Version 21.3.0.0.0
+* **Oracle Database 21c Enterprise Edition**
+* **Java Runtime Environment (JRE) >= 17**
+* **Java Development Kit (JDK) >= 17** *(chỉ cần nếu phát triển hoặc debug)*
+* **Git** *(nếu muốn clone trực tiếp mã nguồn)*
+* **IntelliJ IDEA Ultimate** *(khuyến nghị cho việc phát triển)*
 
-Copyright (c) 1982, 2021, Oracle.  All rights reserved.
+### 🔶 Kiểm tra phiên bản Java
 
-Enter user-name: /AS SYSDBA
-
-Connected to:
-Oracle Database 21c Enterprise Edition Release 21.0.0.0.0 - Production
-Version 21.3.0.0.0
-
-SQL>
-```
-
-### Bước 2: Tạo một pluggable database, mở nó và giữ trạng thái luôn mở cho cơ sở dữ liệu
+#### 🔹 Sau khi tải **Java Runtime Environment (JRE)** và **Java Development Kit (JDK)**, có thể kiểm tra phiên bản bằng lệnh dưới đây:
 
 ```powershell
-SQL> CREATE PLUGGABLE DATABASE NEOSTAIN_CSMS
-  2  ADMIN USER ADMIN_CSMS IDENTIFIED BY 12345678 ROLES=(DBA)
-  3  FILE_NAME_CONVERT=('PDBSEED', 'NEOSTAIN_CSMS');
-
-Pluggable database created.
-
-SQL> ALTER PLUGGABLE DATABASE NEOSTAIN_CSMS OPEN;
-
-Pluggable database altered.
-
-SQL> ALTER PLUGGABLE DATABASE NEOSTAIN_CSMS SAVE STATE;
-
-Pluggable database altered.
+java -version
 ```
 
-### Bước 3: Kết nối tới database vừa tạo
+---
+
+## 🔧 Hướng Dẫn Cài Đặt
+
+### 1️⃣ Cài đặt Oracle Database
+
+* [Tải Oracle 21c](https://www.oracle.com/database/technologies/oracle21c-windows-downloads.html) và cài đặt theo hướng dẫn.
+* Đảm bảo Oracle Listener hoạt động trên cổng `1521`.
+
+### 2️⃣ Thiết Lập Cơ Sở Dữ Liệu
+
+#### 🔹 Bước 1: Mở SQL\*Plus và kết nối với quyền SYSDBA
 
 ```powershell
-SQL> CONNECT CSMS_ADMIN/12345678@LOCALHOST:1521/NEOSTAIN_CSMS
-Connected.
+SQLPLUS /AS SYSDBA
 ```
 
-### Bước 4: Tạo một tablespace và đặt làm mặc định
+#### 🔹 Bước 2: Tạo Pluggable Database `NEOSTAIN_CSMS`
+
+```sql
+CREATE PLUGGABLE DATABASE NEOSTAIN_CSMS
+  ADMIN USER CSMS_ADMIN IDENTIFIED BY 12345678 ROLES=(DBA)
+  FILE_NAME_CONVERT=('PDBSEED', 'NEOSTAIN_CSMS');
+
+ALTER PLUGGABLE DATABASE NEOSTAIN_CSMS OPEN;
+ALTER PLUGGABLE DATABASE NEOSTAIN_CSMS SAVE STATE;
+```
+
+#### 🔹 Bước 3: Kết nối tới PDB
+
+```sql
+CONNECT CSMS_ADMIN/12345678@localhost:1521/NEOSTAIN_CSMS
+```
+
+#### 🔹 Bước 4: Tạo tablespace và cấp quyền
+
+```sql
+CREATE TABLESPACE CSMS_DATA 
+  DATAFILE 'csms_data.dbf' SIZE 100M AUTOEXTEND ON;
+
+ALTER USER CSMS_ADMIN DEFAULT TABLESPACE CSMS_DATA;
+ALTER USER CSMS_ADMIN QUOTA UNLIMITED ON CSMS_DATA;
+```
+
+#### 🔹 Bước 5: Khởi tạo cơ sở dữ liệu
+
+Chạy tuần tự các script SQL theo đúng thứ tự sau:
+
+* `CREATE.sql` – tạo bảng và cấu trúc.
+* `SEQUENCE_TRIGGER.sql` – tạo sequence và trigger.
+* `PROCEDURE.sql` – tạo stored procedures.
+* `FUNCTION.sql` – tạo functions.
+* `SCHEDULE_JOBS.sql` – tạo job theo lịch.
+* `INSERT.sql` – thêm dữ liệu mẫu.
+
+🔁 **Nếu gặp lỗi:** Chạy `DROP.sql` để xóa toàn bộ cấu trúc và bắt đầu lại.
+
+---
+
+## ▶️ Hướng Dẫn Chạy Ứng Dụng (sử dụng JAR file)
+
+* **File ứng dụng:** `neostain-csms.jar`
+
+### Bước 1: Đảm bảo Java Runtime Environment (JRE >=17) đã được cài đặt.
+
+### Bước 2: Chạy ứng dụng từ dòng lệnh
+
+* Mở Terminal hoặc CMD và chạy lệnh sau:
 
 ```powershell
-SQL> CREATE TABLESPACE CSMS_DATA DATAFILE 'csms_data.dbf' SIZE 100M AUTOEXTEND ON;
-
-Tablespace created.
-
-SQL> ALTER USER CSMS_ADMIN DEFAULT TABLESPACE CSMS_DATA;
-
-User altered.
+java -jar neostain-csms.jar
 ```
 
-### Bước 5: Cấp quota cho tablespace vào người dùng
+Ứng dụng sẽ khởi động và sẵn sàng hoạt động.
 
-```powershell
-SQL> ALTER USER CSMS_ADMIN QUOTA UNLIMITED ON CSMS_DATA;
+---
 
-User altered.
-```
+## 🌐 Chia Sẻ Cơ Sở Dữ Liệu Qua Mạng LAN (tùy chọn)
 
-### Bước 6: Lần lượt chạy CREATE.sql -> SEQUENCE_TRIGGER.sql -> PROCEDURE.sql -> INSERT.sql để tạo các bảng và thêm dữ liệu (Nếu xảy ra lỗi thì chạy file DROP.sql để xóa bảng)
+Để chia sẻ và truy cập CSDL từ máy khác:
 
-### Bước 7: Chạy file Main.java tại src/com/neostain/csms/Main.java
+* Cài đặt **Radmin VPN** và tạo mạng LAN.
+* Đảm bảo Oracle Listener cho phép kết nối từ xa.
+* Mở cổng `1521` trên Firewall.
+
+---
+
+## 🔒 Thông Tin Đăng Nhập Mặc Định
+
+* **Mật khẩu mặc định cho tất cả tài khoản:**
+
+  * Password: `Java@123`
+
+---
+
+## 📝 Phiên bản hiện tại: **NeoStain CSMS v1.0.0**
+
+**Official Stable Release**
