@@ -1,6 +1,6 @@
-# 🟢 NeoStain CSMS – Hệ Thống Quản Lý Cửa Hàng
+# 🟢 NeoStain CSMS – Hệ Thống Quản Lý Cửa Hàng Tiện Lợi
 
-NeoStain CSMS (Customer & Store Management System) là một ứng dụng Java tích hợp quản lý dữ liệu cửa hàng, nhân viên, kho hàng, tài khoản người dùng, và các báo cáo thống kê.
+NeoStain CSMS (Convenience Store Management System) là một ứng dụng Java tích hợp quản lý dữ liệu cửa hàng, nhân viên, kho hàng, tài khoản người dùng, và các báo cáo thống kê.
 
 ---
 
