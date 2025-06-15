@@ -168,69 +168,54 @@ public class MemberPanel extends JPanel {
                 String name = nameField.getText().trim();
                 String phone = phoneFieldx.getText().trim();
                 String email = emailFieldx.getText().trim();
-                // Step 1: Validate input (simulate add, catch exception)
-                try {
-                    serviceManager.getManagementService().createMember(name, phone, email);
-                } catch (com.neostain.csms.util.exception.DuplicateFieldException dfe) {
-                    DialogFactory.showErrorDialog(dialog, "Lỗi trùng dữ liệu", dfe.getMessage());
-                    if ("phoneNumber".equals(dfe.getFieldName())) {
-                        phoneFieldx.requestFocus();
-                    } else {
-                        emailFieldx.requestFocus();
-                    }
-                    return;
-                } catch (com.neostain.csms.util.exception.FieldValidationException fve) {
-                    DialogFactory.showErrorDialog(dialog, "Lỗi dữ liệu không hợp lệ", fve.getMessage());
-                    if ("phoneNumber".equals(fve.getFieldName())) {
-                        phoneFieldx.requestFocus();
-                    } else {
-                        emailFieldx.requestFocus();
-                    }
-                    return;
-                } catch (Exception ex) {
-                    DialogFactory.showErrorDialog(dialog, "Lỗi", "Lỗi không xác định: " + ex.getMessage());
-                    return;
-                }
-                // Step 2: Show confirmation dialog
-                JPanel infoPanel = new JPanel(new GridLayout(3, 2, 8, 8));
-                infoPanel.add(new JLabel("Họ và tên:"));
-                infoPanel.add(new JLabel(name));
-                infoPanel.add(new JLabel("Số điện thoại:"));
-                infoPanel.add(new JLabel(phone));
-                infoPanel.add(new JLabel("Email:"));
-                infoPanel.add(new JLabel(email));
-                int confirm = JOptionPane.showConfirmDialog(
-                        dialog,
-                        infoPanel,
-                        "Bạn có xác nhận đăng ký thành viên với thông tin sau?",
-                        JOptionPane.OK_CANCEL_OPTION,
-                        JOptionPane.QUESTION_MESSAGE
-                );
-                if (confirm == JOptionPane.OK_OPTION) {
-                    try {
-                        serviceManager.getManagementService().createMember(name, phone, email);
-                        dialog.dispose();
-                        resetBtn.doClick();
-                        DialogFactory.showInfoDialog(this, "Thành công", "Đăng ký thành viên thành công!");
-                    } catch (com.neostain.csms.util.exception.DuplicateFieldException dfe) {
-                        DialogFactory.showErrorDialog(dialog, "Lỗi trùng dữ liệu", dfe.getMessage());
-                        if ("phoneNumber".equals(dfe.getFieldName())) {
-                            phoneFieldx.requestFocus();
-                        } else {
-                            emailFieldx.requestFocus();
+                if (name.isEmpty()) {
+                    DialogFactory.showErrorDialog(dialog, "Lỗi dữ liệu không hợp lệ", "Tên không được để trống");
+                } else if (phone.isEmpty()) {
+                    DialogFactory.showErrorDialog(dialog, "Lỗi dữ liệu không hợp lệ", "Số điện thoại không được để trống");
+                } else if (email.isEmpty()) {
+                    DialogFactory.showErrorDialog(dialog, "Lỗi dữ liệu không hợp lệ", "Email không được để trống");
+                } else {
+                    // Step 1: Show confirmation dialog
+                    JPanel infoPanel = new JPanel(new GridLayout(3, 2, 8, 8));
+                    infoPanel.add(new JLabel("Họ và tên:"));
+                    infoPanel.add(new JLabel(name));
+                    infoPanel.add(new JLabel("Số điện thoại:"));
+                    infoPanel.add(new JLabel(phone));
+                    infoPanel.add(new JLabel("Email:"));
+                    infoPanel.add(new JLabel(email));
+                    int confirm = JOptionPane.showConfirmDialog(
+                            dialog,
+                            infoPanel,
+                            "Bạn có xác nhận đăng ký thành viên với thông tin sau?",
+                            JOptionPane.OK_CANCEL_OPTION,
+                            JOptionPane.QUESTION_MESSAGE
+                    );
+                    if (confirm == JOptionPane.OK_OPTION) {
+                        try {
+                            serviceManager.getManagementService().createMember(name, phone, email);
+                            dialog.dispose();
+                            resetBtn.doClick();
+                            DialogFactory.showInfoDialog(this, "Thành công", "Đăng ký thành viên thành công!");
+                        } catch (com.neostain.csms.util.exception.DuplicateFieldException dfe) {
+                            DialogFactory.showErrorDialog(dialog, "Lỗi trùng dữ liệu", dfe.getMessage());
+                            if ("phoneNumber".equals(dfe.getFieldName())) {
+                                phoneFieldx.requestFocus();
+                            } else {
+                                emailFieldx.requestFocus();
+                            }
+                        } catch (com.neostain.csms.util.exception.FieldValidationException fve) {
+                            DialogFactory.showErrorDialog(dialog, "Lỗi dữ liệu không hợp lệ", fve.getMessage());
+                            if ("phoneNumber".equals(fve.getFieldName())) {
+                                phoneFieldx.requestFocus();
+                            } else {
+                                emailFieldx.requestFocus();
+                            }
+                        } catch (Exception ex) {
+                            DialogFactory.showErrorDialog(dialog, "Lỗi", "Lỗi không xác định: " + ex.getMessage());
                         }
-                    } catch (com.neostain.csms.util.exception.FieldValidationException fve) {
-                        DialogFactory.showErrorDialog(dialog, "Lỗi dữ liệu không hợp lệ", fve.getMessage());
-                        if ("phoneNumber".equals(fve.getFieldName())) {
-                            phoneFieldx.requestFocus();
-                        } else {
-                            emailFieldx.requestFocus();
-                        }
-                    } catch (Exception ex) {
-                        DialogFactory.showErrorDialog(dialog, "Lỗi", "Lỗi không xác định: " + ex.getMessage());
                     }
+                    // else: do nothing, stay in dialog
                 }
-                // else: do nothing, stay in dialog
             });
 
             dialog.pack();
