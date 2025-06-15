@@ -117,6 +117,4 @@ java -jar neostain-csms.jar
 
 ---
 
-## 📝 Phiên bản hiện tại: **NeoStain CSMS v1.0.0**
-
-**Official Stable Release**
+## 📝 Phiên bản hiện tại: **NeoStain CSMS v1.0.1 June 2025 - Official Stable Release**
